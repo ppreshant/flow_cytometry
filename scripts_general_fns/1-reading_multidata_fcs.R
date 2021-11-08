@@ -1,5 +1,8 @@
 # read a multi data .fcs 3.0 file
 
+# if the file was already opened into a directory of individual files, they will be read
+# otherwise the multi file will be read into a directory of the same name or into a temporary directory
+
 read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with multiple datasets
                                number_of_datasets = NULL,  # number of datasets if predetermined (will automatically get if NULL)
                                transformation_key = FALSE, emptyvalue_key = FALSE, # don't know what these are
@@ -8,27 +11,40 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
                               
 {
   
-  # decide path - either save files or create a temporary directory
-  outpath <- if(is.null(directory_path)) {
-    
-    tempdir() # create a temporary directory if path is not specified
+  read_multi_file_key = FALSE # set to TRUE inside if conditions
   
+  # decide path - either save files or create a temporary directory
+  if(is.null(directory_path)) {
+    
+    outpath <-  tempdir() # create a temporary directory if path is not specified
+    read_multi_file_key = TRUE # set to TRUE
+    
   } else { # if directory_path is specified
     
-    if(!dir.exists(directory_path)) dir.create(directory_path) # create a directory to write files if doesn't exist
-    outpath = directory_path } # record the path of the directory
-
-  # Find the number of datasets in the FCS file
-  number_of_datasets <- if(is.null(number_of_datasets)) {
-    get_number_of_datasets_fcs(multi_data_fcs_path)
+    if(!dir.exists(directory_path)) # if path doesn't exist, create the directory and load files 
+    
+    { dir.create(directory_path) # create a directory to write files if doesn't exist
+      read_multi_file_key = TRUE # set to TRUE
+    }
+   
+    outpath <- directory_path # record the path of the directory
+    
   }
+  
+  if(read_multi_file_key) # if the file has to be read
+  {
+    
+    # Find the number of datasets in the FCS file
+    number_of_datasets <- if(is.null(number_of_datasets)) {
+      get_number_of_datasets_fcs(multi_data_fcs_path)
+    }
     
     for(i in 1:number_of_datasets){
-    
+      
       # Load in each dataset as a floFrame and write it out as its own FCS
       dataset_i <- flowWorkspace::load_cytoframe_from_fcs(multi_data_fcs_path, dataset = i, # read each file
-                            transformation = transformation_key,
-                            emptyValue = emptyvalue_key)
+                                                          transformation = transformation_key,
+                                                          emptyValue = emptyvalue_key)
       
       # get the well ID of the current dataset loaded
       wellid <- keyword(dataset_i, '$WELLID')
@@ -37,6 +53,9 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
       write.FCS(dataset_i, file.path(outpath, 
                                      paste0(wellid, ".fcs"))) # write each dataset as individual .fcs file
     }
+    
+  }
+    
   
   # Read the split FCS files back in to a single floSet
   fs <- flowWorkspace::load_cytoset_from_fcs(list.files(outpath, 

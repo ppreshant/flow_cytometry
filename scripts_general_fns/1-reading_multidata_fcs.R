@@ -11,7 +11,11 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
                               
 {
   
-  read_multi_file_key = FALSE # set to TRUE inside if conditions
+  # key -- Should I read the multi-file .fcs or not 
+  # TRUE = read multi-fcs file, write to individual files with numbering and read them back as a multi-fcs cytoset
+  # FALSE = just read the individual files (which will already be present)
+  read_multi_file_key = FALSE # set to TRUE if directory holding individual files is not specified / does not exist yet
+  # if the directory exists, it has to be created by R hence holds the files already :: Could check for empty directory to future proof this
   
   # decide path - either save files or create a temporary directory
   if(is.null(directory_path)) {
@@ -21,14 +25,19 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
     
   } else { # if directory_path is specified
     
+    # Record the path to read the individual files from now
+    outpath <- directory_path # record the path of the directory
+    
+    
     if(!dir.exists(directory_path)) # if path doesn't exist, create the directory and load files 
     
     { dir.create(directory_path) # create a directory to write files if doesn't exist
       read_multi_file_key = TRUE # set to TRUE
-    }
-   
-    outpath <- directory_path # record the path of the directory
-    
+    } else if(dir(directory_path) %>% length == 0) # directory is empty
+      {
+      read_multi_file_key = TRUE # set to TRUE
+        
+      }
   }
   
   if(read_multi_file_key) # if the file has to be read

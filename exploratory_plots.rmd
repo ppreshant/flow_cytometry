@@ -1,0 +1,29 @@
+---
+author: "Prashant Kalvapalle"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_float: TRUE
+---
+
+---
+title: `r title_name`
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = F) #, fig.width = 10, fig.height = 5)
+```
+
+## Flow cytometry exploratory analysis
+
+Showing all samples together, with 1 plot for each measurement modality
+
+```{r exploratory_histograms}
+
+# plotly::ggplotly(pltscatter) # does not work, missing a layer with facetting variable `name`
+
+```
+

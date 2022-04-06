@@ -4,20 +4,19 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-folder_name <- 'guava_data/' # guava_data/ or sony_data/
+folder_name <- '' # guava_data/ or sony_data/
 
-subfolder_name <- 'S032 66,sPK14,15-6-7-21/'
-file.name_input <- '2021-07-06_at_11-30-50am' # input file name without .fcs
+file.name_input <- 'S040_cymR on chromosome_12-3-22' # input file name without .fcs
 
 
-title_name <- 'S032:66+48 flowcyt'
+title_name <- 'S040:cymR chromosome_flowcyt'
 
 
 # Prelims ----
 source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
 
 
-fl.path = str_c(folder_name, subfolder_name, file.name_input, '.fcs')
+fl.path = str_c('flowcyt_data/', folder_name, file.name_input, '.fcs')
 
 
 # Load data ----
@@ -26,7 +25,7 @@ fl.path = str_c(folder_name, subfolder_name, file.name_input, '.fcs')
 # reading multiple data sets from .fcs file, writes to multiple .fcs files and re-reads as as cytoset
 
 fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset (package = flowWorkspace)
-                          directory_path = str_c(folder_name, subfolder_name, file.name_input))
+                          directory_path = str_c('flowcyt_data/', folder_name, file.name_input))
 
 # legacy version -- backup 
 # run this without the dataset argument to figure out how many data segments are in the file
@@ -38,13 +37,17 @@ fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset 
 
 # fcs.subset <- Subset(fl.set, 'G01.fcs')
 
+# See the variables in the data
+# colnames(fl.set)
+
 # Exploratory plotting ----
 
 # overview plots : take a long time to show 
 
 # Plot density of all samples in the set
-pltden <- ggcyto(fl.set, aes(x = 'FSC-HLin')) + 
+pltden <- ggcyto(fl.set, aes(x = 'YEL-HLog')) + 
   geom_density(fill = 'blue', alpha = 0.3) + 
+  # facet_grid() + # plot overlapping stuff
   scale_x_logicle() # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
 
   

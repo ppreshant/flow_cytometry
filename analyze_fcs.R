@@ -4,12 +4,14 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-folder_name <- '' # guava_data/ or sony_data/
+folder_name <- 'S044_new fusions_4-5-22/' # 'foldername/'
 
-file.name_input <- 'S040_cymR on chromosome_12-3-22' # input file name without .fcs
+file.name_input <- '' # input file name without .fcs
 
 
-title_name <- 'S040:cymR chromosome_flowcyt'
+title_name <- 'S044:mScarlet-U64 fusions_flowcyt'
+
+Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables automatically
 
 
 # Prelims ----
@@ -45,29 +47,51 @@ fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset 
 # overview plots : take a long time to show 
 
 # Plot density of all samples in the set
-pltden <- ggcyto(fl.set, aes(x = 'YEL-HLog')) + 
-  geom_density(fill = 'blue', alpha = 0.3) + 
+pltden <- ggcyto(fl.set, 
+                 aes(x = 'mScarlet-I-A'),  # plot 'YEL-HLog' for Guava
+                 subset = 'A') +
+  geom_density(fill = 'red', alpha = 0.3) +
   # facet_grid() + # plot overlapping stuff
-  scale_x_logicle() # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  ggtitle(title_name)
 
+# save plot
+ggsave(str_c('FACS_analysis/plots/', 
+             'S044_mScarlet-U64-fusions',  # title_name, 
+             '-density', 
+             '.png'),
+       plot = pltden,
+       height = 8, width = 10)
+
+
+# FSC-SSC plot of single sample -- troubleshooting
+ggcyto(fl.set[1], aes(x = 'FSC-A', y = 'SSC-A')) + 
+  geom_hex(bins = 120) + 
+  geom_density2d(colour = 'black') + 
   
-# plot scatterplots of all samples in the set
-pltscatter <- ggcyto(fl.set, aes(x = 'FSC-HLin', y = 'SSC-HLin')) +  # initialize a ggplot
-  # geom_point(alpha = 0.1) + 
-  geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
-  scale_x_logicle() + scale_y_logicle()
-# logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  scale_x_logicle() + scale_y_logicle() 
 
-# testing simple plotting : is not as customizable
-# ggcyto::autoplot(fl.set, 'FSC-HLin')
-
-# Plot to html file using R markdown
-rmarkdown::render('exploratory_plots.rmd', output_file = str_c('./FACS_analysis/', title_name, '.html'))
+# # plot scatterplots of all samples in the set
+# pltscatter <- ggcyto(fl.set, aes(x = 'FSC-HLin', y = 'SSC-HLin')) +  # initialize a ggplot
+#   # geom_point(alpha = 0.1) + 
+#   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
+#   scale_x_logicle() + scale_y_logicle()
+# # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+# 
+# # testing simple plotting : is not as customizable
+# # ggcyto::autoplot(fl.set, 'FSC-HLin')
+# 
+# # Plot to html file using R markdown
+# rmarkdown::render('exploratory_plots.rmd', output_file = str_c('./FACS_analysis/', title_name, '.html'))
 
 
 # Inspecting data ----
 
-
+# using FlopR : : error : 'x' must be object of class 'flowFrame'
+process_fcs('flowcyt_data/S044_new fusions_4-5-22/96 Well Plate (deep)/Sample Group - 1/Unmixing-1/E01 Well - E01 WLSM.fcs',
+            flu_channels = c('mScarlet-I-A'),
+            do_plot = T
+            )
 
 # Gating ----
 

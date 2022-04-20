@@ -69,7 +69,8 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
   # Read the split FCS files back in to a single floSet
   fs <- flowWorkspace::load_cytoset_from_fcs(list.files(outpath, 
                                                         pattern="*.fcs", 
-                                                        full.names = TRUE), # add recursive = T for Sony data-nested folders
+                                                        full.names = TRUE,
+                                                        recursive = TRUE), # add recursive = T for Sony data-nested folders
                                              transformation = transformation_key,
                                              emptyValue = emptyvalue_key) 
 }

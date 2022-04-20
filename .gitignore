@@ -5,3 +5,5 @@
 *.fcs
 *_data/
 scripts_archive/.ipynb_checkpoints/
+.spyproject/
+FACS_analysis/

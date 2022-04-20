@@ -28,6 +28,9 @@ Advantage of flowcal
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)
 - [ ] Getting plate layout google sheet : Can use the same approach to call the existing R function to do this for us
  
+ **Error-handling**
+ - [ ] Could have a user input if beads data gating looks acceptable before proceeding to MEFLing
+ 
  Literature
   - [ ] read the flowcal introduction paper to understand the data storage format and theme etc.
 	  - wondering how extendable the formats are compared to the R/bioconductor ones that are building on the original FlowCore so more future proof?

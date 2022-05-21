@@ -54,6 +54,13 @@ Advantage of flowcal
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 
 	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate (ul) / sec}$
 
+**Quality controls**
+- [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- Or make a plot to help look for anomalies?
+- [ ] Save plots along the gating procedure for the first (_or first 3_) `.fcs` files? 
+- Would it be worthwhile to save plots along the gating process for each file in the dataset for manual QC purposes -- a RMD style html output would be good
+	- How do we dump the plots from each .fcs file from within the loop into an RMD output?
+	- Can squeeze into a pdf by doing subplots - [source](https://stackoverflow.com/a/41277685/9049673) 
+	
 **Literature**
   - [ ] read the flowcal introduction paper to understand the data storage format and theme etc.
 	  - wondering how extendable the formats are compared to the R/bioconductor ones that are building on the original FlowCore so more future proof?

@@ -61,17 +61,17 @@ fcs_data[0].channels # data from different machines have different names
 
 # %% visualize raw data
 
-# plot both density scatter plot and histogram for a channel
-FlowCal.plot.density_and_hist(single_fcs,
-                              density_channels = ['FSC-A', 'SSC-A'],
-                              density_params = {'mode': 'scatter'},
-                              hist_channels = ['mScarlet-I-A'])
-plt.tight_layout() # improves the dual plot label positioning
-plt.show()
+# # plot both density scatter plot and histogram for a channel
+# FlowCal.plot.density_and_hist(single_fcs,
+#                               density_channels = ['FSC-A', 'SSC-A'],
+#                               density_params = {'mode': 'scatter'},
+#                               hist_channels = ['mScarlet-I-A'])
+# plt.tight_layout() # improves the dual plot label positioning
+# plt.show()
 
 # %% transform to relative fluorescence units (a.u)
 # Useful if machine uses log amplifier
-# Not required for Sony data. check if you
+# Not required for Sony data. check if your data requires it by running
 
 # transformed_fcs = FlowCal.transform.to_rfi(single_fcs, channels='mScarlet-I-A')
 
@@ -83,58 +83,8 @@ plt.show()
 
 # FlowCal.plot.hist1d(single_fcs, channel='FSC-A')
     
-# %% Gating
-# gate out saturated events - high and low
-singlefcs_gate1 = FlowCal.gate.high_low(single_fcs, channels = ['FSC-A', 'SSC-A'])
 
-# auto density gating : for 50% of cells
-singlefcs_densitygate50 = FlowCal.gate.density2d(singlefcs_gate1,
-                                   channels = ['FSC-A', 'SSC-A'],
-                                   gate_fraction = 0.50,
-                                   full_output=True) # full => saves outline
-
-FlowCal.plot.density_and_hist(singlefcs_gate1,
-                              gated_data = singlefcs_densitygate50.gated_data,
-                              gate_contour = singlefcs_densitygate50.contour,
-                              density_channels=['FSC-A', 'SSC-A'],
-                              density_params={'mode': 'scatter'},
-                              hist_channels=['mGreenLantern cor-A', 'mScarlet-I-A'])
-plt.tight_layout(); plt.show()
-
-
-# %% visualize gate
-# auto density gating
-# full output saves the contour of the gate which will be shown in plot
-s_gate75 = FlowCal.gate.density2d(singlefcs_gate1,
-                                   channels = ['FSC-A', 'SSC-A'],
-                                   gate_fraction = 0.75,
-                                   full_output=True)
-
-FlowCal.plot.density_and_hist(singlefcs_gate1,
-                              gated_data = s_gate75.gated_data,
-                              gate_contour = s_gate75.contour,
-                              density_channels=['FSC-A', 'SSC-A'],
-                              density_params={'mode': 'scatter'},
-                              hist_channels=['mScarlet-I-A'])
-plt.tight_layout(); plt.show()
-
-FlowCal.plot.density2d(s_gate75.gated_data,
-                       channels=['mScarlet-I-A', 'SSC-A'],
-                       mode = 'scatter')
-
-# %% doublet discrimination
-
-FlowCal.plot.density2d(singlefcs_gate1,
-                       channels=['FSC-A', 'FSC-H'],
-                       mode = 'scatter')
-
-FlowCal.plot.density2d(s_gate75.gated_data,
-                       channels=['FSC-A', 'FSC-H'],
-                       mode = 'scatter')
-# confirm that the gating only retains the good high density area
-# where H and A are linear
-
-# %% beads
+# %% Beads processing
 
 # Get the beads file based on user provided well/pattern
 beads_filepath = [m for m in fcspaths if beads_match_name in m][0]
@@ -147,11 +97,11 @@ beads_data = FlowCal.io.FCSData(beads_filepath)
 b_g1 = FlowCal.gate.high_low(beads_data,
                              channels = ['FSC-A', 'SSC-A'],
                              low=(1000)) 
-# TODO: low threshold of 1,000 is arbitrary, 
+# TODO: low=threshold of 1,000 is arbitrary : my beads have lot of debris, 
 # might change depending on gains. Try to generalize
  
 
-# gate 30% 
+# gate 30% # since my beads have lot of debris
 b_gate30 = FlowCal.gate.density2d(b_g1,
                                     channels=['FSC-A', 'SSC-A'],
                                     gate_fraction= 0.3,
@@ -174,6 +124,80 @@ FlowCal.plot.density_and_hist(b_gate30.gated_data,
 plt.tight_layout(); plt.show()
 
 
+# %% Gating
+# gate out saturated events - high and low
+singlefcs_gate1 = FlowCal.gate.high_low(single_fcs, channels = ['FSC-A', 'SSC-A'])
+
+# auto density gating : for 50% of cells
+singlefcs_densitygate50 = FlowCal.gate.density2d(singlefcs_gate1,
+                                   channels = ['FSC-A', 'SSC-A'],
+                                   gate_fraction = 0.50,
+                                   full_output=True) # full => saves outline
+
+FlowCal.plot.density_and_hist(singlefcs_gate1,
+                              gated_data = singlefcs_densitygate50.gated_data,
+                              gate_contour = singlefcs_densitygate50.contour,
+                              density_channels=['FSC-A', 'SSC-A'],
+                              density_params={'mode': 'scatter'},
+                              hist_channels=['mGreenLantern cor-A', 'mScarlet-I-A'])
+plt.tight_layout(); plt.show()
+
+# %% doublet discrimination
+
+# Singlets: auto density gating : for 90% of cells w FSC-A vs H
+singlefcs_singlets90 = FlowCal.gate.density2d(singlefcs_densitygate50.gated_data,
+                                   channels = ['FSC-A', 'FSC-H'],
+                                   gate_fraction = 0.90,
+                                   full_output=True) # full => saves outline
+
+# plot before and after gating
+FlowCal.plot.density_and_hist(singlefcs_densitygate50.gated_data,
+                              gated_data = singlefcs_singlets90.gated_data,
+                              gate_contour = singlefcs_singlets90.contour,
+                              density_channels=['FSC-A', 'FSC-H'],
+                              density_params={'mode': 'scatter'},
+                              hist_channels=['mGreenLantern cor-A', 'mScarlet-I-A'])
+plt.tight_layout(); plt.show()
+
+# confirm that the gating only retains the good high density area
+# where H and A are linear
+
+# %% Alternate gating percentage
+# auto density gating
+# full output saves the contour of the gate which will be shown in plot
+# singlefcs_gate75 = FlowCal.gate.density2d(singlefcs_gate1,
+#                                     channels = ['FSC-A', 'SSC-A'],
+#                                     gate_fraction = 0.75,
+#                                     full_output=True)
+
+# FlowCal.plot.density_and_hist(singlefcs_gate1,
+#                               gated_data = singlefcs_gate75.gated_data,
+#                               gate_contour = singlefcs_gate75.contour,
+#                               density_channels=['FSC-A', 'SSC-A'],
+#                               density_params={'mode': 'scatter'},
+#                               hist_channels=['mScarlet-I-A'])
+# plt.tight_layout(); plt.show()
+
+# # Singlets: auto density gating : for 90% of cells w FSC-A vs H
+# singlefcs_g75_singlets90 = FlowCal.gate.density2d(singlefcs_gate75.gated_data,
+#                                    channels = ['FSC-A', 'FSC-H'],
+#                                    gate_fraction = 0.90,
+#                                    full_output=True) # full => saves outline
+
+# # plot before and after gating
+# FlowCal.plot.density_and_hist(singlefcs_gate75.gated_data,
+#                               gated_data = singlefcs_g75_singlets90.gated_data,
+#                               gate_contour = singlefcs_g75_singlets90.contour,
+#                               density_channels=['FSC-A', 'FSC-H'],
+#                               density_params={'mode': 'scatter'},
+#                               hist_channels=['mGreenLantern cor-A', 'mScarlet-I-A'])
+# plt.tight_layout(); plt.show()
+
+# # Plot FSC vs SSC now
+# FlowCal.plot.density2d(singlefcs_g75_singlets90.gated_data,
+#                        mode='scatter',
+#                        channels=['FSC-A', 'SSC-A'])
+
 # %% Calibration
 
 # specify the mefl values from data sheet
@@ -188,28 +212,17 @@ to_mef = FlowCal.mef.get_transform_fxn(b_gate30.gated_data,
 plt.show()
 
 # convert data into MEFLs 
-calibrated_fcs = to_mef(single_fcs, ['mGreenLantern cor-A', 'mScarlet-I-A'])
+calibrated_fcs = to_mef(singlefcs_singlets90.gated_data, ['mGreenLantern cor-A', 'mScarlet-I-A'])
 
 # %% Check if MEFL worked
 
-# gate out saturated events - high and low
-calibrated_gate1 = FlowCal.gate.high_low(calibrated_fcs, channels = ['FSC-A', 'SSC-A'])
-
-# auto density gating : for 50% of cells
-calibrated_densitygate50 = FlowCal.gate.density2d(calibrated_gate1,
-                                   channels = ['FSC-A', 'SSC-A'],
-                                   gate_fraction = 0.50,
-                                   full_output=True) # full => saves outline
-
-
 # confirm that MEFLs are different from a.u 
 FlowCal.plot.hist1d(\
-        [singlefcs_densitygate50.gated_data,\
-         calibrated_densitygate50.gated_data],\
-            channel = 'mScarlet-I-A', legend=True,\
-            legend_labels = ['A.U.', 'MEFL'])
-
-# %% PBS check
+    [singlefcs_densitygate50.gated_data, calibrated_fcs],
+    channel = 'mScarlet-I-A', legend=True,
+    legend_labels = ['A.U.', 'MEFL'])
+        
+    # %% PBS check
 # pbs = FlowCal.io.FCSData(sony_well_to_file('F10'))
 
 
@@ -218,8 +231,15 @@ FlowCal.plot.hist1d(\
 #                               density_params = {'mode': 'scatter'},
 #                               hist_channels= ['mScarlet-I-A'])
 
-# %% violin plots 
-
-
 # %% summary plots
 
+FlowCal.stats.median(calibrated_fcs, 
+                     channels = ['mGreenLantern cor-A', 'mScarlet-I-A'])
+
+# %% violin plots 
+
+# Make violin plot and show medians
+FlowCal.plot.violin(calibrated_fcs,
+                    channel = 'mScarlet-I-A',
+                    draw_summary_stat=True,
+                    draw_summary_stat_fxn=np.median)  

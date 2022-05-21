@@ -20,7 +20,8 @@ a <- tibble(a1 = 1:6, a2 = 6:1, a3 = rep(c('a', 'b'),3), a4 = a2 ^2)
 # calling more funs in separate scripts ----
 
 list_of_general_functions <- c("1-reading_multidata_fcs.R",
-                               "2-get_number_of_datasets_fcs.R")
+                               "2-get_number_of_datasets_fcs.R",
+                               "6-wrappers_utilities.R")
 
 # Source all the functions listed above
 map(str_c('./scripts_general_fns/', list_of_general_functions),

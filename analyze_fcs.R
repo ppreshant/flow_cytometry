@@ -7,12 +7,12 @@
 folder_name <- 'S044_new fusions_4-5-22/' # 'foldername/'
 
 file.name_input <- '' # input file name without .fcs
-
+# Relevant only when reading a multi-data .fcs file (from Guava)
 
 title_name <- 'S044:mScarlet-U64 fusions_flowcyt'
 
 Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables automatically
-
+# To be implemented in future: using an if() to designate the names of the fluorescent channels 
 
 # Prelims ----
 source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
@@ -29,69 +29,42 @@ fl.path = str_c('flowcyt_data/', folder_name, file.name_input, '.fcs')
 fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset (package = flowWorkspace)
                           directory_path = str_c('flowcyt_data/', folder_name, file.name_input))
 
-# legacy version -- backup 
-# run this without the dataset argument to figure out how many data segments are in the file
 
-# fl <- read.FCS(filename = fl.path,  # reading individual datasets
-#                          transformation = F, 
-#                          emptyValue = F) #, dataset = 1)
-
-
-# fcs.subset <- Subset(fl.set, 'G01.fcs')
-
-# See the variables in the data
-# colnames(fl.set)
-
-# Exploratory plotting ----
-
-# overview plots : take a long time to show 
-
-# Plot density of all samples in the set
-pltden <- ggcyto(fl.set, 
-                 aes(x = 'mScarlet-I-A'),  # plot 'YEL-HLog' for Guava
-                 subset = 'A') +
-  geom_density(fill = 'red', alpha = 0.3) +
-  # facet_grid() + # plot overlapping stuff
-  scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  ggtitle(title_name)
-
-# save plot
-ggsave(str_c('FACS_analysis/plots/', 
-             'S044_mScarlet-U64-fusions',  # title_name, 
-             '-density', 
-             '.png'),
-       plot = pltden,
-       height = 8, width = 10)
-
-
-# FSC-SSC plot of single sample -- troubleshooting
-ggcyto(fl.set[1], aes(x = 'FSC-A', y = 'SSC-A')) + 
-  geom_hex(bins = 120) + 
-  geom_density2d(colour = 'black') + 
+# read the Mean equivalent fluorophores for the peaks
+beads_values <-
+  read.csv('flowcyt_data/calibration_beads_sony.csv') %>% 
+  select(FITC, 'PE.TR') %>%  # Retain only relevant channels
+  rename('mGreenLantern cor-A' = 'FITC', # rename to fluorophores used in Sony
+         'mScarlet-I-A' = 'PE.TR') %>% 
   
-  scale_x_logicle() + scale_y_logicle() 
-
-# # plot scatterplots of all samples in the set
-# pltscatter <- ggcyto(fl.set, aes(x = 'FSC-HLin', y = 'SSC-HLin')) +  # initialize a ggplot
-#   # geom_point(alpha = 0.1) + 
-#   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
-#   scale_x_logicle() + scale_y_logicle()
-# # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-# 
-# # testing simple plotting : is not as customizable
-# # ggcyto::autoplot(fl.set, 'FSC-HLin')
-# 
-# # Plot to html file using R markdown
-# rmarkdown::render('exploratory_plots.rmd', output_file = str_c('./FACS_analysis/', title_name, '.html'))
-
+  map2(., colnames(.), # make into a nested list
+       ~ list(channel = .y, peaks = .x))
 
 # Inspecting data ----
 
-# using FlopR : : error : 'x' must be object of class 'flowFrame'
-process_fcs('flowcyt_data/S044_new fusions_4-5-22/96 Well Plate (deep)/Sample Group - 1/Unmixing-1/E01 Well - E01 WLSM.fcs',
-            flu_channels = c('mScarlet-I-A'),
-            do_plot = T
-            )
+# Run this script to make ggplots of density and scatter for all files -- time intensive
+# source('scripts_general_fns/7-exploratory_data_view.R')
+
+
+# Processing ----
+
+# using FlopR single file processing : : error : 'x' must be object of class 'flowFrame'
+# process_fcs('flowcyt_data/S044_new fusions_4-5-22/96 Well Plate (deep)/Sample Group - 1/Unmixing-1/F11 Well - F11 WLSM.fcs',
+#             flu_channels = c('mScarlet-I-A'),
+#             do_plot = T
+#             )
+
+ptm <- proc.time() # time initial
+process_fcs_dir(dir_path = str_c('flowcyt_data', 'test', sep = '/'), 
+                pattern = '.fcs',
+                flu_channels = c('mScarlet-I-A'),
+                neg_fcs = 'E03',
+                
+                calibrate = TRUE,
+                mef_peaks = beads_values
+                )
+proc.time() - ptm # time duration of the run
+
 
 # Gating ----
 

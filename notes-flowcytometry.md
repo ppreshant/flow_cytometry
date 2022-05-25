@@ -52,14 +52,17 @@ Advantage of flowcal
  
  **Other information**
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 
-	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate (ul) / sec}$
+	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate = (ul/ sec)}$
+**Post processing**
+- [ ] How to merge replicate data before plotting violins? Tabor paper combines the distributions I guess
 
 **Quality controls**
 - [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- Or make a plot to help look for anomalies?
 - [ ] Save plots along the gating procedure for the first (_or first 3_) `.fcs` files? 
-- Would it be worthwhile to save plots along the gating process for each file in the dataset for manual QC purposes -- a RMD style html output would be good
+- Would it be worthwhile to save all plots along the gating process for each file in the dataset for manual QC purposes -- a RMD style html output would be good
 	- How do we dump the plots from each .fcs file from within the loop into an RMD output?
-	- Can squeeze into a pdf by doing subplots - [source](https://stackoverflow.com/a/41277685/9049673) 
+	- (_can't use since subplots are already made by `FlowCal.plots`_) Can squeeze into a pdf by doing subplots - [source](https://stackoverflow.com/a/41277685/9049673) 
+	- Would a pluto notebook (_or jupyter notebook_) work for calling the python script and collecting all the plots generated?
 	
 **Literature**
   - [ ] read the flowcal introduction paper to understand the data storage format and theme etc.
@@ -153,3 +156,23 @@ table 1 | table 2
 God knows |       What does
 Who is | God really?
 
+# Julia/python
+
+Notes to reproduce running python scripts inside Pluto notebooks as a way to capture output plots in a nice html format - 21/5/22
+
+## Setting up Julia -> python
+- Load julia with `julia` in the gitbash terminal
+- Create new julia environment using `]` then `activate .` 
+- Add packages with `add ..` : Added `Pluto`, `Plots`, `PyCall`
+- load package with `using PyCall`. following [PyCall documentation](https://github.com/JuliaPy/PyCall.jl)
+- Add python of the desired conda environment to path variable `ENV["PYTHON"] = "C:/Users/new/.conda/envs/flowcal/python.exe"` 
+- Load Pkg with `using Pkg` and build PyCall (_need to do everytime the path changes or any major changes are made_) with `Pkg.build("PyCall")`
+
+Error
+- `from scripts_general_fns.g3_python_utils_facs import *` causes `ModuleNotFoundError("No module named 'scripts_general_fns'")`
+- Same error in jupyter-lab
+- Looks like you need empty `__init__.py` files within subdirectories where the modules are located (or all dirs starting from the closest path in `sys.path`)
+
+# Jupyter-lab - to save html of plots
+- Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
+- 

@@ -9,18 +9,25 @@ tags: #notes
 - [x] Read a paper that does bacterial flow cytometry to see what kind of analysis they do : _Read a bunch of Tabor papers : Castillo hair etc._
   
   
-# Workflow  +Which tool to use?
+# Which tool to use?
  1. [x] Loading files
- 2. [ ] Attaching names from google sheet
- 3. [ ] Processing :: _FlowCal ahead, Flop**R** working but too slow. Need to automate FlowCal, and use beads named for FlopR_
- 4. [ ] Gating :: _Not really needed other than FSC-SSC gating. R workflow is more familiar right now_
- 5. [ ] Plotting distribution :  Who has the better violins automated?
- 6. [ ] Retrieving data :: FlowCal is easier/have Lauren's template, need to figure out in R 
+ 2. [ ] Attaching names from google sheet :: R done, python can [try](https://www.analyticsvidhya.com/blog/2020/07/read-and-update-google-spreadsheets-with-python/)
+ 3. [ ] Processing :: _FlowCal ahead, ~~Flop**R** working but too slow~~. Need to automate FlowCal, ~~and use beads named for FlopR_~~
+ 4. [ ] Gating :: _Useful for determining % of population that is red etc. R/flopR workflow is more familiar right now_
+ 5. [ ] Plotting distribution :  Who has the better violins automated? FlowCal : violins without sample name; flopr
+ 6. Retrieving data :: FlowCal is easier/have Lauren's template, need to figure out in R 
  
  Let's focus on processing with FlowCal since it is faster - 14/5/22
  ~~FlopR, since R is good for the other steps - 30/4/22
 
-  
+# Ideal workflow
+Script in rmd
+1. R script loads google sheet names
+2. python script for calibration w flow cal
+	- Pass variable of which well(s) are beads; Save processed, calibrated data to .fcs again
+3. Re-read processed fcs, attach names and condense replicates
+4. plot using ggcyto + geom_violin/ggridges
+
 # Python/Flowcal
 Advantage of flowcal
 - Nice looking plots
@@ -41,7 +48,7 @@ Advantage of flowcal
   - [ ] Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
 	  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
     - [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
-  - [ ] Plot summary stats - median..? with violin
+  - [ ] Plot summary stats - median..? with violin : [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
 
 **File handling**
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)
@@ -53,6 +60,8 @@ Advantage of flowcal
  **Other information**
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 
 	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate = (ul/ sec)}$
+- Run time for single .fcs ~ 9-10 sec with plotting and 1 sec without plotting. using `%timeit -n 1 -r 1 _process_single_fcs(..)`
+
 **Post processing**
 - [ ] How to merge replicate data before plotting violins? Tabor paper combines the distributions I guess
 
@@ -67,7 +76,13 @@ Advantage of flowcal
 **Literature**
   - [ ] read the flowcal introduction paper to understand the data storage format and theme etc.
 	  - wondering how extendable the formats are compared to the R/bioconductor ones that are building on the original FlowCore so more future proof?
-  
+
+**Data display**
+
+Nice plot from tabor lab, 4c : Schmidl, Sebastian R., et al. "Rewiring bacterial two-component systems by modular DNA-binding domain swapping." [_Nature Chemical Biology_](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6#Fig3) 15.7 (2019): 690-698.
+
+![[Pasted image 20220526020446.png]]
+
 # R/cytoset/cytoframes
 
 

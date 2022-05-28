@@ -16,7 +16,7 @@ def get_fcs_files(parent_path):
     # %% get paths : glob
     # get the list of all .fcs files in the experiment
     fcspaths = glob.glob(parent_path + '**/*.fcs', 
-              recursive=True)
+              recursive=True) # ** and recursive => includes all subfolders
     
     # using pathlib to get the parent path
      # fcspaths[0] | p(PurePath).parent | p(str)

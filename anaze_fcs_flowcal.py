@@ -1,6 +1,7 @@
-"""
-Wrapper script to ease processing Flow cytometry data using 
-FlowCal repository : https://github.com/taborlab/FlowCal/
+""" Process a directory of .fcs files using FlowCal
+
+Wrapper script to process a directory of Flow cytometry data
+using FlowCal, repository : https://github.com/taborlab/FlowCal/
 - Opens all .fcs files within the directory
 - Attaches sample names from a google sheet 
     (could change to local .csv file too)
@@ -10,9 +11,6 @@ FlowCal repository : https://github.com/taborlab/FlowCal/
 ----------
 Following tutorial to use Flowcal 
 https://taborlab.github.io/FlowCal/python_tutorial/
-
-Copying snippets of script from Lauren Gambill's workflow
-
 
 @author: Prashant
 @date 9/April/22

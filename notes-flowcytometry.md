@@ -6,17 +6,30 @@ tags: #notes
 
 # Reading
 
-- [x] Read a paper that does bacterial flow cytometry to see what kind of analysis they do : _Read a bunch of Tabor papers : Castillo hair etc._
-  
+Read papers that does bacterial flow cytometry to see what kind of analysis they do : _Read a bunch of Tabor papers : Castillo hair etc._
+- [Sexton et al, MSB, 2020](https://www.embopress.org/doi/full/10.15252/msb.20209618) "Multiplexing cell‐cell communication." _Molecular systems biology_ 16.7 (2020): e9618.
+	- 60% SSC threshold ; 20,000–30,000 _E. coli_-sized events were recorded; 85% events density gated
+- [Sebastian, 2019](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6) Schmidl, Sebastian R., et al. "Rewiring bacterial two-component systems by modular DNA-binding domain swapping." _Nature Chemical Biology_ 15.7 (2019): 690-698.
+	- 35% SSC threshold ; 20,000 events ; 30% density retained : Nice image for gating flow
+	- Tried B. subtilis, S oneidensis; used geometric mean?; combines separate day replicates for histograms; Took avg (arithmetic?) of 3 replicates' geometric mean for 
+- [Klümper, Uli, et al. 2015](https://www-nature-com.ezproxy.rice.edu/articles/ismej2014191) "Broad host range plasmids can invade an unexpectedly diverse fraction of a soil bacterial community." _The ISME journal_ 9.4 (2015): 934-945.
+	- Sorting: 0.1% to 82% enrichment fast sorting; second 100% sorting, 10,000 cells : 2,000 eps speed
   
 # Which tool to use?
  1. [x] Loading files
  2. [ ] Attaching names from google sheet :: R done, python can [try](https://www.analyticsvidhya.com/blog/2020/07/read-and-update-google-spreadsheets-with-python/)
  3. [ ] Processing :: _FlowCal ahead, ~~Flop**R** working but too slow~~. Need to automate FlowCal, ~~and use beads named for FlopR_~~
- 4. [ ] Gating :: _Useful for determining % of population that is red etc. R/flopR workflow is more familiar right now_
- 5. [ ] Plotting distribution :  Who has the better violins automated? FlowCal : violins without sample name; flopr
- 6. Retrieving data :: FlowCal is easier/have Lauren's template, need to figure out in R 
- 
+	 - FlowCal lets you pre-trim data before automatic clustering and MEFLing, FlopR does not currently
+ 4. Gating :: _Useful for determining % of population that is red etc. R/flopR workflow is more familiar right now_
+	 - (_verify_) Neither have a nice gating heirarchy, but R's flowworkset has good ones for gating and stats
+ 5. Plotting distribution :  Who has the better violins automated? FlowCal : violins, _but without sample name_ and matplotlib is not compositional like ggplot; flopr -- check
+ 6. Retrieving summary stats :: FlowCal.stats module, need to figure out in flopR-
+
+Other
+1. Run-time
+	- _FlowCal_ : Run time for single .fcs ~ 9-10 sec with plotting and 1 sec without plotting. using `%timeit -n 1 -r 1 _process_single_fcs(..)`. For full workflow of 4 files + beads calibration = 23.4 sec (without plotting calibration details)
+	- _FlopR_ : ~ 1 min per sample ; maybe turn plotting off?
+
  Let's focus on processing with FlowCal since it is faster - 14/5/22
  ~~FlopR, since R is good for the other steps - 30/4/22
 
@@ -24,13 +37,23 @@ tags: #notes
 Script in rmd
 1. R script loads google sheet names
 2. python script for calibration w flow cal
-	- Pass variable of which well(s) are beads; Save processed, calibrated data to .fcs again
+	- [x] Pass variable of which well(s) are beads; Save the calibrated data to .fcs again
+	1. Can't proceed to next step .. Figure out a way to beautify the existing plot; Ask John Sexton for custom code
 3. Re-read processed fcs, attach names and condense replicates
 4. plot using ggcyto + geom_violin/ggridges
 
+
+# Running flowcytometer
+- [ ] Check with Harsha: Issues with clogs/air from Vibrio?
+Running vibrio through the machine seems to clog the SEA Sony in BRC. Even beads have air issues with these sample sets (S0045, S045b) and the data looks like this with SSC around 0 ; but beads run on the same day in S046 are fine..
+- How old are the cells? vibrio are known to aggregate- _Swetha says_ ; Especially true if they are in stationary phase right?
+
+![[Pasted image 20220530125021.png]]
+
+
 # Python/Flowcal
 Advantage of flowcal
-- Nice looking plots
+- Nice looking plots to show transformations, ex: gated vs full samples, MEFLing
 - Built-in normalization
 - Density based gating : ~automatic but needs a user based selection of the % of cells that should be retained
 	- Check if this can be done in R too?
@@ -39,7 +62,7 @@ Advantage of flowcal
   - [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
   
   - [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`
-  - [ ] (_working_) Vectorize the flowcal processing script by putting it in a function / or vectorizing each step with list comprehensions
+  - [x] (_working_) Vectorize the flowcal processing script by putting it in a function / or vectorizing each step with list comprehensions
   - [ ] Bring in plate layout from the google sheets
   - [ ] Convert plate layout to columns like in R -- using pandas? or a dplyr for python
   - [ ] Attach the names (with some kind of `regex` matching) 
@@ -48,11 +71,16 @@ Advantage of flowcal
   - [ ] Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
 	  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
     - [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
-  - [ ] Plot summary stats - median..? with violin : [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
+  - [ ] Plot summary stats - median..? with violin along with sample names: [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
 
-**File handling**
+**File/fcs handling**
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)
 - [ ] Getting plate layout google sheet : Can use the same approach to call the existing R function to do this for us
+- [ ] Merge data for replicates : as simple as ndarray.concatenate? do before plotting violins/ distributions 
+	> All fluorescence histograms shown are composed of three histograms taken from samples on three separate days and combined into 128 logarithmically spaced bins between 101–106 MEFL units (Supplementary Fig. [15c](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6#MOESM1)) unless otherwise stated. *[Source](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6): Schmidl, Sebastian R., et al. "Rewiring bacterial two-component systems by modular DNA-binding domain swapping." _Nature Chemical Biology_ 15.7 (2019): 690-698.*
+
+- [x] Saving output .fcs: Idea - from `FCSData/numpy ndarray` use [fcswrite](https://github.com/ZELLMECHANIK-DRESDEN/fcswrite) to convert to .fcs 3.0 file. Can write [any numpy array](https://github.com/ZELLMECHANIK-DRESDEN/fcswrite/blob/master/examples/numpy2fcs.py). For metadata etc, can convert to the data format used by [fcsparser](https://pypi.org/project/fcsparser/) or [flowcytometry tools](https://pypi.org/project/FlowCytometryTools/) which are alluded to in fcswrite documentation.
+	- solved : ~~`Error:` ValueError - `If odd number of keys + values detected (indicating an unpaired key or value).` due to duplicates in HEADER and TEXT
  
  **Error-handling**
  - [ ] Could have a user input if beads data gating looks acceptable before proceeding to MEFLing
@@ -60,12 +88,9 @@ Advantage of flowcal
  **Other information**
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 
 	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate = (ul/ sec)}$
-- Run time for single .fcs ~ 9-10 sec with plotting and 1 sec without plotting. using `%timeit -n 1 -r 1 _process_single_fcs(..)`
-
-**Post processing**
-- [ ] How to merge replicate data before plotting violins? Tabor paper combines the distributions I guess
 
 **Quality controls**
+- [ ] Show the number of events in all files loaded -- look for anomalies?
 - [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- Or make a plot to help look for anomalies?
 - [ ] Save plots along the gating procedure for the first (_or first 3_) `.fcs` files? 
 - Would it be worthwhile to save all plots along the gating process for each file in the dataset for manual QC purposes -- a RMD style html output would be good
@@ -85,13 +110,19 @@ Nice plot from tabor lab, 4c : Schmidl, Sebastian R., et al. "Rewiring bacterial
 
 # R/cytoset/cytoframes
 
+## Packages/tools
+- flowCore : core data format (flowFrame et.)
+- [flowWorkspace](https://www.bioconductor.org/packages/release/bioc/vignettes/flowWorkspace/inst/doc/flowWorkspace-Introduction.html#01_Purpose) : gating and operations on facs : 
+> samples, groups, transformations, compensation matrices, gates, and population statistics in the gating tree, which is represented as a `GatingSet` object in `R`. 
+- [openCyto](https://bioconductor.org/packages/devel/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html) - Automated gating functions and workflows for serial gating
 
 ## data format
 
 Need to understand the data format a bit
-- The cytoset for `S032` dataset has `13` observables, and `26` cells : I assume each observable before and after gain adjustment/filtering and such. 
+flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C for efficiency 
+- The cytoset for `S032` dataset has `13` observables, and `26` cells : I assume each observable before and after gain adjustment/filtering and such? 
 
-- [ ] What is TIME in `fl.set %>% colnames()`? _I assume the number of cells being counted? Since the first 4 have fewer, it was because I terminated the PBS samples as they were taking too long.. _
+- [ ] What is TIME in `fl.set %>% colnames()`? _Time is recorded as each event passes through._. _Since the first 4 in S032 have fewer, it was because I terminated the PBS samples as they were taking too long.._
 - [x] Need to figure out how to get the `wellid` from .fcs file headers. _used it to name the individual files when saving them._
 	- Could record these `wellid`s and put them into a column that I could use to merge metadata
 - [ ] Learn how to explore a `flowworkspace::cytoset`
@@ -108,7 +139,7 @@ Directory checking in `1-reading_multidata_fcs`
 	- ``` name.keyword: An optional character vector that specifies which FCS keyword to use as the sample names. If this is not set, the GUID of the FCS file is used for sampleNames, and if that is not present (or not unique), then the file names are used. ```
 
 - [ ] Remove biological replicate counts from cytometry template layouts (metadata) - **justification** _Could attach the numbering in R, will save some effort while making template?, Unless you want to mark biological replicates from technical replicates, which will complicate the analysis by making more columns .. etc._  Could also think about this when multiple dilutions are read and need to be analyzed?
-- [ ] 
+- [ ] Equalize processing for Guava vs Sony :: use alias feature to harmonize names to green/red or fluorophores.. `#manually supply the alias vs channel options mapping as a data.frame` in [read.FCS](https://rdrr.io/bioc/flowCore/man/read.FCS.html)
 
 ## Processing 
 - [ ] How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
@@ -137,9 +168,14 @@ Inspired from FlowCal, seeing if the processes can be mimiced. And if flopR can'
 #### Issues 
 - Is **too slow**. 5 files, with calibration takes >5 mins even failing in the beads step.
 	- flowClust of the beads is the slowest step, approx 1 min ; ggplot saving is also long -- too many points?
+	- Put a profiler to figure out where it is being slowed down, and how to improve it.. 
+
  user | system | elapsed 
  --| --|-- 
  155.77 |  12.20 | 291.44 
+
+- Some error when processing beads -- 
+
 - [x] Get_calibration not selecting the correct bead population. Our sample has too much junk, but the `process_fcs` that was getting bacteria and then singlets was doing ok -- so maybe short-circuit the program to do this for the beads too..
 
 Tasks

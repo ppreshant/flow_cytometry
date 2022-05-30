@@ -27,8 +27,9 @@ import os # for directory navigation
 # %% dummy data for troubleshootings
 
 # Dummy 2d array
-a = np.array([[1, 2, 3], [4, 5, 6]], np.int32)
-b = dict(b1 = range(4), b2 = 'cats')
+a = np.array([[1, 2, 3], [4, 5, 6]], np.int32) # np 2d array
+b = dict(b1 = range(4), b2 = 'cats') # dictionary
+c = list(range(5)) # list
 
 # %% wrapper fcs file path
 # returns dirpath/interpath/Sony formatted well name.fcs

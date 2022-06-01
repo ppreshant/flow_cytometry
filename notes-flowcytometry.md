@@ -14,7 +14,11 @@ Read papers that does bacterial flow cytometry to see what kind of analysis they
 	- Tried B. subtilis, S oneidensis; used geometric mean?; combines separate day replicates for histograms; Took avg (arithmetic?) of 3 replicates' geometric mean for 
 - [Klümper, Uli, et al. 2015](https://www-nature-com.ezproxy.rice.edu/articles/ismej2014191) "Broad host range plasmids can invade an unexpectedly diverse fraction of a soil bacterial community." _The ISME journal_ 9.4 (2015): 934-945.
 	- Sorting: 0.1% to 82% enrichment fast sorting; second 100% sorting, 10,000 cells : 2,000 eps speed
-  
+
+## tutorials
+https://jchellmuth.com/posts/FACS-with-R/
+
+
 # Which tool to use?
  1. [x] Loading files
  2. [ ] Attaching names from google sheet :: R done, python can [try](https://www.analyticsvidhya.com/blog/2020/07/read-and-update-google-spreadsheets-with-python/)

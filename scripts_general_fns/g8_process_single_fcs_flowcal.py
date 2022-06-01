@@ -5,9 +5,7 @@ Created on Fri May 20 17:28:59 2022
 @author: Prashant
 """
 def process_single_fcs_flowcal(single_fcs, 
-                               beads_to_mef, 
-                               scatter_channels=scatter_channels,
-                               fluorescence_channels=fluorescence_channels,
+                               beads_to_mef,
                                make_plots = False):
     """Processing a single .fcs file with FlowCal
     
@@ -33,32 +31,39 @@ def process_single_fcs_flowcal(single_fcs,
 
     """
     
+        
     import matplotlib.pyplot as plt # plotting package
     import FlowCal # flow cytometry processing
 
-   # %% visualize raw data
+    # import config : directory name and other definitions
+    from scripts_general_fns.g10_user_config import scatter_channels, fluorescence_channels
+    
+    
+    # %% visualize raw data
+    
+    # # plot both density scatter plot and histogram for a channel
+    if make_plots:
+        
+        FlowCal.plot.density_and_hist(single_fcs,
+                                     density_channels = scatter_channels,
+                                     density_params = {'mode': 'scatter'},
+                                     hist_channels = ['mScarlet-I-A'])
+        plt.tight_layout() # improves the dual plot label positioning
+        plt.show()
 
-   # # plot both density scatter plot and histogram for a channel
-   # FlowCal.plot.density_and_hist(single_fcs,
-   #                               density_channels = scatter_channels,
-   #                               density_params = {'mode': 'scatter'},
-   #                               hist_channels = ['mScarlet-I-A'])
-   # plt.tight_layout() # improves the dual plot label positioning
-   # plt.show()
-
-   # %% transform to relative fluorescence units (a.u)
-   # Useful if machine uses log amplifier
-   # Not required for Sony data. check if your data requires it by running
-
-   # transformed_fcs = FlowCal.transform.to_rfi(single_fcs, channels='mScarlet-I-A')
-
-   # # plot before and after transformation
-   # FlowCal.plot.hist1d(\
-   #         [single_fcs, transformed_fcs],\
-   #             channel = 'mScarlet-I-A', legend=True,\
-   #             legend_labels = ['Raw', 'RFU transformed'])
-
-   # FlowCal.plot.hist1d(single_fcs, channel='FSC-A')
+    # %% transform to relative fluorescence units (a.u)
+    # Useful if machine uses log amplifier
+    # Not required for Sony data. check if your data requires it by running
+    
+    # transformed_fcs = FlowCal.transform.to_rfi(single_fcs, channels='mScarlet-I-A')
+    
+    # # plot before and after transformation
+    # FlowCal.plot.hist1d(\
+    #         [single_fcs, transformed_fcs],\
+    #             channel = 'mScarlet-I-A', legend=True,\
+    #             legend_labels = ['Raw', 'RFU transformed'])
+    
+    # FlowCal.plot.hist1d(single_fcs, channel='FSC-A')
 
     # %% Gating
     # gate out saturated events - high and low
@@ -110,7 +115,7 @@ def process_single_fcs_flowcal(single_fcs,
         # confirm that MEFLs are different from a.u 
         FlowCal.plot.hist1d(\
             [singlefcs_densitygate50.gated_data, calibrated_fcs],
-            channel = fluorescence_channels[2], legend=True, # 'mScarlet-I-A'
+            channel = fluorescence_channels[1], legend=True, # 'mScarlet-I-A'
             legend_labels = ['A.U.', 'MEFL'])
  
     # Return calibrated single fcs file

@@ -8,3 +8,4 @@ scripts_archive/.ipynb_checkpoints/
 .spyproject/
 FACS_analysis/
 scripts_general_fns/__pycache__/
+documentation/

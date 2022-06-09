@@ -2,10 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-*.fcs
-*_data/
-scripts_archive/.ipynb_checkpoints/
+*.ipynb_checkpoints/
+*__pycache__/
 .spyproject/
 FACS_analysis/
-scripts_general_fns/__pycache__/
 documentation/
+*.fcs
+*_data/

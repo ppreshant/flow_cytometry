@@ -52,8 +52,8 @@ def process_fcs_dir(make_processing_plots=False):
     fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
     # Loads them as lists in alphabetical order I assume?
     
-    # Get the beads file based on user provided well/pattern
-    beads_filepath = [m for m in fcspaths if re.match(beads_match_name, m, re.IGNORECASE)][0]
+    # Get the beads file based on user provided well/pattern : selects the first pf multiple
+    beads_filepath = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)][0]
     
     # Remove beads from the fcs path list
     fcspaths.remove(beads_filepath)

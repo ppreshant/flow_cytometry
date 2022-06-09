@@ -117,6 +117,7 @@ def process_single_fcs_flowcal(single_fcs,
             [singlefcs_densitygate50.gated_data, calibrated_fcs],
             channel = fluorescence_channels[1], legend=True, # 'mScarlet-I-A'
             legend_labels = ['A.U.', 'MEFL'])
+        plt.show()
  
     # Return calibrated single fcs file
     return calibrated_fcs

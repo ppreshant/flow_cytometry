@@ -4,24 +4,28 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'processed_data/'
-folder_name <- 'S045b_Vmax red dilutions_Sony_28-5-22/' # 'foldername/'
+base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/
+folder_name <- 'S048_e coli dilutions/' # 'foldername/'
 
 file.name_input <- '' # input file name without .fcs
 # Relevant only when reading a multi-data .fcs file (from Guava)
 
 # title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
-title_name <- str_replace(folder_name, '/', '') # could also use the folder name
+title_name <- stringr::str_replace(folder_name, '/', '') # Use the folder name without the slash
 
 Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables automatically
 # To be implemented in future: using an if() to designate the names of the fluorescent channels 
+
+# Fluorescence channel names
+ch <- c('red' = 'mScarlet-I-A', 
+        'green' = 'mGreenLantern cor-A')
+
 
 # Prelims ----
 source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
 
 
 fl.path = str_c(base_directory, folder_name, file.name_input, '.fcs')
-title_name
 
 # Load data ----
 
@@ -31,6 +35,13 @@ title_name
 
 fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset (package = flowWorkspace)
                           directory_path = str_c(base_directory, folder_name, file.name_input))
+
+# check the sample names
+# sampleNames(fl.set)
+# pData(fl.set) # data frame with column 'name'
+
+# See the variables in the data
+# colnames(fl.set) # vector
 
 
 # metadata ----

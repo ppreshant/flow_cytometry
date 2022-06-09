@@ -3,6 +3,16 @@ Prashant Kalvapalle
 started - 5/March/2022
 tags: #notes
 
+# Features
+- [ ] Add a separator between output of individual well plots '----' and print the well name maybe?
+- [ ] Make a variable for density gating percentage, (_fancy) get it from user input after showing a plot of 50%, interactive analysis.?_
+
+# Bugs
+- [ ] input() function called from within a module in jupyterlab does not work
+- [ ] Get rid of this `file saved :  test2.fcs` being saved
+
+**R**
+- [ ] Pass by reference to the ggcyto aes call -- something about (quasi)quotation?
 
 # Reading
 

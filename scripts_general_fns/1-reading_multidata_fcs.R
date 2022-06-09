@@ -73,5 +73,6 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
                                                         full.names = TRUE,
                                                         recursive = TRUE), # add recursive = T for Sony data-nested folders
                                              transformation = transformation_key,
-                                             emptyValue = emptyvalue_key) 
+                                             emptyValue = emptyvalue_key, 
+                                             ignore.text.offset = TRUE) # This is useful for .fcs files with bad text fields
 }

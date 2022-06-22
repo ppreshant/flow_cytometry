@@ -3,7 +3,7 @@
 # if the file was already opened into a directory of individual files, they will be read
 # otherwise the multi file will be read into a directory of the same name or into a temporary directory
 
-read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with multiple datasets
+read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with multiple datasets or folder with mutliple fcs
                                number_of_datasets = NULL,  # number of datasets if predetermined (will automatically get if NULL)
                                transformation_key = FALSE, emptyvalue_key = FALSE, # don't know what these are
                                

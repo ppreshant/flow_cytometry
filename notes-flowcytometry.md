@@ -3,17 +3,6 @@ Prashant Kalvapalle
 started - 5/March/2022
 tags: #notes
 
-# Features
-- [ ] Add a separator between output of individual well plots '----' and print the well name maybe?
-- [ ] Make a variable for density gating percentage, (_fancy) get it from user input after showing a plot of 50%, interactive analysis.?_
-
-# Bugs
-- [ ] input() function called from within a module in jupyterlab does not work
-- [ ] Get rid of this `file saved :  test2.fcs` being saved
-
-**R**
-- [ ] Pass by reference to the ggcyto aes call -- something about (quasi)quotation?
-
 # Reading
 
 Read papers that does bacterial flow cytometry to see what kind of analysis they do : _Read a bunch of Tabor papers : Castillo hair etc._
@@ -26,8 +15,9 @@ Read papers that does bacterial flow cytometry to see what kind of analysis they
 	- Sorting: 0.1% to 82% enrichment fast sorting; second 100% sorting, 10,000 cells : 2,000 eps speed
 
 ## tutorials
-https://jchellmuth.com/posts/FACS-with-R/
-
+Full tutorial (_flowcore, ggcyto_): https://jchellmuth.com/posts/FACS-with-R/
+[openCyto](https://bioconductor.org/packages/devel/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html#1D_gating_methods) automatic gating schemes
+[ggcyto](https://www.bioconductor.org/packages/release/bioc/vignettes/ggcyto/inst/doc/Top_features_of_ggcyto.html#1:_suppoort_3_types_of_plot_constructor) plotting help, adding gates, axis limits
 
 # Which tool to use?
  1. [x] Loading files
@@ -39,13 +29,20 @@ https://jchellmuth.com/posts/FACS-with-R/
  5. Plotting distribution :  Who has the better violins automated? FlowCal : violins, _but without sample name_ and matplotlib is not compositional like ggplot; flopr -- check
  6. Retrieving summary stats :: FlowCal.stats module, need to figure out in flopR-
 
-Other
+## Other considerations
 1. Run-time
 	- _FlowCal_ : Run time for single .fcs ~ 9-10 sec with plotting and 1 sec without plotting. using `%timeit -n 1 -r 1 _process_single_fcs(..)`. For full workflow of 4 files + beads calibration = 23.4 sec (without plotting calibration details)
 	- _FlopR_ : ~ 1 min per sample ; maybe turn plotting off?
+2. What kind of stats do we want from data? 
+	- (S048 mainly) % and numbers of cells in red high, red low and gr .. 
+	- Other expts : distributions of fcs data plotted 
 
- Let's focus on processing with FlowCal since it is faster - 14/5/22
- ~~FlopR, since R is good for the other steps - 30/4/22
+## Conclusions
+ - 10/6/22 : Use adhoc R openCyto, flowWorkspace - for S048 data -- flowcal is discarding useful data. *Re-calibrate FlowCal to retain more events (~ >80%) in the future?*
+ - 14/5/22 : Let's focus on trim-mefl processing with FlowCal since it is faster 
+ - 30/4/22 : ~~FlopR, since R is good for the other steps - 
+
+
 
 # Ideal workflow
 Script in rmd
@@ -71,8 +68,12 @@ Advantage of flowcal
 - Built-in normalization
 - Density based gating : ~automatic but needs a user based selection of the % of cells that should be retained
 	- Check if this can be done in R too?
+
+## Bugs
+- [ ] Code: input() function called from within a module in jupyterlab does not work
+- [ ] Looks like singlet gating is using the wrong y axis- should be FSC-H? _check_
   
-  ## Tasks
+## Tasks
   - [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
   
   - [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`
@@ -80,14 +81,15 @@ Advantage of flowcal
   - [ ] Bring in plate layout from the google sheets
   - [ ] Convert plate layout to columns like in R -- using pandas? or a dplyr for python
   - [ ] Attach the names (with some kind of `regex` matching) 
-  
-  **Plotting - matplotlib**
+
+
+### Plotting - matplotlib
   - [ ] Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
 	  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
     - [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
   - [ ] Plot summary stats - median..? with violin along with sample names: [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
 
-**File/fcs handling**
+### File/fcs handling
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)
 - [ ] Getting plate layout google sheet : Can use the same approach to call the existing R function to do this for us
 - [ ] Merge data for replicates : as simple as ndarray.concatenate? do before plotting violins/ distributions 
@@ -96,14 +98,18 @@ Advantage of flowcal
 - [x] Saving output .fcs: Idea - from `FCSData/numpy ndarray` use [fcswrite](https://github.com/ZELLMECHANIK-DRESDEN/fcswrite) to convert to .fcs 3.0 file. Can write [any numpy array](https://github.com/ZELLMECHANIK-DRESDEN/fcswrite/blob/master/examples/numpy2fcs.py). For metadata etc, can convert to the data format used by [fcsparser](https://pypi.org/project/fcsparser/) or [flowcytometry tools](https://pypi.org/project/FlowCytometryTools/) which are alluded to in fcswrite documentation.
 	- solved : ~~`Error:` ValueError - `If odd number of keys + values detected (indicating an unpaired key or value).` due to duplicates in HEADER and TEXT
  
- **Error-handling**
+### Error-handling
  - [ ] Could have a user input if beads data gating looks acceptable before proceeding to MEFLing
- 
- **Other information**
+
+### Gating
+- [ ] Make a variable for density gating percentage, (_fancy) get it from user input after showing a plot of 50%, interactive analysis.?_
+
+
+### Other information
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 
 	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate = (ul/ sec)}$
 
-**Quality controls**
+### Quality controls
 - [ ] Show the number of events in all files loaded -- look for anomalies?
 - [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- Or make a plot to help look for anomalies?
 - [ ] Save plots along the gating procedure for the first (_or first 3_) `.fcs` files? 
@@ -111,7 +117,12 @@ Advantage of flowcal
 	- How do we dump the plots from each .fcs file from within the loop into an RMD output?
 	- (_can't use since subplots are already made by `FlowCal.plots`_) Can squeeze into a pdf by doing subplots - [source](https://stackoverflow.com/a/41277685/9049673) 
 	- Would a pluto notebook (_or jupyter notebook_) work for calling the python script and collecting all the plots generated?
-	
+
+### html output
+- [ ] Add a separator between output of individual well plots '----' and print the well name maybe?
+- [ ] Get rid of this `file saved :  test2.fcs` being saved
+
+
 **Literature**
   - [ ] read the flowcal introduction paper to understand the data storage format and theme etc.
 	  - wondering how extendable the formats are compared to the R/bioconductor ones that are building on the original FlowCore so more future proof?
@@ -167,9 +178,19 @@ Directory checking in `1-reading_multidata_fcs`
 ## data trimming/processing
 Inspired from FlowCal, seeing if the processes can be mimiced. And if flopR can't do it automatically, we can incorporate it before hand or within the flopR functions..
 
+## Gating
+- [ ] Is there a `flowWorkspace` way to gate (quad gate..?) on a single sample and use the same gating parameters across all samples?
+	- [x] (_use biexp_): `mindensity` gate value causes convergence problems with logicle transform
+- [ ] figure out how to add filterID with mindensity
+
 - `RemoveMargins` : Remove margin events in flow cyt data. [PeacoQC documentation](https://rdrr.io/github/saeyslab/PeacoQC/man/RemoveMargins.html); [github](https://github.com/saeyslab/PeacoQC); 
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
-- 
+
+## Plotting
+
+- [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
+- [ ] _Error:_ `xlim(c(-100, 1e3))` not working on ggcyto + geomhex + geomdensity2d plot
+
 
 # R/flopR
 ### What exactly does flopR do?

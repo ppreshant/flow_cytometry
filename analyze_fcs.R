@@ -11,7 +11,7 @@ file.name_input <- '' # input file name without .fcs
 # Relevant only when reading a multi-data .fcs file (from Guava)
 
 # title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
-title_name <- stringr::str_replace(folder_name, '/', '') # Use the folder name without the slash
+title_name <- stringr::str_replace(folder_name, '/', '-raw') # Use the folder name without the slash
 
 Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables automatically
 # To be implemented in future: using an if() to designate the names of the fluorescent channels 
@@ -46,6 +46,9 @@ fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset 
 
 # metadata ----
 
+# Read the sample names and metadata from google sheet
+sample_metadata <- get_and_parse_plate_layout(str_c(folder_name, file.name_input))
+
 # # read the Mean equivalent fluorophores for the peaks
 # beads_values <-
 #   read.csv('flowcyt_data/calibration_beads_sony.csv') %>% 
@@ -56,10 +59,11 @@ fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset 
 #   map2(., colnames(.), # make into a nested list
 #        ~ list(channel = .y, peaks = .x))
 
+
 # Inspecting data ----
 
 # Run this script to make ggplots of density and scatter for all files -- time intensive
-source('scripts_general_fns/7-exploratory_data_view.R')
+# source('scripts_general_fns/7-exploratory_data_view.R')
 
 
 # Processing ----

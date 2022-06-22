@@ -15,10 +15,22 @@
 
 # Exploratory plotting ----
 
+# Make a subset of data to plot
+
+samples_in_fl <- sampleNames(fl.set) # get all the sample names
+# remove samples matching the regular expression :: Example row D
+samples_to_include <- samples_in_fl[!str_detect(samples_in_fl, 'D[:digit:]+')]  
+
+fl.subset <- fl.set[samples_to_include] # filter out wells by regex
+
+# Change title name manually
+title_name <- 'S048_raw_ecoli dilutions'
+
+
 # overview plots : take a long time to show 
 
 # Plot density of all samples in the set
-pltden <- ggcyto(fl.set[-(1:3)], # select subset of samples to plot
+pltden <- ggcyto(fl.subset, # select subset of samples to plot
                  aes(x = 'mScarlet-I-A')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
                  # subset = 'A'
                  ) +
@@ -38,12 +50,14 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # plot scatterplots of all samples in the set
 
-pltscatter <- ggcyto(fl.set[-(1:3)], # select subset of samples to plot
+pltscatter <- ggcyto(fl.subset, # select subset of samples to plot
                      aes(x = 'mScarlet-I-A', y = 'mGreenLantern cor-A')) +  # fluorescence channels
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
   scale_x_logicle() + scale_y_logicle() +
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  
+  ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
   
   facet_wrap('name', ncol = 10, scales = 'free') + # control facets
   ggtitle(title_name)
@@ -51,7 +65,7 @@ pltscatter <- ggcyto(fl.set[-(1:3)], # select subset of samples to plot
 
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
-             '-scatter', 
+             '-scatter-subset2', 
              '.png'),
        plot = pltscatter,
        height = 8, width = 20) # change height and width by number of panels
@@ -66,12 +80,12 @@ ggsave(str_c('FACS_analysis/plots/',
 
 
 # (singlets) FSC-SSC plot of single sample -- troubleshooting
-plt_scatter_single <- 
-  {ggcyto(fl.set[19], aes(x = 'FSC-A', y = 'SSC-A')) + 
+plt_fluor_single <- 
+  {ggcyto(fl.set[3], aes_string(x = as.name(ch['red']), y = as.name(ch['green']))) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
-  scale_x_logicle() + scale_y_logicle() } %>% 
+  scale_x_logicle() + scale_y_logicle()} %>% 
   
   print()
 
@@ -84,13 +98,31 @@ plt_scatter_single <-
 #        height = 5, width = 5)
 
 
-# Gating practice ----
 
+
+# Gating practice ----
 
 # practice gating on cytoframe
 
-single_fcs <- fl.set[[5]]
+single_fcs <- fl.set[[3]]
 
+# set gate
+gate_quad <- openCyto:::.quadGate.tmix(single_fcs, channels = ch, K = 3, usePrior = "no")
+
+
+plt_fl_single <- autoplot(single_fcs, ch[1], ch[2]) + 
+  geom_density2d(colour = 'black') + 
+  
+  scale_x_logicle() + scale_y_logicle()
+
+# view gate
+plt_fl_single + geom_gate(gate_quad) + geom_stats()
+
+# Gating stats
+
+
+
+# More plotting ----
 
 # Scatter
 plt_red_scatter <- {ggcyto(single_fcs, aes(x = 'mScarlet-I-A', y = 'SSC-A')) + 

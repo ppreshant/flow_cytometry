@@ -18,20 +18,23 @@
 # Make a subset of data to plot
 
 samples_in_fl <- sampleNames(fl.set) # get all the sample names
-# remove samples matching the regular expression :: Example row D
-samples_to_include <- samples_in_fl[!str_detect(samples_in_fl, 'D[:digit:]+')]  
+# remove samples matching the regular expression :: Example row D : 'D[:digit:]+'
+samples_to_include <- samples_in_fl[str_detect(samples_in_fl, 'D[:digit:]+')]  
 
 fl.subset <- fl.set[samples_to_include] # filter out wells by regex
 
+# for selecting a single sample
+# fl.subset <- fl.set['A06 Well - A06 WLSM.fcs'] # get a single sample
+
 # Change title name manually
-title_name <- 'S048_raw_ecoli dilutions'
+# title_name <- 'S048_raw_ecoli dilutions'
 
 
 # overview plots : take a long time to show 
 
 # Plot density of all samples in the set
 pltden <- ggcyto(fl.subset, # select subset of samples to plot
-                 aes(x = 'mScarlet-I-A')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+                 aes_string(x = as.name(ch[['red']]))#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
                  # subset = 'A'
                  ) +
   geom_density(fill = 'red', alpha = 0.3) +
@@ -51,7 +54,8 @@ ggsave(str_c('FACS_analysis/plots/',
 # plot scatterplots of all samples in the set
 
 pltscatter <- ggcyto(fl.subset, # select subset of samples to plot
-                     aes(x = 'mScarlet-I-A', y = 'mGreenLantern cor-A')) +  # fluorescence channels
+                     aes_string(x = as.name(ch[['red']]), y = as.name(ch[['green']]) )) +  # fluorescence channels
+
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
   scale_x_logicle() + scale_y_logicle() +
@@ -81,7 +85,7 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # (singlets) FSC-SSC plot of single sample -- troubleshooting
 plt_fluor_single <- 
-  {ggcyto(fl.set[3], aes_string(x = as.name(ch['red']), y = as.name(ch['green']))) + 
+  {ggcyto(fl.set[3], aes_string(x = as.name(ch[['red']]), y = as.name(ch[['green']]))) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
@@ -125,13 +129,13 @@ plt_fl_single + geom_gate(gate_quad) + geom_stats()
 # More plotting ----
 
 # Scatter
-plt_red_scatter <- {ggcyto(single_fcs, aes(x = 'mScarlet-I-A', y = 'SSC-A')) + 
+plt_red_scatter <- {ggcyto(single_fcs, aes_string(x = as.name(ch[['red']]), y = 'SSC-A')) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
   scale_x_logicle()} %>% print()
 
-plt_green_scatter <- {ggcyto(single_fcs, aes(x = 'mGreenLantern cor-A', y = 'SSC-A')) + 
+plt_green_scatter <- {ggcyto(single_fcs, aes_string(x = as.name(ch[['green']]), y = 'SSC-A')) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
@@ -140,7 +144,7 @@ plt_green_scatter <- {ggcyto(single_fcs, aes(x = 'mGreenLantern cor-A', y = 'SSC
 
 # Density
 ggcyto(single_fcs, 
-       aes(x = 'mScarlet-I-A')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+       aes_string(x = as.name(ch[['red']]) )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
        # subset = 'A'
 ) +
   geom_density(fill = 'red', alpha = 0.3) + 

@@ -14,7 +14,7 @@ Created on Wed Jun  1 01:00:43 2022
 # paths are relative to the working directory
 # without the trailing slash "/"
 fcs_root_folder = 'flowcyt_data'
-fcs_experiment_folder = 'S048_e coli dilutions'
+fcs_experiment_folder = 'S043_28-3-22'
 
 # channels to use : names change according to the flow cytometer machine 
 scatter_channels = ['FSC-A', 'SSC-A']
@@ -23,7 +23,9 @@ fluorescence_channels = ['mGreenLantern cor-A', 'mScarlet-I-A']
 # fcs_data[0].channels
 # in future we will convert them into standardized names in the script 
 # based on a few instrument names?..
-   
+
+# Choose a density gate fraction : 0.5 (50%) is decent, if you need to retain more events try 80%
+density_gating_fraction = .8
 
 # Give the pattern/well to match the bead file (ex: E01 etc.)
 beads_match_name =  'beads' # beads data is saved in a group/folder named beads for (Sony)

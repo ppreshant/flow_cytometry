@@ -9,6 +9,31 @@ source('./analyze_fcs.R')
 # Select sample(s) ----
 
 single_fcs <- fl.set[[3]] # select a representative sample to set gates on
+# selected the 1:1 dilution for S048 : well E03
+
+# Visualize sample ----
+
+pltscatter_single <- ggcyto(single_fcs, # select subset of samples to plot
+                     aes(x = 'mScarlet-I-A', y = 'mGreenLantern cor-A')) +  # fluorescence channels
+  # geom_point(alpha = 0.1) +
+  geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
+  scale_x_logicle() + scale_y_logicle() +
+  # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  
+  ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
+  
+  facet_wrap('name', ncol = 10, scales = 'free') + # control facets
+  ggtitle(title_name)
+
+# save plot
+ggsave(str_c('FACS_analysis/plots/', 
+             title_name,  # title_name, 
+             '-scatter-E03', 
+             '.png'),
+       plot = pltscatter_single,
+       height = 5, width = 5) # change height and width by number of panels
+
+
 
 # Gating ----
 # (setting 1D gates on both channels stored in vector 'ch')

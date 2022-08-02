@@ -78,7 +78,7 @@ Advantage of flowcal
   
   - [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`
   - [x] (_working_) Vectorize the flowcal processing script by putting it in a function / or vectorizing each step with list comprehensions
-  - [ ] Bring in plate layout from the google sheets
+  - [ ] Bring in plate layout from the google sheets -- or connect through R?
   - [ ] Convert plate layout to columns like in R -- using pandas? or a dplyr for python
   - [ ] Attach the names (with some kind of `regex` matching) 
 
@@ -261,4 +261,25 @@ Error
 
 # Jupyter-lab - to save html of plots
 - Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
-- 
+
+
+# Notes of individual analyses
+## S050
+Noticed that name of fluophores: _gfpmut3b, mcherry2_ names are not showing up in channel names on d0/d1/d8 data. Did we forget to unmix or something else gone wrong? 
+- Is the fluor data completely missing? Check sizes for comparable number of samples 
+	
+data | # samples | size | Size per sample
+-----| ------------| -----|------------------
+S048 |  35 |         164 MB|
+S050.d8| 78 | 80 MB | definitely missing data :( 
+
+- [ ] Check if plotting works?
+- [ ] 
+> `> colnames(fl.set) # vector
+[1] "FSC-A" "FSC-H" "FSC-W" "SSC-A" "SSC-H" "SSC-W" "TIME" `
+
+in comparison, S048 gives
+> [1] "FSC-A"               "FSC-H"               "FSC-W"               "SSC-A"               "SSC-H"               "SSC-W"              
+ [7] "mGreenLantern cor-A" "mGreenLantern cor-H" "mGreenLantern cor-W" "mScarlet-I-A"        "mScarlet-I-H"        "mScarlet-I-W"       
+[13] "TIME"
+

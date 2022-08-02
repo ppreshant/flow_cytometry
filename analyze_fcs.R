@@ -1,27 +1,10 @@
 # flow cytometry -- beginer level
 # read .fcs file, visualize data
 
-# user inputs ----
-
-# include the trailing slash "/" in the folder paths
-base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/
-folder_name <- 'S048_e coli dilutions/' # 'foldername/'
-
-file.name_input <- '' # input file name without .fcs
-# Relevant only when reading a multi-data .fcs file (from Guava)
-
-# title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
-title_name <- stringr::str_replace(folder_name, '/', '-raw') # Use the folder name without the slash
-
-Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables automatically
-# To be implemented in future: using an if() to designate the names of the fluorescent channels 
-
-# Fluorescence channel names
-ch <- c('red' = 'mScarlet-I-A', 
-        'green' = 'mGreenLantern cor-A')
-
 
 # Prelims ----
+source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent channel names
+
 source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
 
 
@@ -40,7 +23,7 @@ fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset 
 # sampleNames(fl.set)
 # pData(fl.set) # data frame with column 'name'
 
-# See the variables in the data
+# See the variables in the data : names of the channels
 # colnames(fl.set) # vector
 
 

@@ -9,7 +9,8 @@ Read papers that does bacterial flow cytometry to see what kind of analysis they
 - [Sexton et al, MSB, 2020](https://www.embopress.org/doi/full/10.15252/msb.20209618) "Multiplexing cell‐cell communication." _Molecular systems biology_ 16.7 (2020): e9618.
 	- 60% SSC threshold ; 20,000–30,000 _E. coli_-sized events were recorded; 85% events density gated
 - [Sebastian, 2019](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6) Schmidl, Sebastian R., et al. "Rewiring bacterial two-component systems by modular DNA-binding domain swapping." _Nature Chemical Biology_ 15.7 (2019): 690-698.
-	- 35% SSC threshold ; 20,000 events ; 30% density retained : Nice image for gating flow
+	- 35% SSC threshold ; 20,000 events ; 30% density retained : Nice image showing gating workflow (S15)
+	- Combined histograms of 3 replicates after gating
 	- Tried B. subtilis, S oneidensis; used geometric mean?; combines separate day replicates for histograms; Took avg (arithmetic?) of 3 replicates' geometric mean for 
 - [Klümper, Uli, et al. 2015](https://www-nature-com.ezproxy.rice.edu/articles/ismej2014191) "Broad host range plasmids can invade an unexpectedly diverse fraction of a soil bacterial community." _The ISME journal_ 9.4 (2015): 934-945.
 	- Sorting: 0.1% to 82% enrichment fast sorting; second 100% sorting, 10,000 cells : 2,000 eps speed
@@ -27,15 +28,16 @@ Full tutorial (_flowcore, ggcyto_): https://jchellmuth.com/posts/FACS-with-R/
  4. Gating :: _Useful for determining % of population that is red etc. R/flopR workflow is more familiar right now_
 	 - (_verify_) Neither have a nice gating heirarchy, but R's flowworkset has good ones for gating and stats
  5. Plotting distribution :  Who has the better violins automated? FlowCal : violins, _but without sample name_ and matplotlib is not compositional like ggplot; flopr -- check
- 6. Retrieving summary stats :: FlowCal.stats module, need to figure out in flopR-
+ 6. Retrieving summary stats :: `FlowCal.stats` module Python, `flowWorkspace::gs_pop_get_count_fast()` in R
 
 ## Other considerations
 1. Run-time
 	- _FlowCal_ : Run time for single .fcs ~ 9-10 sec with plotting and 1 sec without plotting. using `%timeit -n 1 -r 1 _process_single_fcs(..)`. For full workflow of 4 files + beads calibration = 23.4 sec (without plotting calibration details)
-	- _FlopR_ : ~ 1 min per sample ; maybe turn plotting off?
+	- _FlopR_ : ~ 1 min per sample ; maybe turn plotting off? Which step takes the most time?
 2. What kind of stats do we want from data? 
 	- (S048 mainly) % and numbers of cells in red high, red low and gr .. 
 	- Other expts : distributions of fcs data plotted 
+3. Can we skip MEFL calibration for certain experiments? -  _Especially if only population fraction in a gate is desired (S048)?_ Could stay within R if doing this -
 
 ## Conclusions
  - 10/6/22 : Use adhoc R openCyto, flowWorkspace - for S048 data -- flowcal is discarding useful data. *Re-calibrate FlowCal to retain more events (~ >80%) in the future?*
@@ -74,13 +76,13 @@ Advantage of flowcal
 - [ ] Looks like singlet gating is using the wrong y axis- should be FSC-H? _check_
   
 ## Tasks
-  - [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
-  
-  - [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`
-  - [x] (_working_) Vectorize the flowcal processing script by putting it in a function / or vectorizing each step with list comprehensions
-  - [ ] Bring in plate layout from the google sheets -- or connect through R?
-  - [ ] Convert plate layout to columns like in R -- using pandas? or a dplyr for python
-  - [ ] Attach the names (with some kind of `regex` matching) 
+- [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
+
+- [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`
+- [x] (_working_) Vectorize the flowcal processing script by putting it in a function / or vectorizing each step with list comprehensions
+- [ ] Bring in plate layout from the google sheets -- or connect through R?
+	- [ ] Convert plate layout to columns like in R -- using pandas? or a dplyr for python
+	- [ ] Attach the names (with some kind of `regex` matching) 
 
 
 ### Plotting - matplotlib
@@ -158,6 +160,9 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 	- How to ensure that the order of samples is matched by the replacement file name? I guess the data.frame workflow might be easier, make a new column called well
 
 ## file handling
+Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
+- [ ] How to solve the problem of non unique names?
+
 Directory checking in `1-reading_multidata_fcs`
 - [x] Check for empty directory to future proof when a directory exists but has no files in it
 - [ ] Change sampleNames of the fcs set when [reading files](https://rdrr.io/bioc/flowWorkspace/man/load_cytoset_from_fcs.html) by passing a vector(?) to  
@@ -168,6 +173,7 @@ Directory checking in `1-reading_multidata_fcs`
 
 ## Processing 
 - [ ] How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
+- [ ] Break the processing modules into functions that can be called interactively _ex: while figuring out the correct density fraction etc._
 
 ## flow rate
 - Tried using the flowAI's `flow_auto_qc` but it does not work due to number of cells incompatibility
@@ -190,6 +196,14 @@ Inspired from FlowCal, seeing if the processes can be mimiced. And if flopR can'
 
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
 - [ ] _Error:_ `xlim(c(-100, 1e3))` not working on ggcyto + geomhex + geomdensity2d plot
+
+
+## Git organization
+For manual scripts with possible changes across experiments, should they be in a separate branch for each dataset used vs copying over into different files? _until of course, the script is eventually broken into functions that don't change across expts._
+`11-manual_gating.R -> S048..`
+- Branch : new universal changes can be ported by merging main into branch (moving the branch along; but manually rejecting experiment specific changes) ; Static branch should be in a working state ; retains history
+- Copy : (universal) Changes in everything other than the current file will be retained but could break the code. _breaking has not happened so far for qPCR files where I apply this philosophy_ using fucntions from general code
+ - branch + copy single file: doing both could enable mergeability, cause confusion too? -- _thinking too much.. go do some actual work now_
 
 
 # R/flopR
@@ -265,16 +279,17 @@ Error
 
 # Notes of individual analyses
 ## S050
-Noticed that name of fluophores: _gfpmut3b, mcherry2_ names are not showing up in channel names on d0/d1/d8 data. Did we forget to unmix or something else gone wrong? 
-- Is the fluor data completely missing? Check sizes for comparable number of samples 
+Noticed that name of fluophores: _gfpmut3, mcherry2_ names are not showing up in channel names on d0/d1/d8 data. Did we forget to unmix or something else gone wrong? 
+- Is the fluor data completely missing? _Confirmed in the Sony software: Happens when the spectrum does not show up, implying that compensation removes the fluorescenc channels from the data_
+- Check sizes for comparable number of samples : data for d-1 has gfpmut3 and mcherry2 channels
 	
-data | # samples | size | Size per sample
+data | # samples | size | Notes
 -----| ------------| -----|------------------
 S048 |  35 |         164 MB|
 S050.d8| 78 | 80 MB | definitely missing data :( 
+S052 | 33 | 53 MB |  mGL, mSc present; Maybe less off target events due to thresholding on SSC instead of FSC?
+* S052 PBS wells were missing the fl channels and preventing making of cytoset.. Could this property have been carried over from the S050 dataset?
 
-- [ ] Check if plotting works?
-- [ ] 
 > `> colnames(fl.set) # vector
 [1] "FSC-A" "FSC-H" "FSC-W" "SSC-A" "SSC-H" "SSC-W" "TIME" `
 

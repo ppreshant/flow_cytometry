@@ -17,11 +17,12 @@ fl.path = str_c(base_directory, folder_name, file.name_input, '.fcs')
 # also works with single multidata .fcs files from Guava machine
 
 fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset (package = flowWorkspace)
+                             fcs_pattern_to_subset = fcs_pattern_to_subset,
                           directory_path = str_c(base_directory, folder_name, file.name_input))
 
 # check the sample names
-# sampleNames(fl.set)
-# pData(fl.set) # data frame with column 'name'
+# sampleNames(fl.set) # returns names as a vector
+# pData(fl.set) %>% mutate(number = row_number()) %>% view() # data frame with column 'name' and numbering
 
 # See the variables in the data : names of the channels
 # colnames(fl.set) # vector

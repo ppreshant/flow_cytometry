@@ -16,16 +16,27 @@ file.name_input <- '' # input file name without .fcs
 # title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
 title_name <- stringr::str_replace(folder_name, '/', '-raw') # Use the folder name without the slash
 
+
+# regular expression to load only a subset of files
+fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
+
+
+# Other parameters
+
 Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables automatically
 # To be implemented in future: using an if() to designate the names of the fluorescent channels 
 
 # Fluorescence channel names
-ch <- c('red' = 'mScarlet-I-A', # change according to cytometer, for changing from area to width height etc.
-        'green' = 'mGreenLantern cor-A')
+# ch <- c('red' = 'mScarlet-I-A', # change according to cytometer, fluorophores and for changing from area to width height etc.
+#         'green' = 'mGreenLantern cor-A')
+
+fluor_chnls <- c('red' = 'mcherry2-A',
+        'green' = 'gfpmut3-A')
 
 # Scatter channel names
-sc <- c('fwd' = 'FSC-A', # change according to cytometer, for changing from area to width height etc.
+scatter_chnls <- c('fwd' = 'FSC-A', # set according to cytometer machine convention, and for changing from area to width height etc.
         'side' = 'SSC-A')
 
-# ch <- c('red' = 'mcherry2', 
-#         'green' = 'gfpmut3b')
+
+# FEATURE: can rename channels so that generic names can be used throughout the script : cf_rename_channel(x, old, new)
+# FEATURE: in the future, can build in robustness to consider as fl channels the colnames "*-A" that are not FSC and SSC 

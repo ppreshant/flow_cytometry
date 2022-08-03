@@ -4,10 +4,11 @@
 # otherwise the multi file will be read into a directory of the same name or into a temporary directory
 
 read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with multiple datasets or folder with mutliple fcs
+                               fcs_pattern_to_subset = NULL, # provide the regular expression to subset the files to be read
                                number_of_datasets = NULL,  # number of datasets if predetermined (will automatically get if NULL)
                                transformation_key = FALSE, emptyvalue_key = FALSE, # don't know what these are
                                
-                               directory_path = NULL, # give directory path if you want the files saved
+                               directory_path = NULL, # give directory path : for reading multiple .fcs files / to save single .fcs files
                                return_cytoset = TRUE) # Make this false when only using this function to split a single .fcs to multiple .fcs
                               
 {
@@ -69,7 +70,7 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
   
   # Read the split FCS files back in to a single floSet
   fs <- flowWorkspace::load_cytoset_from_fcs(list.files(outpath, 
-                                                        pattern="*.fcs", 
+                                                        pattern=if(is.null(fcs_pattern_to_subset)) "*.fcs" else fcs_pattern_to_subset, 
                                                         full.names = TRUE,
                                                         recursive = TRUE), # add recursive = T for Sony data-nested folders
                                              transformation = transformation_key,

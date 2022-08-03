@@ -36,15 +36,15 @@ ggsave(str_c('FACS_analysis/plots/',
 
 
 # Gating ----
-# (setting 1D gates on both channels stored in vector 'ch')
-gates_1d_list <- map(ch, ~ openCyto::mindensity(single_fcs, channel = .x))
+# (setting 1D gates on both channels stored in vector 'fluor_chnls')
+gates_1d_list <- map(fluor_chnls, ~ openCyto::mindensity(single_fcs, channel = .x)) # draws a line at the minimum density region in 1d
 
 
 # Visualize gates
 
 # scatter plot
 plt_scatter_1dgate_list <- 
-  map2(ch, gates_1d_list,
+  map2(fluor_chnls, gates_1d_list,
        ~ {ggcyto(single_fcs, 
                  aes_string(x = as.name(.x), y = 'SSC-A')) + # use respective channel name
            geom_hex(bins = 120) + 
@@ -64,7 +64,7 @@ plt_scatter_1dgate_list <-
 
 # density plot
 plt_den_1d_list <- 
-  map2(ch, gates_1d_list,
+  map2(fluor_chnls, gates_1d_list,
        ~ {ggcyto(single_fcs, 
                  aes_string(x = as.name(.x))) + # use respective channel name
            geom_density(fill = 'red', alpha = 0.3) + 

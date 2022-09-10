@@ -7,7 +7,7 @@
 # Subset data ----
 
 # Make a subset of data to plot :: Remove PBS controls, beads etc. 
-# Using this for plotting in nice orientation mimicking the plate if possible
+# Using this for plotting in nice a orientation mimicking the plate wells if possible
 
 samples_in_fl <- sampleNames(fl.set) # get all the sample names
 
@@ -38,13 +38,18 @@ pltden <- ggcyto(fl.subset, # select subset of samples to plot
   scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
   ggtitle(title_name)
 
+# estimate dimensions to save the plot in
+num_of_facets <- pltden$facet$params %>% length() # find the number of panels
+est_plt_side <- sqrt(num_of_facets) %>% round() %>% {. * 2} # make 2/panel on each side (assuming square shape)
+
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
              '-density', 
              '.png'),
        plot = pltden,
-       height = 8, width = 20) # change height and width by number of panels
+       # height = 8, width = 8) # change height and width by number of panels
+       height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
 
 
 # plot scatterplots of all samples in the set
@@ -56,19 +61,23 @@ pltscatter <- ggcyto(fl.subset, # select subset of samples to plot
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
   scale_x_logicle() + scale_y_logicle() +
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  
   ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
   
-  facet_wrap('name', ncol = 10, scales = 'free') + # control facets
+  # visual changes
+  # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
+  # scale_fill_viridis_c(direction = -1) + # colourscale viridis
+  
+  # facet_wrap('name', ncol = 10, scales = 'free') + # control facets for full panel
   ggtitle(title_name)
 
 
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
-             '-scatter-subset', 
+             '-fluor', 
              '.png'),
        plot = pltscatter,
-       height = 8, width = 20) # change height and width by number of panels
+       # height = 8, width = 20) # change height and width by number of panels
+       height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
 
 
 
@@ -79,36 +88,15 @@ ggsave(str_c('FACS_analysis/plots/',
 # rmarkdown::render('exploratory_plots.rmd', output_file = str_c('./FACS_analysis/', title_name, '.html'))
 
 
-# (singlets) FSC-SSC plot of single sample -- troubleshooting
-plt_fluor_single <- 
-  {ggcyto(fl.set[3], aes_string(x = as.name(fluor_chnls[['red']]), y = as.name(fluor_chnls[['green']]))) + 
-  geom_hex(bins = 120) + 
-  geom_density2d(colour = 'black') + 
-  
-  scale_x_logicle() + scale_y_logicle()} %>% 
-  
-  print()
-
-# custom save plot
-# ggsave(str_c('FACS_analysis/plots/', 
-#              'S045b',  # title_name, 
-#              '-two populations-A5', 
-#              '.png'),
-#        plot = plt_scatter_single,
-#        height = 5, width = 5)
-
-
-
-
 # Gating practice ----
 
 # practice gating on cytoframe
 
-single_fcs <- fl.set[[3]]
+single_fcs <- fl.set[[6]]
 
 # set gate
 gate_quad <- openCyto:::.quadGate.tmix(single_fcs, channels = fluor_chnls, K = 3, usePrior = "no")
-
+# takes ~ 10 s time
 
 plt_fl_single <- autoplot(single_fcs, fluor_chnls[1], fluor_chnls[2]) + 
   geom_density2d(colour = 'black') + 
@@ -122,9 +110,43 @@ plt_fl_single + geom_gate(gate_quad) + geom_stats()
 
 
 
-# More plotting ----
+# Single plots ----
 
-# Scatter
+
+# FSC-SSC plot of single sample -- troubleshooting
+plt_fluor_single <- 
+  {ggcyto(single_fcs, aes_string(x = as.name(fluor_chnls[['red']]), y = as.name(fluor_chnls[['green']]))) + 
+      geom_hex(bins = 120) + 
+      geom_density2d(colour = 'black') + 
+      
+      scale_x_logicle() + scale_y_logicle()} %>% 
+  
+  print()
+
+
+plt_sctr_single <- 
+  {ggcyto(single_fcs, aes_string(x = as.name(scatter_chnls[['fwd']]), 
+                                y = as.name(scatter_chnls[['side']]))) + 
+      geom_hex(bins = 120) + 
+      geom_density2d(colour = 'black') + 
+      
+      scale_x_logicle() + scale_y_logicle()} %>% 
+  
+  print()
+
+
+# custom save plot
+# ggsave(str_c('FACS_analysis/plots/', 
+#              'S045b',  # title_name, 
+#              '-two populations-A5', 
+#              '.png'),
+#        plot = plt_scatter_single,
+#        height = 5, width = 5)
+
+
+
+
+# fluor vs Scatter
 plt_red_scatter <- {ggcyto(single_fcs, aes_string(x = as.name(fluor_chnls[['red']]), y = 'SSC-A')) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 

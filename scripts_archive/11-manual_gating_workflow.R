@@ -1,14 +1,14 @@
 # 11-manual_gating_workflow
 
-#' Gating on a single or few representative samples and applying it to other fcs with a map/lopp
-#' 
+#' Gating on a single (or few?) representative sample and applying it to other fcs files
+#' Currently this is a general workflow but will be copied when it has been modified for specific expts
 
 # Load data by running analyze_fcs till line 38
 source('./analyze_fcs.R')
 
 # Select sample(s) ----
 
-single_fcs <- fl.set[[3]] # select a representative sample to set gates on
+single_fcs <- fl.set[[7]] # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
 # Visualize sample ----
@@ -114,7 +114,7 @@ sample_name_translator <- c('Base strain|green' = 'Inf', # changes the LHS into 
                             '51|red' = '0',
                             '1/|,' = '') # remove commas and convert the 1/x into x 
 
-title_name <- '3B Limit of detection of splicing-flow cyt'
+title_name_summary <- '3B Limit of detection of splicing-flow cyt'
 
 # Analysis ----
 
@@ -147,7 +147,7 @@ plt_counts <- {ggplot(counts_gated,
     geom_point() + 
     geom_line(aes(y = mean_Count), linetype = 2) + 
     
-    ggtitle(title_name) + # add title to plot
+    ggtitle(title_name_summary) + # add title to plot
     theme(legend.position = 'top')} %>%  # position legend on the top 
   
   # formatting
@@ -157,4 +157,4 @@ plt_counts <- {ggplot(counts_gated,
 # plotly::ggplotly(plt_counts)  
   
 # save plot
-ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 4)
+ggsave(plot_as(title_name_summary, '-counts'), plt_counts, width = 4, height = 4)

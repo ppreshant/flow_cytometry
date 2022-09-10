@@ -6,8 +6,8 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'flowcyt_data/S050/' # processed_data/ or flowcyt_data/
-folder_name <- 'S050_d1/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
+base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/
+folder_name <- 'S048_e coli dilutions/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
 
 # for single file fcs guava data
 file.name_input <- '' # input file name without .fcs
@@ -17,9 +17,9 @@ file.name_input <- '' # input file name without .fcs
 title_name <- stringr::str_replace(folder_name, '/', '-raw') # Use the folder name without the slash
 
 
-# regular expression to load only a subset of files
-fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
-
+# regular expression to load only a subset of files : use '.*' for taking full data
+# fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
+fcs_pattern_to_subset <- '.*'
 
 # Other parameters
 
@@ -27,11 +27,12 @@ Machine_type <- 'Sony' # Sony or Guava # use this to plot appropriate variables 
 # To be implemented in future: using an if() to designate the names of the fluorescent channels 
 
 # Fluorescence channel names
-# ch <- c('red' = 'mScarlet-I-A', # change according to cytometer, fluorophores and for changing from area to width height etc.
-#         'green' = 'mGreenLantern cor-A')
+fluor_chnls <- c('red' = 'mScarlet-I-A', # change according to cytometer, fluorophores and for changing from area to width height etc.
+        'green' = 'mGreenLantern cor-A')
+# red = 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA ; and variable for Sony
 
-fluor_chnls <- c('red' = 'mcherry2-A',
-        'green' = 'gfpmut3-A')
+# fluor_chnls <- c('red' = 'mcherry2-A',
+#         'green' = 'gfpmut3-A')
 
 # Scatter channel names
 scatter_chnls <- c('fwd' = 'FSC-A', # set according to cytometer machine convention, and for changing from area to width height etc.

@@ -162,6 +162,7 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 ## file handling
 Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
 - [ ] How to solve the problem of non unique names?
+- [ ] Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too -- need to merge before attaching names_
 
 Directory checking in `1-reading_multidata_fcs`
 - [x] Check for empty directory to future proof when a directory exists but has no files in it
@@ -174,6 +175,8 @@ Directory checking in `1-reading_multidata_fcs`
 ## Processing 
 - [ ] How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
 - [ ] Break the processing modules into functions that can be called interactively _ex: while figuring out the correct density fraction etc._
+- [ ] Merge data from biological replicates (_as mentioned in paper_) : ideas [CytoTree](https://rdrr.io/bioc/CytoTree/man/runExprsMerge.html) ; post issue in [flowWorkspace](https://github.com/RGLab/flowWorkspace/issues) or flowCore?
+	> CombineFCS; This function can be used to combine 2 FCS files having a set of shared markers and return one FCS file (matrix) with the total number of cells is equal to the summation of cells in both FCS files, with each cell has an extended number of measured markers. [CyTOFmerge](https://github.com/tabdelaal/CyTOFmerge)
 
 ## flow rate
 - Tried using the flowAI's `flow_auto_qc` but it does not work due to number of cells incompatibility

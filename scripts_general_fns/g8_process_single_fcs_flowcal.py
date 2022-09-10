@@ -36,7 +36,7 @@ def process_single_fcs_flowcal(single_fcs,
     import FlowCal # flow cytometry processing
 
     # import config : directory name and other definitions
-    from scripts_general_fns.g10_user_config import scatter_channels, fluorescence_channels
+    from scripts_general_fns.g10_user_config import scatter_channels, fluorescence_channels, density_gating_fraction
     
     
     # %% visualize raw data
@@ -70,15 +70,15 @@ def process_single_fcs_flowcal(single_fcs,
     singlefcs_gate1 = FlowCal.gate.high_low(single_fcs, channels = scatter_channels)
 
     # auto density gating : for 50% of cells
-    singlefcs_densitygate50 = FlowCal.gate.density2d(singlefcs_gate1,
+    singlefcs_densitygate = FlowCal.gate.density2d(singlefcs_gate1,
                                        channels = scatter_channels,
-                                       gate_fraction = 0.50,
+                                       gate_fraction = density_gating_fraction,
                                        full_output=True) # full => saves outline
 
     if make_plots:
         FlowCal.plot.density_and_hist(singlefcs_gate1,
-                                      gated_data = singlefcs_densitygate50.gated_data,
-                                      gate_contour = singlefcs_densitygate50.contour,
+                                      gated_data = singlefcs_densitygate.gated_data,
+                                      gate_contour = singlefcs_densitygate.contour,
                                       density_channels=scatter_channels,
                                       density_params={'mode': 'scatter'},
                                       hist_channels=fluorescence_channels)
@@ -87,14 +87,14 @@ def process_single_fcs_flowcal(single_fcs,
     # %% doublet discrimination
 
     # Singlets: auto density gating : for 90% of cells w FSC-A vs H
-    singlefcs_singlets90 = FlowCal.gate.density2d(singlefcs_densitygate50.gated_data,
+    singlefcs_singlets90 = FlowCal.gate.density2d(singlefcs_densitygate.gated_data,
                                        channels = scatter_channels,
                                        gate_fraction = 0.90,
                                        full_output=True) # full => saves outline
 
     if make_plots:
         # plot before and after gating
-        FlowCal.plot.density_and_hist(singlefcs_densitygate50.gated_data,
+        FlowCal.plot.density_and_hist(singlefcs_densitygate.gated_data,
                                       gated_data = singlefcs_singlets90.gated_data,
                                       gate_contour = singlefcs_singlets90.contour,
                                       density_channels=scatter_channels,
@@ -114,7 +114,7 @@ def process_single_fcs_flowcal(single_fcs,
     if make_plots:
         # confirm that MEFLs are different from a.u 
         FlowCal.plot.hist1d(\
-            [singlefcs_densitygate50.gated_data, calibrated_fcs],
+            [singlefcs_densitygate.gated_data, calibrated_fcs],
             channel = fluorescence_channels[1], legend=True, # 'mScarlet-I-A'
             legend_labels = ['A.U.', 'MEFL'])
         plt.show()

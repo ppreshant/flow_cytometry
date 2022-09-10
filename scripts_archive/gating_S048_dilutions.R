@@ -3,7 +3,7 @@
 #' Gating on a single (or few?) representative sample and applying it to other fcs files
 #' Currently this is a general workflow but will be copied when it has been modified for specific expts
 
-# Load data by running analyze_fcs till line 38
+# Load data by running analyze_fcs till line 38 with 'S048_e coli dilutions' data
 source('./analyze_fcs.R')
 
 # Select sample(s) ----
@@ -33,6 +33,13 @@ ggsave(str_c('FACS_analysis/plots/',
        plot = pltscatter_single,
        height = 5, width = 5) # change height and width by number of panels
 
+# save PDF
+ggsave(str_c('FACS_analysis/plots/', 
+             title_name,  # title_name, 
+             '-scatter-E03', 
+             '.pdf'),
+       plot = pltscatter_single,
+       height = 5, width = 5) # change height and width by number of panels
 
 
 # Gating ----
@@ -158,3 +165,6 @@ plt_counts <- {ggplot(counts_gated,
   
 # save plot
 ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 4)
+
+# save PDF
+ggsave(str_c('FACS_analysis/plots/', title_name, '-counts.pdf'), plt_counts, width = 4, height = 4)

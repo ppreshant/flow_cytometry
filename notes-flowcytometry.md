@@ -164,6 +164,12 @@ Implement a regex command to capture files from multiple directories (S050 - mul
 - [ ] How to solve the problem of non unique names?
 - [ ] Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too -- need to merge before attaching names_
 
+### Questions :
+- [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
+	- _keyword(single_fcs) and element P1D  shows "Logarithmic,6,1"_ 
+	- does that mean the data needs to be log transformed and is this done by the default linearize option?  
+	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
+
 Directory checking in `1-reading_multidata_fcs`
 - [x] Check for empty directory to future proof when a directory exists but has no files in it
 - [ ] Change sampleNames of the fcs set when [reading files](https://rdrr.io/bioc/flowWorkspace/man/load_cytoset_from_fcs.html) by passing a vector(?) to  
@@ -196,10 +202,11 @@ Inspired from FlowCal, seeing if the processes can be mimiced. And if flopR can'
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
-
+- The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
 - [ ] _Error:_ `xlim(c(-100, 1e3))` not working on ggcyto + geomhex + geomdensity2d plot
-
+- [x] _changing title of the plots_ : do it manually for now
+- [x] _Replicates merge:_ ggcyto automatically merges replicates!
 
 ## Git organization
 For manual scripts with possible changes across experiments, should they be in a separate branch for each dataset used vs copying over into different files? _until of course, the script is eventually broken into functions that don't change across expts._

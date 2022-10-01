@@ -22,6 +22,7 @@ fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a cytoset 
 
 # check the sample names
 # sampleNames(fl.set) # returns names as a vector
+  # for a single file/cytoframe use "identifier(single_fcs)"
 # pData(fl.set) %>% mutate(number = row_number()) %>% view() # data frame with column 'name' and numbering
 
 # See the variables in the data : names of the channels
@@ -43,6 +44,31 @@ sample_metadata <- get_and_parse_plate_layout(str_c(folder_name, file.name_input
 #   map2(., colnames(.), # make into a nested list
 #        ~ list(channel = .y, peaks = .x))
 
+
+# Autodetect channels ----
+if(autodetect_channels) {
+  channels_used <- colnames(fl.set) %>% str_subset(use_channel_dimension) # ex: select only the -Area channels
+  
+  scatter_chnls <- channels_used %>% str_subset('(F|S)SC') %>% 
+    set_names(str_replace_all(., scatter_direction_lookup)) # set names 
+  
+  fluor_chnls <- channel_colour_lookup %>% names %>% str_c(collapse = '|') %>% # collate all the fluore channel names
+    {str_subset(channels_used, .)} %>% # subset the channels that match
+    set_names(str_replace_all(., channel_colour_lookup)) # set names
+}
+
+
+# Attach metadata ----
+new_pdata <- pData(fl.set) %>% 
+  mutate(well = str_extract(name, '[A-H][:digit:]+')) %>% # detect the well numbers
+  rename(original_name = name) %>% # rename the "name" column
+  
+  left_join(sample_metadata) %>% # join the metadata -- assay_variable, Sample_category etc. 
+  mutate(name = str_c(assay_variable, sample_category, sep = " /")) %>% # make a fusion for name
+  
+  column_to_rownames('original_name') # remake the rownames -- to enable attachment
+
+pData(fl.set) <- new_pdata # replace the pData
 
 # Inspecting data ----
 

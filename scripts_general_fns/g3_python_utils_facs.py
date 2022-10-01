@@ -34,7 +34,7 @@ c = list(range(5)) # list
 # %% wrapper fcs file path
 # returns dirpath/interpath/Sony formatted well name.fcs
 def sony_well_to_file(wellname):
-    return dir_path + inter_path + \
+    return fcs_root_folder + fcs_experiment_folder + \
     wellname + ' Well - ' + wellname + ' WLSM' + \
     '.fcs'
         
@@ -91,7 +91,7 @@ def get_well_name(string):
 
     Parameters
     ----------
-    single_fcs : str
+    string : str
         String containing the wellname
 
     Returns
@@ -108,4 +108,28 @@ def get_well_name(string):
     except:
          print('Well name not present in : ', string)
          return string # return back the string if there is an error
+    
+
+# %% Get the matching entries from a list of strings (use to subset by wells : A01 etc.)
+def subset_matching_regex(list_strings, regex_string):
+    """ Get the wellname (Ex: A11) from a longer string
+    
+
+    Parameters
+    ----------
+    list_strings : list
+        list of strings that needs to be subset
+    regex_string : str
+        String with the containing the wellname
+
+    Returns
+    -------
+    subseted list with regex matching entries.
+
+    """
+    
+    import re # for regular expression string manipulations
+    
+    return [str for str in list_strings
+            if re.search(regex_string, str)]
     

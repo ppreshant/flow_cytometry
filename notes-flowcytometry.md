@@ -73,16 +73,14 @@ Advantage of flowcal
 
 ## Bugs
 - [ ] Code: input() function called from within a module in jupyterlab does not work
-- [ ] Looks like singlet gating is using the wrong y axis- should be FSC-H? _check_
+- [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
   
 ## Tasks
 - [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
 
 - [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`
 - [x] (_working_) Vectorize the flowcal processing script by putting it in a function / or vectorizing each step with list comprehensions
-- [ ] Bring in plate layout from the google sheets -- or connect through R?
-	- [ ] Convert plate layout to columns like in R -- using pandas? or a dplyr for python
-	- [ ] Attach the names (with some kind of `regex` matching) 
+- [x] (_connecting through R better_) : Bring in plate layout from the google sheets, Convert plate layout to columns like in R -- using pandas? or a dplyr for python, Attach the names (with some kind of `regex` matching) 
 
 
 ### Plotting - matplotlib
@@ -104,7 +102,8 @@ Advantage of flowcal
  - [ ] Could have a user input if beads data gating looks acceptable before proceeding to MEFLing
 
 ### Gating
-- [ ] Make a variable for density gating percentage, (_fancy) get it from user input after showing a plot of 50%, interactive analysis.?_
+- [x] Make a variable for density gating percentage, 
+	- [ ] (_fancy) get it from user input after showing a plot of 50%, interactive analysis.?_
 
 
 ### Other information
@@ -121,7 +120,9 @@ Advantage of flowcal
 	- Would a pluto notebook (_or jupyter notebook_) work for calling the python script and collecting all the plots generated?
 
 ### html output
-- [ ] Add a separator between output of individual well plots '----' and print the well name maybe?
+- [ ] Add a separator between output of individual well plots '----' and print the well name maybe? 
+	- [ ] Separate the beads from the data files
+	- [ ] split into functions that can be run independantly too --
 - [ ] Get rid of this `file saved :  test2.fcs` being saved
 
 

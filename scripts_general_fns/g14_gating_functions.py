@@ -1,4 +1,4 @@
-# g11_gating_functions.py
+# g14_gating_functions.py
 
 """
 Created: 30-9-22
@@ -42,7 +42,7 @@ def gate_and_reduce_dataset(single_fcs,
     import matplotlib.pyplot as plt # plotting package
     import FlowCal # flow cytometry processing
     
-    # import config : directory name and other definitions
+    # import config : density_gating_fraction as default
     from scripts_general_fns.g10_user_config import density_gating_fraction as default_density_gating_fraction
     
     # determine the density gating fraction user input to function vs default -- in the g10_user_config.py
@@ -88,7 +88,7 @@ def gate_and_reduce_dataset(single_fcs,
                                       hist_channels=fluorescence_channels)
         plt.tight_layout(); plt.show()
         
-        print('--------------------------------------------------------------')
+        print('--------------------------------------------------------------\n\n')
 
     # confirm that the gating only retains the good high density area
     # where H and A are linear

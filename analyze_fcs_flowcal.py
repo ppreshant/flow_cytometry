@@ -35,15 +35,17 @@ def process_fcs_dir(make_processing_plots=False):
     import re # for regular expression : string matching
     
     # import local packages
-    import scripts_general_fns.g3_python_utils_facs as myutils
-    from scripts_general_fns.g4_file_inputs import get_fcs_files
-    from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal
-    from scripts_general_fns.g9_write_fcs_wrapper import write_FCSdata_to_fcs
-    
+    import scripts_general_fns.g3_python_utils_facs as myutils # general utlilties
+    from scripts_general_fns.g4_file_inputs import get_fcs_files # reading in .fcs
+    from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+    from scripts_general_fns.g9_write_fcs_wrapper import write_FCSdata_to_fcs # .fcs output
+    from myutils import subset_matching_regex # regex subset data by wells
+
     # import config : directory name and other definitions
     from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
         beads_match_name,\
-        scatter_channels, fluorescence_channels
+        scatter_channels, fluorescence_channels,\
+        channel_lookup_dict
     
     # If needed, change the current working directory
     # os.chdir(r'C:\Users\new\Box Sync\Stadler lab\Data\Flow cytometry (FACS)')
@@ -66,11 +68,20 @@ def process_fcs_dir(make_processing_plots=False):
     outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
                    for singlefcspath in fcspaths]
     
-    # %% load data
+    # %% load the .fcs data
     fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
     
-    # select one file for workflow making 
-    single_fcs = fcs_data[0] # load first file
+    # select one file for workflow making / testing 
+    # single_fcs = fcs_data[0] # load first file for testing purposes
+    
+    # %% Autodetect channel names
+    # get the relevant channels present in the data
+    relevant_channels = fcs_data[0].channels | p(subset_matching_regex, px, '-A$') 
+
+    # autodetect the channels
+    fluorescence_channels, scatter_channels = tuple\
+        (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
+    
     # %% bring sample names
     
     # bring sample names from google sheet, 
@@ -175,8 +186,6 @@ def process_fcs_dir(make_processing_plots=False):
                         draw_summary_stat_fxn=np.median)  
     
     # %% Save calibrated fcs data to file
-    
-    write_FCSdata_to_fcs('processed_data/test/test2.fcs', single_fcs)
     
     [write_FCSdata_to_fcs(filepath, fcs_data) \
      for filepath, fcs_data in zip(outfcspaths, calibrated_fcs_data)]

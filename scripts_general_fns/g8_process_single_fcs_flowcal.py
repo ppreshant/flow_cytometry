@@ -4,9 +4,11 @@ Created on Fri May 20 17:28:59 2022
 
 @author: Prashant
 """
-def process_single_fcs_flowcal(single_fcs, 
+def process_single_fcs_flowcal(single_fcs,
+                               scatter_channels, fluorescence_channels,
                                beads_to_mef,
                                make_plots = False):
+    
     """Processing a single .fcs file with FlowCal
     
     Takes the .fcs data and 
@@ -19,6 +21,10 @@ def process_single_fcs_flowcal(single_fcs,
     ----------
     single_fcs : FlowCal.io.FCSData
         The .fcs file data for the current file to be processed.
+    scatter_channels : list
+        The channels to be used for scattering depending on instrument - ex: ['FSC-A', 'SSC-A']
+    fluorescence_channels : list
+        The channels to be used for fluorescence depending on experiment, instrument - ex: ['gfpmut3-A', 'mcherry2-A']
     beads_to_mef : Function (functools.partial)
         The to_mef transformation function output from FlowCal.mef.get_transform_fxn(..)
         used for calibration
@@ -27,7 +33,8 @@ def process_single_fcs_flowcal(single_fcs,
         
     Returns
     -------
-    calibrated, cleaned up .fcs dataset.
+    calibrated_fcs : FlowCal.io.FCSData
+        Returns a cleaned up and calibrated .fcs dataset.
 
     """
     
@@ -36,14 +43,17 @@ def process_single_fcs_flowcal(single_fcs,
     import FlowCal # flow cytometry processing
     
     # import local packages
-    from scripts_general_fns.g11_gating_functions import gate_and_reduce_dataset
+    from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
     
     
-    # import config : directory name and other definitions
-    from scripts_general_fns.g10_user_config import scatter_channels, fluorescence_channels, density_gating_fraction
+    # import config : nothing to import
+    # scatter_channels, fluorescence_channels are in the function arguments
+    # density_gating_fraction is imported in g14.. for gate_and_reduce_dataset()
     
     
     # %% visualize raw data
+    
+    print('---> Raw data')
     
     # # plot both density scatter plot and histogram for a channel
     if make_plots:
@@ -71,7 +81,9 @@ def process_single_fcs_flowcal(single_fcs,
 
     # %% Gating
     # Reduce dataset by gating out low and high, density gating - user defined threshold, singlet gate (90% events) with FlowCal
-    singlefcs_singlets90 = gate_and_reduce_dataset(single_fcs, scatter_channels, fluorescence_channels, make_plots = make_plots)
+    singlefcs_singlets90 = gate_and_reduce_dataset(single_fcs,\
+                                                   scatter_channels, fluorescence_channels,\
+                                                   make_plots = make_plots)
     
     # %% Calibration
     # convert data into MEFLs 

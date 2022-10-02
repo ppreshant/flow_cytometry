@@ -41,9 +41,9 @@ def write_FCSdata_to_fcs(filepath, fcs_data,
     
     # Create a directory if it does not exist
     # from https://stackoverflow.com/a/273227/9049673
-    from pathlib import Path
+    from pathlib import Path # for file path manipulations
     Path(filepath).parents[0].mkdir(parents=True, exist_ok=True)
-    # Path object. get parent directory. make new directory, include parents
+    # Path object. get parent directory(remove ~filename). make new directory, include parents
     
     
     # select channels

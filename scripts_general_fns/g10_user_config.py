@@ -26,6 +26,8 @@ beads_match_name =  'beads' # beads data is saved in a group/folder named beads 
 
 # Optional: Get a custom beads file from a different folder with regex (if not present in current dataset)
 retrieve_custom_beads_file = True # make true to use the file from below else will autodetect from dataset
+
+from scripts_general_fns.g4_file_inputs import get_fcs_files # function for reading in .fcs files
 beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S050_d-1/*/Beads/') # use the [0] subset from these lists
 
 

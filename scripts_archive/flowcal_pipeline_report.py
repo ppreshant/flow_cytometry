@@ -21,7 +21,7 @@
 {
     "metadata": {
         "jupyter" : {
-        "source_hidden": true
+        "source_hidden": True
         }
     }
 }
@@ -42,11 +42,15 @@ sys.path # check that the last entry is the head project path
 
 # Utilities
 from sspipe import p, px
+import importlib # for reloading modules that changed
 
 # %%
 # Run the flow cytometry processing script 
+# importlib.reload(analyze_fcs_flowcal)
 from analyze_fcs_flowcal import process_fcs_dir
 # %timeit -r 1 -n 1 process_fcs_dir(True) # time and run the pipeline
 # reading .fcs data, beads processing, cleanup and calibration, saving summary statistics and cleaned files
 
 # %%
+# Running from commandline
+# jupyter nbconvert --execute --to html flowcal_pipeline_report.ipynb

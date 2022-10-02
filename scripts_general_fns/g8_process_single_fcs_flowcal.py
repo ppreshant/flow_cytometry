@@ -5,8 +5,8 @@ Created on Fri May 20 17:28:59 2022
 @author: Prashant
 """
 def process_single_fcs_flowcal(single_fcs,
-                               scatter_channels, fluorescence_channels,
                                beads_to_mef,
+                               scatter_channels, fluorescence_channels,
                                make_plots = False):
     
     """Processing a single .fcs file with FlowCal
@@ -21,14 +21,14 @@ def process_single_fcs_flowcal(single_fcs,
     ----------
     single_fcs : FlowCal.io.FCSData
         The .fcs file data for the current file to be processed.
+    beads_to_mef : Function (functools.partial)
+        The to_mef transformation function output from FlowCal.mef.get_transform_fxn(..)
+        used for calibration
     scatter_channels : list
         The channels to be used for scattering depending on instrument - ex: ['FSC-A', 'SSC-A']
     fluorescence_channels : list
         The channels to be used for fluorescence depending on experiment, instrument - ex: ['gfpmut3-A', 'mcherry2-A']
-    beads_to_mef : Function (functools.partial)
-        The to_mef transformation function output from FlowCal.mef.get_transform_fxn(..)
-        used for calibration
-    make_plots : bool
+   make_plots : bool
         Indicate if plots for each iteration should be made or not
         
     Returns
@@ -61,7 +61,7 @@ def process_single_fcs_flowcal(single_fcs,
         FlowCal.plot.density_and_hist(single_fcs,
                                      density_channels = scatter_channels,
                                      density_params = {'mode': 'scatter'},
-                                     hist_channels = ['mScarlet-I-A'])
+                                     hist_channels = fluorescence_channels)
         plt.tight_layout() # improves the dual plot label positioning
         plt.show()
 
@@ -94,8 +94,8 @@ def process_single_fcs_flowcal(single_fcs,
     if make_plots:
         # confirm that MEFLs are different from a.u 
         FlowCal.plot.hist1d(\
-            [singlefcs_densitygate.gated_data, calibrated_fcs],
-            channel = fluorescence_channels[1], legend=True, # 'mScarlet-I-A'
+            [singlefcs_singlets90.gated_data, calibrated_fcs],
+            channel = fluorescence_channels[1], legend=True,
             legend_labels = ['A.U.', 'MEFL'])
         plt.show()
  

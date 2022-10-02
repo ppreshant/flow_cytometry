@@ -83,7 +83,6 @@ regex_to_subset = 'F05|D06'
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
 
-# %%
 # %% load the fcs data
 fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
     
@@ -99,7 +98,7 @@ fluorescence_channels, scatter_channels = tuple\
     (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
 
 # %%
-# Gate and plot a single file
+# Gate and plot a single file - testing the density_gating_fraction
 singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
 
 # %%
@@ -112,7 +111,7 @@ from scripts_general_fns.g15_beads_functions import process_beads_file # get and
 
 
 # %%
-process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
+to_mef = process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
 
 # %%
 # get summary stats and test pandas
@@ -130,3 +129,8 @@ summary_stats = map(lambda x, y: [y(single_fcs,
 # %%
 summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-test-summary.csv',
                         index_label='well')
+
+# %%
+# adhoc run with functions
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal
+calibrated_single_fcs = process_single_fcs_flowcal(single_fcs, to_mef, scatter_channels, fluorescence_channels)

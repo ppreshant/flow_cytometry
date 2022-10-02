@@ -120,10 +120,11 @@ Advantage of flowcal
 	- Would a pluto notebook (_or jupyter notebook_) work for calling the python script and collecting all the plots generated?
 
 ### html output
-- [ ] Add a separator between output of individual well plots '----' and print the well name maybe? 
-	- [ ] Separate the beads from the data files
-	- [ ] split into functions that can be run independantly too --
-- [ ] Get rid of this `file saved :  test2.fcs` being saved
+- [ ] convert to Quarto document with jupytext
+	- [ ] Make the saved html file after the folder name 
+- [x] Add a separator between output of individual well plots '----' and print the well name maybe? 
+	- [x] Separate the beads from the data files
+	- [x] split into functions that can be run independantly too --
 
 
 **Literature**

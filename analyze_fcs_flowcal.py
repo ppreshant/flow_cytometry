@@ -43,13 +43,12 @@ def process_fcs_dir(make_processing_plots=False):
     from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
     from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
     from scripts_general_fns.g9_write_fcs_wrapper import write_FCSdata_to_fcs # .fcs output
-    from myutils import subset_matching_regex # regex subset data by wells
     
     # import config : directory name and other definitions
     from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
-        beads_match_name, retrieve_custom_beads_file,\ # beads related
-        scatter_channels, fluorescence_channels,\ # is replaced by autodetected chnls
-        channel_lookup_dict # channels configuration
+        beads_match_name, retrieve_custom_beads_file,\
+        scatter_channels, fluorescence_channels,\
+        channel_lookup_dict  # channels configuration
     
     # If needed, change the current working directory
     # os.chdir(r'C:\Users\new\Box Sync\Stadler lab\Data\Flow cytometry (FACS)')
@@ -65,9 +64,10 @@ def process_fcs_dir(make_processing_plots=False):
     # Retrieve custom beads file, if user wants (current dataset has no beads) ; else
     # Get the beads file from current dataset using well/pattern : selects the first of multiple matches
     if retrieve_custom_beads_file: 
-        from scripts_general_fns.g10_user_config import beads_filepath[0] as beads_filepath
+        from scripts_general_fns.g10_user_config import beads_filepath as beads_list
+        beads_filepath = beads_list[0]
     else: 
-    beads_filepath = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)][0]
+        beads_filepath = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)][0]
     
     
     # Remove beads from the fcs path list if using from current dataset (not custom beads file)
@@ -90,11 +90,11 @@ def process_fcs_dir(make_processing_plots=False):
     
     # %% Autodetect channel names
     # get the relevant channels present in the data
-    relevant_channels = fcs_data[0].channels | p(subset_matching_regex, px, '-A$') 
+    relevant_channels = fcs_data[0].channels | p(myutils.subset_matching_regex, px, '-A$') 
 
     # autodetect the channels
     fluorescence_channels, scatter_channels = tuple\
-        (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
+        (myutils.subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
     
     # %% bring sample names and metadata
     
@@ -114,10 +114,12 @@ def process_fcs_dir(make_processing_plots=False):
     
     Markdown('## Data cleanup, MEFL calibration') | p(display) # post message
     
+    
     # convert data into MEFLs for all .fcs files
     calibrated_fcs_data = [process_single_fcs_flowcal\
                            (single_fcs,
                             to_mef,
+                            scatter_channels, fluorescence_channels,
                             make_plots=make_processing_plots)\
                       for single_fcs in fcs_data]
     
@@ -132,7 +134,7 @@ def process_fcs_dir(make_processing_plots=False):
                       [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
 
     # Generate a combined pandas DataFrame for mean, median and mode respectively
-    summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in fcs_data] |\
+    summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in calibrated_fcs_data] |\
         p(pd.DataFrame, 
           columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
           index = fcslist), # rownames as the .fcs file names

@@ -82,6 +82,8 @@ def process_beads_file(beads_filepath,
                                   hist_channels= fluorescence_channels)
     plt.tight_layout(); plt.show()
     
+    # Note : not doing singlet gating since the fsc vs ssc profile looks pretty tight 
+    # and we're discarding lot of events already
     
     # %% Calibration transformation
     

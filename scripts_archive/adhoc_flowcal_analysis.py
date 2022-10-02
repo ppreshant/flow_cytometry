@@ -49,6 +49,8 @@ from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
 # %%
 # flowcal prerequisites
 import FlowCal # flow cytometry processing
+import numpy as np # for array manipulations - faster
+import pandas as pd # for small data frames, csv outputs
 
 # enables automatic reloading of local modules when updated : For interactive use
 # %load_ext autoreload
@@ -76,7 +78,10 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 # %%
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-fcspaths_subset = subset_matching_regex(fcspaths, 'F05|D06')
+regex_to_subset = 'F05|D06'
+
+fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
+fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
 
 # %%
 # %% load the fcs data
@@ -107,7 +112,21 @@ from scripts_general_fns.g15_beads_functions import process_beads_file # get and
 
 
 # %%
-beads_filepath
+process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
 
 # %%
-process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels)
+# get summary stats and test pandas
+summary_stats_list = (['mean', 'median', 'mode'],
+                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
+
+# Generate a combined dataframe for mean, median and mode respectively
+summary_stats = map(lambda x, y: [y(single_fcs, 
+                         channels = fluorescence_channels)\
+                   for single_fcs in fcs_data] |\
+    p(pd.DataFrame, 
+      columns = [x + '_' + chnl for chnl in fluorescence_channels],
+     index = fcslist_subset), summary_stats_list[0], summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+
+# %%
+summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-test-summary.csv',
+                        index_label='well')

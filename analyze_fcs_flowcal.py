@@ -32,6 +32,7 @@ def process_fcs_dir(make_processing_plots=False):
     import FlowCal # flow cytometry processing
     import os # for file path manipulations
     import numpy as np # for arrays
+    import pandas as pd # for summary statistics data frame
     import re # for regular expression : string matching
     from IPython.display import display, Markdown # for generating markdown messages
     from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
@@ -124,12 +125,23 @@ def process_fcs_dir(make_processing_plots=False):
     # timing and testing
     # %timeit -n 1 -r 1 python command here
     
-    # %% summary plots
+    # %% summary statistics
     
-    # TODO : Output mean, median and mode into a summary csv file using pandas
-    median_data = [FlowCal.stats.median(single_fcs, 
-                         channels = fluorescence_channels)\
-                   for single_fcs in calibrated_fcs_data]
+    # get summary statistics
+    summary_stats_list = (['mean', 'median', 'mode'], # use these labels and functions below
+                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
+
+    # Generate a combined pandas DataFrame for mean, median and mode respectively
+    summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in fcs_data] |\
+        p(pd.DataFrame, 
+          columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
+          index = fcslist), # rownames as the .fcs file names
+        summary_stats_list[0], # x for the map, y is below
+        summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+    
+    # Save summary statistic to csv file
+    summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-summary.csv',
+                        index_label='well')
     
     # %% violin plots 
     

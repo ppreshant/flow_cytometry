@@ -46,6 +46,7 @@ from sspipe import p, px
 # %%
 # Run the flow cytometry processing script 
 from analyze_fcs_flowcal import process_fcs_dir
-# %timeit -r 1 -n 1 process_fcs_dir(True)
+# %timeit -r 1 -n 1 process_fcs_dir(True) # time and run the pipeline
+# reading .fcs data, beads processing, cleanup and calibration, saving summary statistics and cleaned files
 
 # %%

@@ -33,19 +33,22 @@ def process_fcs_dir(make_processing_plots=False):
     import os # for file path manipulations
     import numpy as np # for arrays
     import re # for regular expression : string matching
+    from IPython.display import display, Markdown # for generating markdown messages
+    from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
     
     # import local packages
     import scripts_general_fns.g3_python_utils_facs as myutils # general utlilties
-    from scripts_general_fns.g4_file_inputs import get_fcs_files # reading in .fcs
+    from scripts_general_fns.g4_file_inputs import get_fcs_files # reading in .fcs files
+    from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
     from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
     from scripts_general_fns.g9_write_fcs_wrapper import write_FCSdata_to_fcs # .fcs output
     from myutils import subset_matching_regex # regex subset data by wells
-
+    
     # import config : directory name and other definitions
     from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
-        beads_match_name,\
-        scatter_channels, fluorescence_channels,\
-        channel_lookup_dict
+        beads_match_name, retrieve_custom_beads_file,\ # beads related
+        scatter_channels, fluorescence_channels,\ # is replaced by autodetected chnls
+        channel_lookup_dict # channels configuration
     
     # If needed, change the current working directory
     # os.chdir(r'C:\Users\new\Box Sync\Stadler lab\Data\Flow cytometry (FACS)')
@@ -54,12 +57,22 @@ def process_fcs_dir(make_processing_plots=False):
     fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
     # Loads them as lists in alphabetical order I assume?
     
-    # Get the beads file based on user provided well/pattern : selects the first pf multiple
+    # Display the name of the data folder being analyzed as markdown
+    Markdown('## Analyzing dataset : "{a}"'.format(a = fcs_experiment_folder)) | p(display)
+    
+    # %% get beads file
+    # Retrieve custom beads file, if user wants (current dataset has no beads) ; else
+    # Get the beads file from current dataset using well/pattern : selects the first of multiple matches
+    if retrieve_custom_beads_file: 
+        from scripts_general_fns.g10_user_config import beads_filepath[0] as beads_filepath
+    else: 
     beads_filepath = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)][0]
     
-    # Remove beads from the fcs path list
-    fcspaths.remove(beads_filepath)
-    fcslist = [m for m in fcslist if m not in os.path.basename(beads_filepath)] # and filename list
+    
+    # Remove beads from the fcs path list if using from current dataset (not custom beads file)
+    if not retrieve_custom_beads_file:
+        fcspaths.remove(beads_filepath)
+        fcslist = [m for m in fcslist if m not in os.path.basename(beads_filepath)] # and filename list
     # TODO: Need a better index based way to trim fcslist of the beads
     # when multiple beads files present;
     
@@ -82,83 +95,23 @@ def process_fcs_dir(make_processing_plots=False):
     fluorescence_channels, scatter_channels = tuple\
         (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
     
-    # %% bring sample names
+    # %% bring sample names and metadata
     
     # bring sample names from google sheet, 
     # attach them to the dataset as a name entry
     
-
+    
     # %% Beads processing
     
-    # read in the beads
-    beads_data = FlowCal.io.FCSData(beads_filepath)
+    Markdown('## Processing beads file') | p(display)
     
-    # troubleshooting beads : raw data visual
-    FlowCal.plot.density_and_hist(beads_data,
-                                  density_channels=scatter_channels,
-                                  density_params={'mode': 'scatter'},
-                                  hist_channels=fluorescence_channels)
-    plt.tight_layout(); plt.show()
+    # Get beads .fcs, cleanup, and generate calibration data structure
+    to_mef = process_beads_file(beads_filepath,\
+                               scatter_channels, fluorescence_channels)
+            
+    # %% Cleanup and MEFL calibration of each fcs file
     
-    
-    # trim saturated : more than 1000 in FSC, SSC
-    # removes the large cloud of points 
-    beads_gate1 = FlowCal.gate.high_low(beads_data,
-                                 channels = scatter_channels,
-                                 low=(1000)) 
-    # TODO: low=threshold of 1,000 is arbitrary : Generalize this--
-    # my Spherotech beads have lot of debris < 1,000, 
-    # but threshold might change depending on gains.
-    
-    if beads_gate1.__len__() < 2000:
-        if input('Beads have aberrant scatter profile, look at the plot and decide to proceed; yes (1) or no (0)'):
-            ValueError('Code stopped by user intervention due to beads file. Change beads file and rerun')
-        
-    # TODO: Have a way to discard the aberrant files with a warning and continue running?
-     
-    
-    # gate 30% # since my beads have lot of debris
-    beads_densitygate30 = FlowCal.gate.density2d(beads_gate1,
-                                        channels=scatter_channels,
-                                        gate_fraction= 0.3,
-                                        full_output=True)
-    
-    # visualize the gating effect
-    FlowCal.plot.density_and_hist(beads_gate1,
-                                  gated_data = beads_densitygate30.gated_data,
-                                  gate_contour = beads_densitygate30.contour,
-                                  density_channels = scatter_channels,
-                                  density_params = {'mode': 'scatter'},
-                                  hist_channels= fluorescence_channels)
-    plt.tight_layout(); plt.show()
-    
-    # visualize the gated population
-    FlowCal.plot.density_and_hist(beads_densitygate30.gated_data,
-                                  density_channels = scatter_channels,
-                                  density_params = {'mode': 'scatter'},
-                                  hist_channels = fluorescence_channels)
-    plt.tight_layout(); plt.show()
-    
-    
-    # %% Calibration transformation
-    
-    # specify the mefl values from data sheet
-    # eventually will read this off an excel file or two 
-    mGreenLantern_mefl_vals = [0, 771, 2106, 6262, 15183, 45292, 136258, 291042]
-    mScarlet_mefl_vals =      [0, 487, 1474, 4516, 11260, 34341, 107608, 260461]
-    
-    # Make the MEFL transformation function using gated beads data
-    to_mef = FlowCal.mef.get_transform_fxn(beads_densitygate30.gated_data, 
-                                           mef_values = [mGreenLantern_mefl_vals, mScarlet_mefl_vals],
-                                           mef_channels = fluorescence_channels,
-                                           plot=True)
-    plt.show()
-    
-    
-    
-    
-    # %% Calibration vectorized
-    # trial run
+    Markdown('## Data cleanup, MEFL calibration') | p(display) # post message
     
     # convert data into MEFLs for all .fcs files
     calibrated_fcs_data = [process_single_fcs_flowcal\
@@ -173,11 +126,15 @@ def process_fcs_dir(make_processing_plots=False):
     
     # %% summary plots
     
+    # TODO : Output mean, median and mode into a summary csv file using pandas
     median_data = [FlowCal.stats.median(single_fcs, 
                          channels = fluorescence_channels)\
                    for single_fcs in calibrated_fcs_data]
     
     # %% violin plots 
+    
+    Markdown('## Summary plots') | p(display) # Post message and explanation
+    print('Summary plots for visual reference only, better plots will be made in R/ggcyto/ggplot workflow')
     
     # Make violin plot and show medians
     FlowCal.plot.violin(calibrated_fcs_data,

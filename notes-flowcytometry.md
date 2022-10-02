@@ -72,7 +72,7 @@ Advantage of flowcal
 	- Check if this can be done in R too?
 
 ## Bugs
-- [ ] Code: input() function called from within a module in jupyterlab does not work
+- [ ] Code: input() function called from within a module in jupyterlab does not work. See `analyze_fcs_flowcal`/Line 121 for beads with low events
 - [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
   
 ## Tasks

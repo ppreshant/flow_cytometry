@@ -16,11 +16,17 @@ Created on Wed Jun  1 01:00:43 2022
 fcs_root_folder = 'flowcyt_data'
 fcs_experiment_folder = 'S050/S050_d1'
 
+# Input a regular expression to subset a limited number of wells
+
 # Choose a density gate fraction : 0.5 (50%) is decent, if you need to retain more events try 80%
 density_gating_fraction = .8
 
-# Give the pattern/well to match the bead file (ex: E01 etc.)
+# Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset
 beads_match_name =  'beads' # beads data is saved in a group/folder named beads for (Sony)
+
+# Optional: Get a custom beads file from a different folder with regex (if not present in current dataset)
+retrieve_custom_beads_file = True # make true to use the file from below else will autodetect from dataset
+beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S050_d-1/*/Beads/') # use the [0] subset from these lists
 
 
 # %% Channel paremeters 

@@ -9,3 +9,4 @@ FACS_analysis/
 documentation/
 *.fcs
 *_data/
+*.ipynb

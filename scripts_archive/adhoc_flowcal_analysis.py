@@ -50,13 +50,13 @@ from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
 # flowcal prerequisites
 import FlowCal # flow cytometry processing
 
-# enables automatic reloading of local modules when updated
+# enables automatic reloading of local modules when updated : For interactive use
 # %load_ext autoreload
 # %autoreload 2
 
 # import local packages
 from scripts_general_fns.g4_file_inputs import get_fcs_files
-from scripts_general_fns.g11_gating_functions import gate_and_reduce_dataset
+from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
 
 # import config : directory name and other definitions
 from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
@@ -94,8 +94,20 @@ fluorescence_channels, scatter_channels = tuple\
     (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
 
 # %%
-from scripts_general_fns.g11_gating_functions import gate_and_reduce_dataset
-
-# %%
 # Gate and plot a single file
 singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
+
+# %%
+# Get a custom beads file from a different folder and process it - test
+beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S050_d-1/*/Beads/')
+# Tips: need to coerce the list to string before using "beads_filepath"
+
+# Test beads processing function
+from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+
+
+# %%
+beads_filepath
+
+# %%
+process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels)

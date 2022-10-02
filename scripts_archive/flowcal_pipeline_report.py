@@ -17,6 +17,7 @@
 # # Run and capture plots of FlowCal processing of flow cytometry data
 
 # %%
+# commands to hide the code when making a .html output from jupyter
 {
     "metadata": {
         "jupyter" : {
@@ -25,10 +26,10 @@
     }
 }
 
-# check current working directory
+# Change the working directory to the base directory : 'Flow cytometry(FACS)'
 import os
 os.chdir("..") # set path to the head directory of the project
-os.getcwd()
+os.getcwd() # check current working directory
 
 # add project path to sys.path: enables loading local modules in other folders
 import sys

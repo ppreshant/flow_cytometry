@@ -47,7 +47,6 @@ def process_fcs_dir(make_processing_plots=False):
     # import config : directory name and other definitions
     from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
         beads_match_name, retrieve_custom_beads_file,\
-        scatter_channels, fluorescence_channels,\
         channel_lookup_dict  # channels configuration
     
     # If needed, change the current working directory

@@ -53,11 +53,11 @@ def process_single_fcs_flowcal(single_fcs,
     
     # %% visualize raw data
     
-    print('---> Raw data')
     
     # # plot both density scatter plot and histogram for a channel
     if make_plots:
         
+        print('---> Raw data')            
         FlowCal.plot.density_and_hist(single_fcs,
                                      density_channels = scatter_channels,
                                      density_params = {'mode': 'scatter'},

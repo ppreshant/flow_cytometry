@@ -48,7 +48,9 @@ import importlib # for reloading modules that changed
 # Run the flow cytometry processing script 
 # importlib.reload(analyze_fcs_flowcal)
 from analyze_fcs_flowcal import process_fcs_dir
-# %timeit -r 1 -n 1 process_fcs_dir(True) # time and run the pipeline
+from scripts_general_fns.g10_user_config import make_processing_plots
+
+# %timeit -r 1 -n 1 process_fcs_dir(make_processing_plots) # time and run the pipeline
 # reading .fcs data, beads processing, cleanup and calibration, saving summary statistics and cleaned files
 
 # %%

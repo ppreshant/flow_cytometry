@@ -62,20 +62,24 @@ from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
 
 # import config : directory name and other definitions
 from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
-    beads_match_name,\
-    scatter_channels, fluorescence_channels,\
+    make_processing_plots, beads_match_name,\
     channel_lookup_dict
 
-# %%
+# %% get .fcs file list
 # Load fcs files
+
 # If needed, change the current working directory
 # os.chdir(r'C:\Users\new\Box Sync\Stadler lab\Data\Flow cytometry (FACS)')
 
-# %% get .fcs file list
 fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
 # Loads them as lists in alphabetical order I assume?
 
+# %% [markdown]
+# # Detect channel names
+# - Need to load a small subset of data
+
 # %%
+# Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
 regex_to_subset = 'F05|D06'
@@ -84,10 +88,11 @@ fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
 
 # %% load the fcs data
-fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
+# load the subset of the .fcs files
+fcs_data_subset = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
     
 # Load one file for testing
-single_fcs = fcs_data[0]
+single_fcs = fcs_data_subset[0]
 
 # %%
 # get the relevant channels present in the data
@@ -97,9 +102,8 @@ relevant_channels = single_fcs.channels | p(subset_matching_regex, px, '-A$')
 fluorescence_channels, scatter_channels = tuple\
     (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
 
-# %%
-# Gate and plot a single file - testing the density_gating_fraction
-singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
+# %% [markdown]
+# # Process the beads
 
 # %%
 # Get a custom beads file from a different folder and process it - test
@@ -113,6 +117,90 @@ from scripts_general_fns.g15_beads_functions import process_beads_file # get and
 # %%
 to_mef = process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
 
+# %% [markdown]
+# # Run a customized analysis workflow : for efficiency/speed
+# - Custom for S050 multi-plate dataset
+# - The beads file is processed only once and re-used for all the plates
+# - Trying to get a vectorized workflow/loop going
+
+# %%
+# More imports
+import re # for regular expression : string matching
+from IPython.display import display, Markdown # for generating markdown messages
+from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
+
+# import local packages
+import scripts_general_fns.g3_python_utils_facs as myutils # general utlilties
+from scripts_general_fns.g4_file_inputs import get_fcs_files # reading in .fcs files
+from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+from scripts_general_fns.g9_write_fcs_wrapper import write_FCSdata_to_fcs # .fcs output
+
+# %%
+# test workflow on d-1 : updating g10_user_config now
+
+# import config : directory names - refresh the config
+from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder
+print(fcs_experiment_folder) # check that corect file is loaded
+
+# %%
+# loop for every experiment folder 
+for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)) + 2)]:
+
+    # get .fcs file list and load data
+    fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
+    # output file paths
+    # trim the directory to remove excessive subsidectories (from Sony instruments)
+    outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
+                   for singlefcspath in fcspaths]
+
+    # %% load the .fcs data
+    fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
+
+    # convert data into MEFLs for all .fcs files
+    calibrated_fcs_data = [process_single_fcs_flowcal\
+                           (single_fcs,
+                            to_mef,
+                            scatter_channels, fluorescence_channels)\
+                      for single_fcs in fcs_data]
+
+    # get summary statistics
+    summary_stats_list = (['mean', 'median', 'mode'], # use these labels and functions below
+                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
+
+    # Generate a combined pandas DataFrame for mean, median and mode respectively
+    summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in calibrated_fcs_data] |\
+        p(pd.DataFrame, 
+          columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
+          index = fcslist), # rownames as the .fcs file names
+        summary_stats_list[0], # x for the map, y is below
+        summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+
+    # Save summary statistic to csv file
+    summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-summary.csv',
+                        index_label='well')
+
+    # Save calibrated fcs data to file
+    [write_FCSdata_to_fcs(filepath, fcs_data) \
+     for filepath, fcs_data in zip(outfcspaths, calibrated_fcs_data)]
+
+    # remove .fcs holding lists to save memory
+    del fcs_data
+    del calibrated_fcs_data
+
+# %% [markdown] tags=[]
+# # Testing utilities
+# - on single fcs files etc.
+
+# %%
+fcs_experiment_folder
+
+# %%
+
+# %%
+# Gate and plot a single file - testing the density_gating_fraction
+singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data_subset[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
+
 # %%
 # get summary stats and test pandas
 summary_stats_list = (['mean', 'median', 'mode'],
@@ -121,7 +209,7 @@ summary_stats_list = (['mean', 'median', 'mode'],
 # Generate a combined dataframe for mean, median and mode respectively
 summary_stats = map(lambda x, y: [y(single_fcs, 
                          channels = fluorescence_channels)\
-                   for single_fcs in fcs_data] |\
+                   for single_fcs in fcs_data_subset] |\
     p(pd.DataFrame, 
       columns = [x + '_' + chnl for chnl in fluorescence_channels],
      index = fcslist_subset), summary_stats_list[0], summary_stats_list[1]) | p(pd.concat, px, axis = 1)

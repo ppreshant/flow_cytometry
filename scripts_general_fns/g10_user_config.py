@@ -14,35 +14,39 @@ Created on Wed Jun  1 01:00:43 2022
 # paths are relative to the working directory
 # without the trailing slash "/"
 fcs_root_folder = 'flowcyt_data'
-fcs_experiment_folder = 'S050/S050_d-1'
+fcs_experiment_folder = 'S040_test run_SA3800'
 
 # Input a regular expression to subset a limited number of wells
 
 # Choose a density gate fraction : 0.5 (50%) is decent, if you need to retain more events try 80%
-density_gating_fraction = .7
+density_gating_fraction = .3
 
-# Important: Select "True" if you want detailed plots of the processing steps for each .fcs file
+# Important: Select "all" ONLY if you want detailed plots of the processing steps for each .fcs file
 # making plots takes very long: 
-make_processing_plots = False
+# Select 'first n' to generate the first few plots for visualization -- first 3 or 5 is good idea
+# Select 'random n' to generate plots for n random .fcs files
+# select None to skip plots -- None is without quotes
+make_processing_plots = 'random 3'
 
 
-# Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset
+# Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset / else skips MEFLing
 beads_match_name =  'beads' # beads data is saved in a group/folder named beads for (Sony)
 
 # Optional: Get a custom beads file from a different folder with regex (if not present in current dataset)
-retrieve_custom_beads_file = True # make true to use the file from below else will autodetect from dataset
+retrieve_custom_beads_file = False # make true to use the file from below else will autodetect from dataset / skip MEFLing if not found
 
-from scripts_general_fns.g4_file_inputs import get_fcs_files # function for reading in .fcs files
-beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S050_d-1/*/Beads/') # use the [0] subset from these lists
+if retrieve_custom_beads_file :
+    from scripts_general_fns.g4_file_inputs import get_fcs_files # function for reading in .fcs files
+    beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S050_d-1/*/Beads/') # use the [0] subset from these lists
 
 
 # %% Channel paremeters 
 
 # parameters for auto-recognizing channels
-use_channel_dimension = '-A$' # indicate the first letter : for Area, Height or Width.. (typically Area is better)
+use_channel_dimension = '-A$' # indicate the first letter : for Area, Height or Width, '-HLog'.. (typically Area is better)
 # Will try to autodetect the scatter channels and designate other ones as fluorescence -- will only work for Sony/BRC currently
 
-channel_lookup_dict = {'fluorescence': 'mScarlet|mcherry|mGreenLantern|gfp', # uses regex matching to assign the fluorescence
+channel_lookup_dict = {'fluorescence': 'mScarlet|mcherry|YEL|mGreenLantern|gfp|GRN', # uses regex matching to assign the fluorescence
                        'scatter': 'FSC|SSC'} # and scattering channels
 # Add more/standardized names for other instruments etc.
 

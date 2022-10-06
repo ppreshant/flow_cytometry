@@ -24,8 +24,26 @@ https://taborlab.github.io/FlowCal/python_tutorial/
 
 # %% processing fcs directory function
 
-def process_fcs_dir(make_processing_plots=False):
-
+def process_fcs_dir(make_processing_plots= None):
+    
+    """ Processes a full directory of .fcs files
+    
+    Parameters
+    ----------
+    make_processing_plots : str / None
+        Parameters such as None, 'all', 'first n' allowed where n is integer to plot these many processing sets
+    
+    Returns
+    -------
+    None
+        Processes .fcs data into a "processed_data/" directory; 
+        Saves a "processing-log.txt" into the same directory;
+        saves the mean, median, and mode of the processed data into "FACS_analysis/tabular_outputs/" directory
+        
+    """
+    
+    
+    
     # %% imports
     
     import matplotlib.pyplot as plt # plotting package
@@ -36,6 +54,8 @@ def process_fcs_dir(make_processing_plots=False):
     import re # for regular expression : string matching
     from IPython.display import display, Markdown # for generating markdown messages
     from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
+    from datetime import datetime # date and time module for the log file
+    import random # module for random numbers and shuffling vector
     
     # import local packages
     import scripts_general_fns.g3_python_utils_facs as myutils # general utlilties
@@ -48,6 +68,7 @@ def process_fcs_dir(make_processing_plots=False):
     from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
         beads_match_name, retrieve_custom_beads_file,\
         channel_lookup_dict  # channels configuration
+    import scripts_general_fns.g10_user_config as config # for future reference of any variables
     
     # If needed, change the current working directory
     # os.chdir(r'C:\Users\new\Box Sync\Stadler lab\Data\Flow cytometry (FACS)')
@@ -65,12 +86,18 @@ def process_fcs_dir(make_processing_plots=False):
     if retrieve_custom_beads_file: 
         from scripts_general_fns.g10_user_config import beads_filepath as beads_list
         beads_filepath = beads_list[0]
+        beads_found = True
     else: 
-        beads_filepath = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)][0]
+        beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
+        if len(beads_filepaths_list) > 0 : # if beads are found
+            beads_found = True
+            beads_filepath = beads_filepaths_list[0]
+        else :
+            beads_found = False
     
     
     # Remove beads from the fcs path list if using from current dataset (not custom beads file)
-    if not retrieve_custom_beads_file:
+    if beads_found and not retrieve_custom_beads_file:
         fcspaths.remove(beads_filepath)
         fcslist = [m for m in fcslist if m not in os.path.basename(beads_filepath)] # and filename list
     # TODO: Need a better index based way to trim fcslist of the beads
@@ -103,24 +130,47 @@ def process_fcs_dir(make_processing_plots=False):
     
     # %% Beads processing
     
-    Markdown('## Processing beads file') | p(display)
-    
-    # Get beads .fcs, cleanup, and generate calibration data structure
-    to_mef = process_beads_file(beads_filepath,\
-                               scatter_channels, fluorescence_channels)
+    if beads_found :
+        Markdown('## Processing beads file') | p(display)
+
+        # Get beads .fcs, cleanup, and generate calibration data structure
+        to_mef = process_beads_file(beads_filepath,\
+                                   scatter_channels, fluorescence_channels)
+    else :
+        Markdown('## Skipping beads/not found') | p(display)
+        to_mef = None
+        print('Beads file not found in the directory, skipping to data cleanup without MEFL calibration')
             
     # %% Cleanup and MEFL calibration of each fcs file
     
-    Markdown('## Data cleanup, MEFL calibration') | p(display) # post message
+    Markdown('## Data cleanup, ~MEFL calibration') | p(display) # post message
     
+    # parse how many processing outputs should be plotted and pass a True/False vector accordingly
+    if make_processing_plots is None:
+        plot_n_things = 0
+        make_plots_vector = [False] * len(fcs_data)
+    else : 
+        regex_match = re.search('(first|random) ([0-9])', make_processing_plots)
+        matches_all = re.search('all', make_processing_plots)
+        
+        if matches_all : 
+            plot_n_things = len(fcs_data) # all plots will be plotted
+            make_plots_vector = [True] * len(fcs_data)
+            
+        if regex_match is not None:
+            plot_n_things = regex_match.group(2) | p(int) 
+            make_plots_vector = [i < plot_n_things for i in range(len(fcs_data))] # first n are True
+            
+            if regex_match.group(1) == 'random':
+                random.shuffle(make_plots_vector) # randomize the Truths
     
-    # convert data into MEFLs for all .fcs files
-    calibrated_fcs_data = [process_single_fcs_flowcal\
+    # convert data into MEFLs for all .fcs files : (skips MEFLing if beads are absent)
+    processed_fcs_data = [process_single_fcs_flowcal\
                            (single_fcs,
                             to_mef,
                             scatter_channels, fluorescence_channels,
-                            make_plots=make_processing_plots)\
-                      for single_fcs in fcs_data]
+                            make_plots=truth_value)\
+                      for single_fcs, truth_value in zip(fcs_data, make_plots_vector)]
     
        
     # timing and testing
@@ -133,7 +183,7 @@ def process_fcs_dir(make_processing_plots=False):
                       [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
 
     # Generate a combined pandas DataFrame for mean, median and mode respectively
-    summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in calibrated_fcs_data] |\
+    summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in processed_fcs_data] |\
         p(pd.DataFrame, 
           columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
           index = fcslist), # rownames as the .fcs file names
@@ -150,16 +200,28 @@ def process_fcs_dir(make_processing_plots=False):
     print('Summary plots for visual reference only, better plots will be made in R/ggcyto/ggplot workflow')
     
     # Make violin plot and show medians
-    FlowCal.plot.violin(calibrated_fcs_data,
+    FlowCal.plot.violin(processed_fcs_data,
                         channel = fluorescence_channels[1], # 'mScarlet-I-A'
                         draw_summary_stat=True,
                         draw_summary_stat_fxn=np.median)  
     
-    # %% Save calibrated fcs data to file
+    # %% Save calibrated or processed fcs data to file
     
     [write_FCSdata_to_fcs(filepath, fcs_data) \
-     for filepath, fcs_data in zip(outfcspaths, calibrated_fcs_data)]
-
+     for filepath, fcs_data in zip(outfcspaths, processed_fcs_data)]
+    
+    # %% make a logfile
+    logtext = [f'Processed on : {datetime.now()}',
+               f'MEFL calibration done? :{beads_found}',
+               '\n',
+               f'Density gating fraction : {config.density_gating_fraction}',
+               f'initial event count : {max([fcs_data[i].__len__() for i in random.sample(range(len(fcslist)) , k = 5)])}', # pick 5 random files
+               f'Fraction retained : {config.density_gating_fraction * 0.9}',
+               f'beads file : {beads_filepath if beads_found else "no beads found"}']
+               
+    with open('processed_data/' + fcs_experiment_folder + '/' + 'processing-log.txt', 'w') as log:
+        '\n'.join(logtext) | p(log.write)
+    
 
     def __main__():
         process_fcs_dir()

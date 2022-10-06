@@ -23,12 +23,12 @@ def process_single_fcs_flowcal(single_fcs,
         The .fcs file data for the current file to be processed.
     beads_to_mef : Function (functools.partial)
         The to_mef transformation function output from FlowCal.mef.get_transform_fxn(..)
-        used for calibration
+        used for calibration. If None, then MEFL calibration will be skipped -- happens when no beads file found
     scatter_channels : list
         The channels to be used for scattering depending on instrument - ex: ['FSC-A', 'SSC-A']
     fluorescence_channels : list
         The channels to be used for fluorescence depending on experiment, instrument - ex: ['gfpmut3-A', 'mcherry2-A']
-   make_plots : bool
+    make_plots : bool
         Indicate if plots for each iteration should be made or not
         
     Returns
@@ -86,18 +86,22 @@ def process_single_fcs_flowcal(single_fcs,
                                                    make_plots = make_plots)
     
     # %% Calibration
-    # convert data into MEFLs 
-    calibrated_fcs = beads_to_mef(singlefcs_singlets90.gated_data, fluorescence_channels)
+    # convert data into MEFLs
+    if beads_to_mef != None :
+        calibrated_fcs = beads_to_mef(singlefcs_singlets90.gated_data, fluorescence_channels)
     
-    # %% Check if MEFL worked
+        # %% Check if MEFL worked
+
+        if make_plots:
+            # confirm that MEFLs are different from a.u 
+            FlowCal.plot.hist1d(\
+                [singlefcs_singlets90.gated_data, calibrated_fcs],
+                channel = fluorescence_channels[1], legend=True,
+                legend_labels = ['A.U.', 'MEFL'])
+            plt.show()
+
+        # Return calibrated single fcs file
+        return calibrated_fcs
     
-    if make_plots:
-        # confirm that MEFLs are different from a.u 
-        FlowCal.plot.hist1d(\
-            [singlefcs_singlets90.gated_data, calibrated_fcs],
-            channel = fluorescence_channels[1], legend=True,
-            legend_labels = ['A.U.', 'MEFL'])
-        plt.show()
- 
-    # Return calibrated single fcs file
-    return calibrated_fcs
+    else :
+        return singlefcs_singlets90.gated_data

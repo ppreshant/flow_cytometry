@@ -111,21 +111,24 @@ Advantage of flowcal
 	 - [ ] Is the **flow rate** recorded in the .FCS file so we can use the time units (assume seconds?) to do:  $\Large \frac{<cells>/sec}{flow rate = (ul/ sec)}$
 
 ### Quality controls
-- [ ] Show the number of events in all files loaded -- look for anomalies?
-- [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- Or make a plot to help look for anomalies?
-- [ ] Save plots along the gating procedure for the first (_or first 3_) `.fcs` files? 
-- Would it be worthwhile to save all plots along the gating process for each file in the dataset for manual QC purposes -- a RMD style html output would be good
-	- How do we dump the plots from each .fcs file from within the loop into an RMD output?
-	- (_can't use since subplots are already made by `FlowCal.plots`_) Can squeeze into a pdf by doing subplots - [source](https://stackoverflow.com/a/41277685/9049673) 
-	- Would a pluto notebook (_or jupyter notebook_) work for calling the python script and collecting all the plots generated?
+- [x] Write an output log file as `.txt` in the output folder - include the initial event count, density fraction gated, final event fraction, _calibrated or not_, what beads file was used
+- [ ] Show the number of (_final gated?_) events in all files loaded -- look for anomalies? _some automated metric with a warning would be nice, looking through each file would be tedious, unless.. below _
+	- [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- _and_/Or make a plot to help look for anomalies?
+
 
 ### html output
-- [ ] convert to Quarto document with jupytext
-	- [ ] Make the saved html file after the folder name 
+- [ ] convert to Quarto document with jupytext : _Advantages_
+	1. Make the saved html file after the folder name
+	2. Run through R studio and integrate with the later plotting code..?
+- [ ] Also convert to pluto and see if we can slowly inject julia for practice?
 - [x] Add a separator between output of individual well plots '----' and print the well name maybe? 
 	- [x] Separate the beads from the data files
 	- [x] split into functions that can be run independantly too --
-
+- [x] _option to_ Save plots along the gating procedure for the first 3 (_or 3 random_) `.fcs` files? _better than showing for all right?_
+- [x] Would it be worthwhile to save all plots along the gating process for each file in the dataset for manual QC purposes -- a RMD style html output would be good
+	- [x] How do we dump the plots from each .fcs file from within the loop into an RMD output? _using jupyter-notebook_
+	- (_can't use since subplots are already made by `FlowCal.plots`_) Can squeeze into a pdf by doing subplots - [source](https://stackoverflow.com/a/41277685/9049673) 
+	- [x] Would a pluto notebook (_or jupyter notebook_) work for calling the python script and collecting all the plots generated?
 
 **Literature**
   - [ ] read the flowcal introduction paper to understand the data storage format and theme etc.
@@ -168,7 +171,7 @@ Implement a regex command to capture files from multiple directories (S050 - mul
 
 ### Questions :
 - [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
-	- _keyword(single_fcs) and element P1D  shows "Logarithmic,6,1"_ 
+	- _keyword(single_fcs) and element P1D shows "Logarithmic,6,1"_ 
 	- does that mean the data needs to be log transformed and is this done by the default linearize option?  
 	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
 

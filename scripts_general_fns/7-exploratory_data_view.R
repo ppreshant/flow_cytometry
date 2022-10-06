@@ -40,7 +40,7 @@ pltden_red <- ggcyto(fl.subset, # select subset of samples to plot
 
 # estimate dimensions to save the plot in
 num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels
-est_plt_side <- sqrt(num_of_facets) %>% round() %>% {. * 2} # make 2/panel on each side (assuming square shape)
+est_plt_side <- sqrt(num_of_facets) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
@@ -91,7 +91,7 @@ plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
   scale_x_logicle() + scale_y_logicle() +
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
+  ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) + # maybe won't work for Guava?
   
   # visual changes
   # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
@@ -109,7 +109,7 @@ ggsave(str_c('FACS_analysis/plots/',
              '.png'),
        plot = plt_scatter,
        # height = 8, width = 20) # change height and width by number of panels
-       height = est_plt_side*1.7, width = est_plt_side*1.7) # use automatic estimate for plt sides : 2 / panel
+       height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
 
 
 # # testing simple plotting : is not as customizable

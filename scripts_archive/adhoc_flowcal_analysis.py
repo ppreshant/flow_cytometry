@@ -63,7 +63,7 @@ from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
 # import config : directory name and other definitions
 from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
     make_processing_plots, beads_match_name,\
-    channel_lookup_dict
+    channel_lookup_dict, use_channel_dimension
 
 # %% get .fcs file list
 # Load fcs files
@@ -82,7 +82,7 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 # Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = 'F05|D06'
+regex_to_subset = 'D' # 'F05|D06'
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
@@ -96,11 +96,34 @@ single_fcs = fcs_data_subset[0]
 
 # %%
 # get the relevant channels present in the data
-relevant_channels = single_fcs.channels | p(subset_matching_regex, px, '-A$') 
+relevant_channels = single_fcs.channels | p(subset_matching_regex, px, use_channel_dimension) 
 
 # autodetect the channels
 fluorescence_channels, scatter_channels = tuple\
     (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
+
+# %%
+# check --
+# scatter_channels
+fcslist_subset
+
+# %% [markdown]
+# # Check a dataset
+
+# %% tags=[]
+f'{single_fcs.__len__()} : number of events' # check that this is a non-empty file
+
+# %% tags=[]
+# Show plots of a dataset, adjust gating fraction manually
+gate_and_reduce_dataset(fcs_data_subset[2],\
+           scatter_channels, fluorescence_channels, density_gating_fraction=.3,
+           make_plots = True) ;
+
+# %% [markdown]
+# # Troubleshooting
+
+# %%
+';'.join(['ants', 'gpds'])
 
 # %% [markdown]
 # # Process the beads
@@ -114,10 +137,10 @@ beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S05
 from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
 
 
-# %%
+# %% tags=[] jupyter={"outputs_hidden": true}
 to_mef = process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
 
-# %% [markdown]
+# %% [markdown] tags=[]
 # # Run a customized analysis workflow : for efficiency/speed
 # - Custom for S050 multi-plate dataset
 # - The beads file is processed only once and re-used for all the plates
@@ -200,6 +223,9 @@ fcs_experiment_folder
 # %%
 # Gate and plot a single file - testing the density_gating_fraction
 singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data_subset[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
+
+# %% [markdown]
+# # Testing other features
 
 # %%
 # get summary stats and test pandas

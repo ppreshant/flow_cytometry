@@ -40,17 +40,21 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 sys.path # check that the last entry is the head project path
 
+# enables automatic reloading of local modules when updated : For interactive use
+# %load_ext autoreload
+# %autoreload 2
+
 # Utilities
 from sspipe import p, px
 import importlib # for reloading modules that changed
 
-# %%
+# %% tags=[]
 # Run the flow cytometry processing script 
 # importlib.reload(analyze_fcs_flowcal)
 from analyze_fcs_flowcal import process_fcs_dir
 from scripts_general_fns.g10_user_config import make_processing_plots
 
-# %timeit -r 1 -n 1 process_fcs_dir(make_processing_plots) # time and run the pipeline
+# %timeit -r 1 -n 1 process_fcs_dir(make_processing_plots) | p(print) # time and run the pipeline
 # reading .fcs data, beads processing, cleanup and calibration, saving summary statistics and cleaned files
 
 # %%

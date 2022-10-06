@@ -27,6 +27,9 @@ def gate_and_reduce_dataset(single_fcs,
         The channels to be used for scattering depending on instrument - ex: ['FSC-A', 'SSC-A']
     fluorescence_channels : list
         The channels to be used for fluorescence depending on experiment, instrument - ex: ['gfpmut3-A', 'mcherry2-A']
+    density_gating_fraction : int
+        manually provided density_gating_fraction : use in interactive mode, when figuring out the best fraction to use.
+        Then change the value in the g10_user_config.py to apply to all the files
     make_plots : bool
         Indicate if plots for each iteration should be made or not
         
@@ -70,6 +73,7 @@ def gate_and_reduce_dataset(single_fcs,
 
     # %% doublet discrimination
     singlet_channels = [scatter_channels[0], re.sub('-A$', '-H', scatter_channels[0])]
+    # will fail for Guava # TODO : needs to be generalized
     
     # Singlets: auto density gating : for 90% of cells w FSC-A vs H
     singlefcs_singlets90 = FlowCal.gate.density2d(singlefcs_densitygate.gated_data,
@@ -88,6 +92,8 @@ def gate_and_reduce_dataset(single_fcs,
                                       hist_channels=fluorescence_channels)
         plt.tight_layout(); plt.show()
         
+        
+        print(f'{singlefcs_densitygate.gated_data.__len__()} : number of singlet events retained')
         print('--------------------------------------------------------------\n\n')
 
     # confirm that the gating only retains the good high density area

@@ -19,9 +19,8 @@ fl.subset <- fl.set[samples_to_include] # filter out wells by regex
 # for selecting a single sample
 # fl.subset <- fl.set[expand_wellname('A06')] # get a single sample
 
-# Change title name manually
-# title_name <- 'S048_raw_ecoli dilutions'
-
+# Reorder samples by factors
+# fl.set
 
 # Exploratory plotting ----
 
@@ -30,11 +29,14 @@ fl.subset <- fl.set[samples_to_include] # filter out wells by regex
 
 # Plot density of all samples in the set - red channel
 pltden_red <- ggcyto(fl.subset, # select subset of samples to plot
-                 aes_string(x = as.name(fluor_chnls[['red']]))#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+                 aes_string(x = as.name(fluor_chnls[['red']]), 
+                            fill = 'sample_category')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
                  # subset = 'A'
                  ) +
+  
   geom_density(fill = 'red', alpha = 0.3) +
-  # facet_wrap('name', ncol = 10, scales = 'free') + # control facets
+  # geom_stats() + # only works after geom_gate
+  
   scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
   ggtitle(title_name)
 
@@ -45,11 +47,46 @@ est_plt_side <- sqrt(num_of_facets) %>% round() %>% {. * 2.5} # make 2.5 cm/pane
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
-             '-density', 
+             '-density', fl_suffix, 
              '.png'),
        plot = pltden_red,
        # height = 8, width = 8) # change height and width by number of panels
        height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
+
+
+# Ridgeline plot
+# The ordering on this plot requires that flowcal_summary_analysis.R is run to get the median data from FlowCal output
+
+plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
+                       aes_string(x = as.name(fluor_chnls[['red']]), 
+                                  fill = 'sample_category')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+                       # subset = 'A'
+                       ) +
+  
+  # conditional plotting of ridges : if ordering exists or not
+  {if (exists('list_of_ordered_levels')) {
+    ggridges::geom_density_ridges(aes
+                             (y = fct_relevel(assay_variable, 
+                                              list_of_ordered_levels[['assay_variable']])), 
+                             alpha = 0.3)
+    
+  } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
+  
+  facet_wrap(facets = NULL) + # control facets
+  scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  theme(legend.position = 'top') +
+  ggtitle(title_name) + ylab('Sample name')
+
+# TODO : add median values on the chart?
+
+# save plot
+ggsave(str_c('FACS_analysis/plots/', 
+             title_name,  # title_name, 
+             '-ridge density', fl_suffix, 
+             '.png'),
+       plot = plt_ridges,
+       height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
+
 
 
 # plot scatterplots of all samples in the set
@@ -75,7 +112,7 @@ pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
 
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
-             '-fluor', 
+             '-fluor', fl_suffix,
              '.png'),
        plot = pltscatter_fluor,
        # height = 8, width = 20) # change height and width by number of panels
@@ -105,7 +142,7 @@ plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
 
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
-             '-scatter', 
+             '-scatter', fl_suffix, 
              '.png'),
        plot = plt_scatter,
        # height = 8, width = 20) # change height and width by number of panels

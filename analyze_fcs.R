@@ -76,6 +76,26 @@ pData(fl.set) <- new_pdata # replace the pData
 # source('scripts_general_fns/7-exploratory_data_view.R')
 
 
+# Saving summary stats from flowWorkspace function
+# flowworkspace_summary <- 
+#   summary(fl.set) %>% 
+#   map( ~ .x[, fluor_chnls]) %>% # select the relevant channels
+#   
+#   {map2_df(.x = ., .y = names(.),
+#           ~ as_tibble(.x, rownames = 'statistic') %>% # make a dataframe with fluor channels only
+#             pivot_wider(names_from = statistic,
+#                         values_from = all_of(set_names(fluor_chnls, NULL)),
+#                         names_glue = "{statistic}_{.value}"
+#             ) %>% 
+#             
+#             add_column(filename = .y)
+#             
+#             )} %>% 
+#   select(filename, everything())
+# 
+# write_csv(flowworkspace_summary, 
+#           str_c(summary_base_directory, str_replace(folder_name, '/', '-R-summary.csv')))
+
 # Processing ----
 
 # Currently using processed files from custom python script based on FlowCal.py

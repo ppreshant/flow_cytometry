@@ -184,9 +184,10 @@ Directory checking in `1-reading_multidata_fcs`
 - [ ] Equalize processing for Guava vs Sony :: use alias feature to harmonize names to green/red or fluorophores.. `#manually supply the alias vs channel options mapping as a data.frame` in [read.FCS](https://rdrr.io/bioc/flowCore/man/read.FCS.html)
 
 ## Processing 
-- [ ] How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
+- [ ] why does `R/flowWorkspace`'s calculation have positive medians vs negative medians for `python/FlowCal`'s median calculation and output -- happens only for a few samples but needs to be sorted if using data from both sources  ![[Pasted image 20221006162045.png |1000]]
+- [x] (_use ggcyto for plotting, no need to get raw data out_) How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
 - [ ] Break the processing modules into functions that can be called interactively _ex: while figuring out the correct density fraction etc._
-- [ ] Merge data from biological replicates (_as mentioned in paper_) : ideas [CytoTree](https://rdrr.io/bioc/CytoTree/man/runExprsMerge.html) ; post issue in [flowWorkspace](https://github.com/RGLab/flowWorkspace/issues) or flowCore?
+- [x] (_ggcyto is already merging them_) Merge data from biological replicates (_as mentioned in paper_) : ideas [CytoTree](https://rdrr.io/bioc/CytoTree/man/runExprsMerge.html) ; post issue in [flowWorkspace](https://github.com/RGLab/flowWorkspace/issues) or flowCore?
 	> CombineFCS; This function can be used to combine 2 FCS files having a set of shared markers and return one FCS file (matrix) with the total number of cells is equal to the summation of cells in both FCS files, with each cell has an extended number of measured markers. [CyTOFmerge](https://github.com/tabdelaal/CyTOFmerge)
 
 ## flow rate

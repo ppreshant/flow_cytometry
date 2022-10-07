@@ -6,24 +6,28 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/ and any subfolders
-folder_name <- 'S040_cymR on chromosome_12-3-22/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
+base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
+folder_name <- 'S040_test run_SA3800/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
 
 # for single file fcs guava data
 file.name_input <- '' # input file name without .fcs
 # Relevant only when reading a multi-data .fcs file (from Guava)
 
 # title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
-title_name <- stringr::str_replace(folder_name, '/$', '-raw') # Use the folder name without the slash, -raw suffix
+fl_suffix = if_else(str_detect(base_directory, 'processed_data'), '-processed', '-raw')
+
+title_name <- stringr::str_replace(folder_name, '/$', fl_suffix) # Use the folder name without the slash, -raw suffix
 # TODO : make an if for raw vs processed based on the base_directory with str_detect()..
 
 
 # regular expression to load only a subset of files : use '.*' for taking full data
 # fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
-fcs_pattern_to_subset <- '.*'
+fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.fcs'
 
 # Other parameters ----
 # for future autodetection stuff 
+
+summary_base_directory <- 'FACS_analysis/tabular_outputs/'
 
 Machine_type <- 'Sony' # Sony or Guava/Bennett or Guava/SEA # use this to plot appropriate variables automatically
 # To be implemented in future: using an if() to designate the names of the fluorescent channels 
@@ -33,7 +37,7 @@ Machine_type <- 'Sony' # Sony or Guava/Bennett or Guava/SEA # use this to plot a
 autodetect_channels <- TRUE # make it TRUE so the fluorescence and scatter channels are auto-detected with below dimension, 
 # else uses the channel names given below
 
-use_channel_dimension <- '-HLog$' # indicate the first letter : for Area, Height or Width.. (typically Area is better)
+use_channel_dimension <- '-A$' # indicate the first letter : for Area, Height or Width.. (typically Area is better)
 # -HLog for Guava/Bennett ; 
 # TODO: Will try to autodetect the scatter channels and designate other ones as fluorescence -- will only work for Sony/BRC currently
 

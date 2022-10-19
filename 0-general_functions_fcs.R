@@ -5,10 +5,10 @@
 
 # Library calling  ----
 # calling libraries ; make sure they are installed (install.packages)
-library(tidyverse)  # general data handline
 library(flowCore) # flow cytometry data types library
 library(flopr)  # flow cytometry specific library
 library(ggcyto) # plotting package for flow cytometry data
+library(tidyverse)  # general data handline
 
 # Sources ----
 

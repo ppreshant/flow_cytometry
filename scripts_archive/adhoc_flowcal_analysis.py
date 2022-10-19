@@ -51,6 +51,7 @@ from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
 import FlowCal # flow cytometry processing
 import numpy as np # for array manipulations - faster
 import pandas as pd # for small data frames, csv outputs
+import re # for regular expression : string matching
 
 # enables automatic reloading of local modules when updated : For interactive use
 # %load_ext autoreload
@@ -64,6 +65,7 @@ from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
 from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
     make_processing_plots, beads_match_name,\
     channel_lookup_dict, use_channel_dimension
+import scripts_general_fns.g10_user_config as config # in case you need more stuff
 
 # %% get .fcs file list
 # Load fcs files
@@ -82,10 +84,13 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 # Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = 'D' # 'F05|D06'
+regex_to_subset = '.*' # 'F05|D06'
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
+
+# %%
+fcslist_subset
 
 # %% load the fcs data
 # load the subset of the .fcs files
@@ -104,8 +109,8 @@ fluorescence_channels, scatter_channels = tuple\
 
 # %%
 # check --
-# scatter_channels
-fcslist_subset
+# fluorescence_channels
+# fcslist_subset
 
 # %% [markdown]
 # # Check a dataset
@@ -113,17 +118,25 @@ fcslist_subset
 # %% tags=[]
 f'{single_fcs.__len__()} : number of events' # check that this is a non-empty file
 
-# %% tags=[]
+# %% tags=[] jupyter={"outputs_hidden": true}
 # Show plots of a dataset, adjust gating fraction manually
-gate_and_reduce_dataset(fcs_data_subset[2],\
-           scatter_channels, fluorescence_channels, density_gating_fraction=.3,
+gate_and_reduce_dataset(fcs_data_subset[7],\
+           scatter_channels, fluorescence_channels, density_gating_fraction=.5,
            make_plots = True) ;
 
 # %% [markdown]
-# # Troubleshooting
+# # Troubleshooting basic python
 
 # %%
 ';'.join(['ants', 'gpds'])
+
+# %%
+# interesting example to get both index and the interator
+indx, empties = zip(*[(i, a) for (i,a) in enumerate(processed_fcs_data) if a.__len__() == 0])
+
+# %%
+a = range(3)
+f'list is : {*a,}'
 
 # %% [markdown]
 # # Process the beads
@@ -136,6 +149,15 @@ beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S05
 # Test beads processing function
 from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
 
+
+# %%
+# get standard beads file from the data
+beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
+if len(beads_filepaths_list) > 0 : # if beads are found
+    beads_found = True
+    beads_filepath = beads_filepaths_list
+else :
+    beads_found = False
 
 # %% tags=[] jupyter={"outputs_hidden": true}
 to_mef = process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
@@ -177,7 +199,7 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
     outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
                    for singlefcspath in fcspaths]
 
-    # %% load the .fcs data
+    # %% load the .fcs data jupyter={"outputs_hidden": true} tags=[]
     fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
 
     # convert data into MEFLs for all .fcs files
@@ -216,29 +238,55 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
 # - on single fcs files etc.
 
 # %%
-fcs_experiment_folder
+# process all .fcs files : (skips MEFLing if beads are absent)
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+
+processed_fcs_data = [process_single_fcs_flowcal\
+                       (single_fcs,
+                        to_mef,
+                        scatter_channels, fluorescence_channels,
+                        make_plots=None)\
+                  for single_fcs in fcs_data_subset]
 
 # %%
+# Remove .fcs data where no events are left after the filtering process
+empty_fcs_names = None # default
+
+empty_fcs_indices = [i for (i,single_fcs) in enumerate(processed_fcs_data) if single_fcs.__len__() == 0] # get the index of the empties
+empty_fcs_names = [x for i,x in enumerate(fcslist) if i in empty_fcs_indices]
+
+fcslist_subset = [x for i,x in enumerate(fcslist_subset) if i not in empty_fcs_indices] 
+fcspaths_subset = [x for i,x in enumerate(fcspaths_subset) if i not in empty_fcs_indices] 
+processed_fcs_data = [x for i,x in enumerate(processed_fcs_data) if i not in empty_fcs_indices] 
 
 # %%
+fcslist_subset.__len__()
+
+# %%
+[fl.__len__() for fl in processed_fcs_data]
+
+# %% jupyter={"outputs_hidden": true} tags=[]
 # Gate and plot a single file - testing the density_gating_fraction
 singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data_subset[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
 
 # %% [markdown]
 # # Testing other features
 
-# %%
-# get summary stats and test pandas
+# %% tags=[]
+# get summary stats and test pandas on the base data / processed data
 summary_stats_list = (['mean', 'median', 'mode'],
                       [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
 
 # Generate a combined dataframe for mean, median and mode respectively
-summary_stats = map(lambda x, y: [y(single_fcs, 
+summary_stats_processed = map(lambda x, y: [y(single_fcs, 
                          channels = fluorescence_channels)\
-                   for single_fcs in fcs_data_subset] |\
+                   for single_fcs in processed_fcs_data] |\
     p(pd.DataFrame, 
       columns = [x + '_' + chnl for chnl in fluorescence_channels],
      index = fcslist_subset), summary_stats_list[0], summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+
+# %%
+summary_stats_processed
 
 # %%
 summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-test-summary.csv',

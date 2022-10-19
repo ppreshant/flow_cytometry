@@ -184,7 +184,8 @@ Directory checking in `1-reading_multidata_fcs`
 - [ ] Equalize processing for Guava vs Sony :: use alias feature to harmonize names to green/red or fluorophores.. `#manually supply the alias vs channel options mapping as a data.frame` in [read.FCS](https://rdrr.io/bioc/flowCore/man/read.FCS.html)
 
 ## Processing 
-- [ ] why does `R/flowWorkspace`'s calculation have positive medians vs negative medians for `python/FlowCal`'s median calculation and output -- happens only for a few samples but needs to be sorted if using data from both sources  ![[Pasted image 20221006162045.png |1000]]
+- [ ] `R/flowWorkspace`  and `python/FlowCal`'s data encoding seems different. Seen in S040 graphs - ridgeline/R vs points/Python
+	- why does the `R/flowWorkspace`'s calculation have positive medians vs negative medians for `python/FlowCal`'s median calculation and output -- happens only for a few samples on the lower end -- but needs to be sorted if using data from both sources to label the plot ![[Pasted image 20221006162045.png |1000]]
 - [x] (_use ggcyto for plotting, no need to get raw data out_) How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
 - [ ] Break the processing modules into functions that can be called interactively _ex: while figuring out the correct density fraction etc._
 - [x] (_ggcyto is already merging them_) Merge data from biological replicates (_as mentioned in paper_) : ideas [CytoTree](https://rdrr.io/bioc/CytoTree/man/runExprsMerge.html) ; post issue in [flowWorkspace](https://github.com/RGLab/flowWorkspace/issues) or flowCore?
@@ -196,8 +197,7 @@ Directory checking in `1-reading_multidata_fcs`
 - [ ] Go into the functions of the flowAI package and fish out the one that is making the flow rate plot and use it by itself
 - [ ] Calculate an avg flow rate (either all stuff or only gated cells) once you understand what the $Time variable is storing.. and its units
 
-## data trimming/processing
-Inspired from FlowCal, seeing if the processes can be mimiced. And if flopR can't do it automatically, we can incorporate it before hand or within the flopR functions..
+
 
 ## Gating
 - [ ] Is there a `flowWorkspace` way to gate (quad gate..?) on a single sample and use the same gating parameters across all samples?
@@ -290,7 +290,7 @@ Error
 - Looks like you need empty `__init__.py` files within subdirectories where the modules are located (or all dirs starting from the closest path in `sys.path`)
 
 # Jupyter-lab - to save html of plots
-- Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
+- [x] Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
 
 
 # Notes of individual analyses

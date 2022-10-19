@@ -79,7 +79,7 @@ def process_fcs_dir(make_processing_plots= None):
     
     # Display the name of the data folder being analyzed as markdown
     Markdown('## Analyzing dataset : "{a}"'.format(a = fcs_experiment_folder)) | p(display)
-    
+        
     # %% get beads file
     # Retrieve custom beads file, if user wants (current dataset has no beads) ; else
     # Get the beads file from current dataset using well/pattern : selects the first of multiple matches
@@ -91,7 +91,7 @@ def process_fcs_dir(make_processing_plots= None):
         beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
         if len(beads_filepaths_list) > 0 : # if beads are found
             beads_found = True
-            beads_filepath = beads_filepaths_list[0]
+            beads_filepath = beads_filepaths_list[0] # take the first beads file
         else :
             beads_found = False
     
@@ -103,10 +103,7 @@ def process_fcs_dir(make_processing_plots= None):
     # TODO: Need a better index based way to trim fcslist of the beads
     # when multiple beads files present;
     
-    # output file paths
-    # trim the directory to remove excessive subsidectories (from Sony instruments)
-    outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
-                   for singlefcspath in fcspaths]
+    
     
     # %% load the .fcs data
     fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
@@ -164,7 +161,8 @@ def process_fcs_dir(make_processing_plots= None):
             if regex_match.group(1) == 'random':
                 random.shuffle(make_plots_vector) # randomize the Truths
     
-    # convert data into MEFLs for all .fcs files : (skips MEFLing if beads are absent)
+    
+    # %% convert data into MEFLs for all .fcs files : (skips MEFLing if beads are absent)
     processed_fcs_data = [process_single_fcs_flowcal\
                            (single_fcs,
                             to_mef,
@@ -172,9 +170,19 @@ def process_fcs_dir(make_processing_plots= None):
                             make_plots=truth_value)\
                       for single_fcs, truth_value in zip(fcs_data, make_plots_vector)]
     
-       
-    # timing and testing
-    # %timeit -n 1 -r 1 python command here
+    
+    # Remove .fcs data where no events are left after the filtering process
+    empty_fcs_names = None # default
+    
+    empty_fcs_indices = [i for (i,single_fcs) in enumerate(processed_fcs_data) if single_fcs.__len__() == 0] # get the index of the empties
+    empty_fcs_names = [x for i,x in enumerate(fcslist) if i in empty_fcs_indices]
+    
+    # remove the empties from all the relevant lists
+    fcslist = [x for i,x in enumerate(fcslist) if i not in empty_fcs_indices] 
+    fcspaths = [x for i,x in enumerate(fcspaths) if i not in empty_fcs_indices] 
+    processed_fcs_data = [x for i,x in enumerate(processed_fcs_data) if i not in empty_fcs_indices] 
+        
+    
     
     # %% summary statistics
     
@@ -205,7 +213,14 @@ def process_fcs_dir(make_processing_plots= None):
                         draw_summary_stat=True,
                         draw_summary_stat_fxn=np.median)  
     
+    
     # %% Save calibrated or processed fcs data to file
+    
+    # output file paths
+    # trim the directory to remove excessive subsidectories (from Sony instruments)
+    outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
+                   for singlefcspath in fcspaths]
+    
     
     [write_FCSdata_to_fcs(filepath, fcs_data) \
      for filepath, fcs_data in zip(outfcspaths, processed_fcs_data)]
@@ -217,11 +232,20 @@ def process_fcs_dir(make_processing_plots= None):
                f'Density gating fraction : {config.density_gating_fraction}',
                f'initial event count : {max([fcs_data[i].__len__() for i in random.sample(range(len(fcslist)) , k = 5)])}', # pick 5 random files
                f'Fraction retained : {config.density_gating_fraction * 0.9}',
-               f'beads file : {beads_filepath if beads_found else "no beads found"}']
+               f'beads file : {beads_filepath if beads_found else "no beads found"}',
+               f'Empty FCS files post processing : {*empty_fcs_names,}'] # print all the names of the empty files after processing
                
     with open('processed_data/' + fcs_experiment_folder + '/' + 'processing-log.txt', 'w') as log:
         '\n'.join(logtext) | p(log.write)
+        
+    # Show parameters under configuration within the markdown too
+    Markdown('### Configuration') | p(display)
+    print('\n'.join(logtext))
+
     
 
     def __main__():
+        """ main function for calling the function. When using the script directly from commandlines
+        """
+        
         process_fcs_dir()

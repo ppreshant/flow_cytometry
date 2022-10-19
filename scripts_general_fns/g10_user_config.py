@@ -14,19 +14,19 @@ Created on Wed Jun  1 01:00:43 2022
 # paths are relative to the working directory
 # without the trailing slash "/"
 fcs_root_folder = 'flowcyt_data'
-fcs_experiment_folder = 'S040_test run_SA3800'
+fcs_experiment_folder = 'S055_51 in 8 organisms'
 
 # Input a regular expression to subset a limited number of wells
 
 # Choose a density gate fraction : 0.5 (50%) is decent, if you need to retain more events try 80%
-density_gating_fraction = .3
+density_gating_fraction = .5
 
 # Important: Select "all" ONLY if you want detailed plots of the processing steps for each .fcs file
 # making plots takes very long: 
 # Select 'first n' to generate the first few plots for visualization -- first 3 or 5 is good idea
 # Select 'random n' to generate plots for n random .fcs files
 # select None to skip plots -- None is without quotes
-make_processing_plots = 'random 3'
+make_processing_plots = None
 
 
 # Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset / else skips MEFLing
@@ -44,7 +44,7 @@ if retrieve_custom_beads_file :
 
 # parameters for auto-recognizing channels
 use_channel_dimension = '-A$' # indicate the first letter : for Area, Height or Width, '-HLog'.. (typically Area is better)
-# Will try to autodetect the scatter channels and designate other ones as fluorescence -- will only work for Sony/BRC currently
+# TODO : default to -A$ and if not found, then provide other things
 
 channel_lookup_dict = {'fluorescence': 'mScarlet|mcherry|YEL|mGreenLantern|gfp|GRN', # uses regex matching to assign the fluorescence
                        'scatter': 'FSC|SSC'} # and scattering channels

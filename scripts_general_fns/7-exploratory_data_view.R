@@ -12,7 +12,14 @@
 samples_in_fl <- sampleNames(fl.set) # get all the sample names
 
 # remove samples matching the regular expression :: Example row D : 'D[:digit:]+'
-samples_to_include <- samples_in_fl[str_detect(samples_in_fl, '.*')] # use: .* to keep everything  
+# samples_to_include <- samples_in_fl[str_detect(samples_in_fl, '.*')] # use: .* to keep everything  
+
+# Metada based sample filtering : to plot a subset 
+samples_to_include <- 
+  pData(fl.set) %>% 
+  filter(!str_detect(name, 'NA|Beads|PBS'), # remove samples without metadata or beads/pbs
+         str_detect(well, '.*')) %>% # select with regex for wells : Example row D : 'D[:digit:]+'
+  rownames() # take the sample names to be plotted
 
 fl.subset <- fl.set[samples_to_include] # filter out wells by regex
 
@@ -23,6 +30,11 @@ fl.subset <- fl.set[samples_to_include] # filter out wells by regex
 # fl.set
 
 # Exploratory plotting ----
+
+# estimate dimensions to save the plot in
+# num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels after making pltden_red
+num_of_unique_samples <- new_pdata$name %>% unique() %>% length()
+est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
 
 # overview plots : take a long time to show 
@@ -40,9 +52,6 @@ pltden_red <- ggcyto(fl.subset, # select subset of samples to plot
   scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
   ggtitle(title_name)
 
-# estimate dimensions to save the plot in
-num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels
-est_plt_side <- sqrt(num_of_facets) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
@@ -59,7 +68,8 @@ ggsave(str_c('FACS_analysis/plots/',
 
 plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
                        aes_string(x = as.name(fluor_chnls[['red']]), 
-                                  fill = 'sample_category')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+                                  fill = 'sample_category')#,  
+                     # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
                        # subset = 'A'
                        ) +
   
@@ -68,7 +78,16 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
     ggridges::geom_density_ridges(aes
                              (y = fct_relevel(assay_variable, 
                                               list_of_ordered_levels[['assay_variable']])), 
-                             alpha = 0.3)
+                             alpha = 0.3
+                             
+                             
+                             # adding mean/meadian -- doesn't work. Error:  Computation failed in `stat_density_ridges()`:
+                                                                    # unused argument (probs = probs) 
+                             # source: https://datavizpyr.com/add-mean-line-to-ridgeline-plot-in-r-with-ggridges/
+                             
+                             # quantile_lines = TRUE, # to show median
+                             # quantile_fun = function(x) mean(x) # make a function to calculate median
+    )
     
   } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
   
@@ -77,7 +96,8 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
   theme(legend.position = 'top') +
   ggtitle(title_name) + ylab('Sample name')
 
-# TODO : add median values on the chart?
+# TODO : add median values on the chart? Fix error
+# TODO : generalize to plot all fluorophores on different charts? 
 
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
@@ -92,7 +112,8 @@ ggsave(str_c('FACS_analysis/plots/',
 # plot scatterplots of all samples in the set
 
 pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
-                     aes_string(x = as.name(fluor_chnls[['red']]), y = as.name(fluor_chnls[['green']]) )) +  # fluorescence channels
+                     aes_string(x = as.name(fluor_chnls[['red']]), 
+                                y = as.name(fluor_chnls[['green']]) )) +  # fluorescence channels
 
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
@@ -122,7 +143,8 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # plot fwd-side scatterplots of all samples in the set
 plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
-                           aes_string(x = as.name(scatter_chnls[['fwd']]), y = as.name(scatter_chnls[['side']]) )) +  # fluorescence channels
+                           aes_string(x = as.name(scatter_chnls[['fwd']]), 
+                                      y = as.name(scatter_chnls[['side']]) )) +  # fluorescence channels
   
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution

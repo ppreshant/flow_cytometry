@@ -8,11 +8,6 @@ source('./0-general_functions_fcs.R') # call the function to load libraries and 
 source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent channel names
 
 
-# User inputs ----
-
-title_name <- str_replace(str_c(folder_name, file.name_input), '/', '')
-
-
 # Load metadata ----
 
 # Read the sample names and metadata from google sheet
@@ -26,7 +21,7 @@ flowcal_summary <-
      rename(filename = well) %>% 
      mutate(well = str_extract(filename, '[A-H][:digit:]+')) %>% # detect the well numbers
      
-     left_join(sample_metadata)
+     left_join(sample_metadata) # attach the metadata : sample names from google sheets
 
 
 # process data ----
@@ -40,7 +35,7 @@ processed_flowcal <-
                names_pattern = '(.*)_(.*)') %>% 
   pivot_wider(names_from = measurement, values_from = value) %>%  # put mean, median .. in separate columns
   
-  drop_na(assay_variable) %>%  # remove empty samples : Beads, PBS etc.
+  drop_na(assay_variable) %>%  # remove empty samples : Beads, PBS etc. [that are not specified in the template]
   
   group_by(across(all_of(metadata_variables))) %>% # group -- except replicate
   mutate(mean_medians = mean(median)) %>%  # find the mean of replicates
@@ -49,9 +44,9 @@ processed_flowcal <-
   # arrangement by median of red fluorescence in ascending order
   arrange_in_order_of_fluorophore # freeze the order of these columns for plotting
   
-
+# Use this list of ordered levels in the other code analyze_fcs.R : plotting full distributions
 list_of_ordered_levels <- arrange_in_order_of_fluorophore(processed_flowcal, to_return = 'ordered')
-# Use this list of ordered levels in the other code analyze_fcs
+# Obsolete : since analyze_fcs uses it's own summary to order stuff now
 
 # Overview plots ----
 
@@ -97,11 +92,9 @@ plot_median_data <- function(.filter = '.*', .fluor = '.*', .remove = 'nothing',
 # FIXTHIS: Warning message:
 #   Ignoring unknown parameters: .data 
 
-# re-plot with independent y-axis scale for better viewing
-# plt.median_yfree <- 
 plot_median_data(.fluor = 'mScarlet')
 
-plotly::ggplotly(plt.median_yfree, dynamicTicks = T) # interactive plot
+# plotly::ggplotly(plt.median_yfree, dynamicTicks = T) # interactive plot
 
 ggsave(plot_as(title_name), width = 5, height = 4) # save
 
@@ -109,6 +102,6 @@ ggsave(plot_as(title_name), width = 5, height = 4) # save
 
 # Individual plots ----
 
-plot_median_data('sPK17|Dam-')
-# the + needs to be escaped as \\+
-ggsave(plot_as('S050_Ara'), width = 6, height = 3)
+# plot_median_data('sPK17|Dam-')
+# # the + needs to be escaped as \\+
+# ggsave(plot_as('S050_Ara'), width = 6, height = 3)

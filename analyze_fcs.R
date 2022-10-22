@@ -3,9 +3,10 @@
 
 
 # Prelims ----
+source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
+
 source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent channel names
 
-source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
 
 
 fl.path = str_c(base_directory, folder_name, file.name_input, '.fcs')
@@ -67,36 +68,74 @@ new_pdata <- pData(fl.set) %>%
   mutate(name = str_c(assay_variable, sample_category, sep = " /")) %>% # make a fusion for name
   
   column_to_rownames('original_name') # remake the rownames -- to enable attachment
+  
+  # # Does arrangement and factor help plotting order in ggcyto? no..
+  # arrange(sample_category, assay_variable) %>% 
+  # mutate(across(c(sample_category, assay_variable), fct_inorder))
 
 pData(fl.set) <- new_pdata # replace the pData
 
 # Inspecting data ----
 
-# Run this script to make ggplots of density and scatter for all files -- time intensive
+# Run this script to make ggplots of density and scatter for all files -- time intensive, so run required subsets
 # source('scripts_general_fns/7-exploratory_data_view.R')
 
 
-# Saving summary stats from flowWorkspace function
-# flowworkspace_summary <- 
-#   summary(fl.set) %>% 
-#   map( ~ .x[, fluor_chnls]) %>% # select the relevant channels
-#   
-#   {map2_df(.x = ., .y = names(.),
-#           ~ as_tibble(.x, rownames = 'statistic') %>% # make a dataframe with fluor channels only
-#             pivot_wider(names_from = statistic,
-#                         values_from = all_of(set_names(fluor_chnls, NULL)),
-#                         names_glue = "{statistic}_{.value}"
-#             ) %>% 
-#             
-#             add_column(filename = .y)
-#             
-#             )} %>% 
-#   select(filename, everything())
-# 
-# write_csv(flowworkspace_summary, 
-#           str_c(summary_base_directory, str_replace(folder_name, '/', '-R-summary.csv')))
 
 # Processing ----
+
+# Saving summary stats from flowWorkspace function
+
+metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore') # used for grouping and while making factors for ordering
+
+flowworkspace_summary <-
+  summary(fl.set) %>%
+  map( ~ .x[, fluor_chnls]) %>% # select the relevant channels
+
+  {map2_df(.x = ., .y = names(.),
+          ~ as_tibble(.x, rownames = 'statistic') %>% # make a dataframe with fluor channels only
+            pivot_wider(names_from = statistic,
+                        values_from = all_of(set_names(fluor_chnls, NULL)),
+                        names_glue = "{statistic}_{.value}"
+            ) %>%
+
+            add_column(filename = .y)
+
+            )} %>%
+  select(filename, everything()) %>%  # gives the min, max quartiles, mean for fluorescence channels
+  
+  # use write_csv to save and continue the pipeline
+  # write_csv(flowworkspace_summary, 
+  #           str_c(summary_base_directory, str_replace(folder_name, '/', '-R-summary.csv'))) %>% 
+  
+  
+  # attaching metadata, ordering etc
+  
+  mutate(well = str_extract(filename, '[A-H][:digit:]+')) %>% # detect the well numbers
+  
+  left_join(sample_metadata) %>%  # attach the metadata : sample names from google sheets
+
+  # reshape data for ease of use by code
+  pivot_longer(matches('-A$'),
+               names_to = c('measurement', 'Fluorophore'), # split columns
+               names_pattern = '(.*)_(.*)') %>% 
+  pivot_wider(names_from = measurement, values_from = value) %>%  # put mean, median .. in separate columns
+  
+  # get mean of replicates
+  group_by(across(all_of(metadata_variables))) %>% # group -- except replicate
+  mutate(mean_medians = mean(Median)) %>%  # find the mean of replicates
+  ungroup() %>% 
+  
+  # arrangement by median of red fluorescence in ascending order
+  arrange_in_order_of_fluorophore # freeze the order of these columns for plotting
+
+
+# Make a list of metadata elements to order the data in the figures by
+list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary, to_return = 'ordered')
+
+
+
+
 
 # Currently using processed files from custom python script based on FlowCal.py
 
@@ -119,17 +158,12 @@ pData(fl.set) <- new_pdata # replace the pData
 # proc.time() - ptm # time duration of the run
 
 
-# Gating ----
+# Gating ---
 
+# Processing ---
 
+# Plotting ---
 
-# Processing ----
-
-
-
-# Plotting ----
-
-
-# Save dataset ----
+# Save dataset ---
 
 

@@ -208,7 +208,8 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
-- The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
+- [ ] Show the density of highly fluorescent events in FSC-SSC plot : _Would be useful to see if any gating/density filtration by FlowCal is distorting the data_
+- _Note_: The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
 - [ ] _Error:_ `xlim(c(-100, 1e3))` not working on ggcyto + geomhex + geomdensity2d plot
 - [x] _changing title of the plots_ : do it manually for now

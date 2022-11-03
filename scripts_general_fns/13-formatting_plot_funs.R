@@ -1,15 +1,21 @@
 # formatting plots
 
-# plot formatting ---- 
+# Default formatting ---- 
 
 
 # Set theme universally : format as classic, colours = Set1
 
 theme_set(theme_classic()) # theme classic ---- Disabled this since the scatter plots looked better with the gray
-scale_colour_discrete <- function(...) { # palette
-  scale_colour_brewer(..., palette="Set1")
+scale_colour_discrete <- function(...) { # default palette for colour
+  scale_colour_brewer(..., palette="Dark2")
 }
 
+scale_fill_discrete <- function(...) { # default palette for fill
+  scale_fill_brewer(..., palette="Dark2")
+}
+
+
+# Functions for formatting ----
 
 # plot formatting function : format as classic, colours = Set1
 format_classic <- function(plt)

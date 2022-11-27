@@ -45,8 +45,12 @@ processed_flowcal <-
   drop_na(assay_variable) %>%  # remove empty samples : Beads, PBS etc.
   
   # order the facets - assay_variable
-  mutate(across(assay_variable, ~ fct_relevel(.x, assay_var_order)))
+  mutate(across(assay_variable, ~ fct_relevel(.x, assay_var_order))) %>% 
+  arrange(assay_variable) # arrange the data for output
   
+
+# Save data ----
+write_csv(processed_flowcal, 'FACS_analysis/tabular_outputs/S050_processed_flowcal.csv', na = '')
 
 # TODO : arrange the stuff in visual order (factors) and control ncol in facet_wrap
 

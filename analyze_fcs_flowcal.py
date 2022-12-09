@@ -81,19 +81,22 @@ def process_fcs_dir(make_processing_plots= None):
     Markdown('## Analyzing dataset : "{a}"'.format(a = fcs_experiment_folder)) | p(display)
         
     # %% get beads file
-    # Retrieve custom beads file, if user wants (current dataset has no beads) ; else
+    # Retrieve custom beads file, if user wants (ex: current dataset has no beads) ; else
     # Get the beads file from current dataset using well/pattern : selects the first of multiple matches
     if retrieve_custom_beads_file: 
         from scripts_general_fns.g10_user_config import beads_filepath as beads_list
         beads_filepath = beads_list[0]
         beads_found = True
     else: 
-        beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
-        if len(beads_filepaths_list) > 0 : # if beads are found
-            beads_found = True
-            beads_filepath = beads_filepaths_list[0] # take the first beads file
-        else :
+        if beads_match_name is None: # user input says to skip beads
             beads_found = False
+        else : # look for beads file by matching to 'beads_match_name' among the .fcs paths
+            beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
+            if len(beads_filepaths_list) > 0 : # if beads are found
+                beads_found = True
+                beads_filepath = beads_filepaths_list[0] # take the first beads file
+            else :
+                beads_found = False
     
     
     # Remove beads from the fcs path list if using from current dataset (not custom beads file)
@@ -118,12 +121,7 @@ def process_fcs_dir(make_processing_plots= None):
     # autodetect the channels
     fluorescence_channels, scatter_channels = tuple\
         (myutils.subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
-    
-    # %% bring sample names and metadata
-    
-    # bring sample names from google sheet, 
-    # attach them to the dataset as a name entry
-    
+
     
     # %% Beads processing
     
@@ -134,10 +132,12 @@ def process_fcs_dir(make_processing_plots= None):
         to_mef = process_beads_file(beads_filepath,\
                                    scatter_channels, fluorescence_channels)
     else :
-        Markdown('## Skipping beads/not found') | p(display)
+        Markdown('## Skipping -- beads/not found') | p(display)
         to_mef = None
         print('Beads file not found in the directory, skipping to data cleanup without MEFL calibration')
-            
+    
+    # TODO : need some way to ask user input if the calibration data is ok before going to the rest of the pipeline. Problem : running through jupyter notebook, does not wait for user inputs..
+    
     # %% Cleanup and MEFL calibration of each fcs file
     
     Markdown('## Data cleanup, ~MEFL calibration') | p(display) # post message

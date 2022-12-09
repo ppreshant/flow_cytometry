@@ -72,6 +72,7 @@ def gate_and_reduce_dataset(single_fcs,
         plt.tight_layout(); plt.show()
 
     # %% doublet discrimination
+    # retain the top 90% of th FSC-A vs FSC-H plot
     singlet_channels = [scatter_channels[0], re.sub('-A$', '-H', scatter_channels[0])]
     # will fail for Guava # TODO : needs to be generalized
     

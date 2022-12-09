@@ -10,6 +10,8 @@ library(flowCore) # flow cytometry data types library
 library(ggcyto) # plotting package for flow cytometry data
 library(tidyverse)  # general data handline
 
+filter <- dplyr::filter # override the filter function from stats:: package
+
 # Sources ----
 
 # google sheets

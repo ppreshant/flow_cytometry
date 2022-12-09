@@ -27,21 +27,23 @@ _The R section is not fully automated yet, but it should work pretty well once y
 - It attaches the sample names to wells from a 96-well layout in google sheet/.csv file. 
 - After this R provides commands to use for gating based on a single representative `.fcs`, and broadcasts the gate to all other data. Using the  [`openCyto`](https://www.bioconductor.org/packages/release/bioc/html/openCyto.html)  package for this 
 - Calculates population statistics for all the data using [.flowWorkspace](https://bioconductor.org/packages/release/bioc/html/flowWorkspace.html) package and save data into `.csv` file 
-- Plots distributions of data as highly customizable ggplots. The plots can be made with a one liner code using the powerful [`ggcyto`](https://www.bioconductor.org/packages/release/bioc/html/ggcyto.html) package. Example figure : 
+- Plots distributions of data as highly customizable ggplots. The plots can be made with a one liner code using the powerful [`ggcyto`](https://www.bioconductor.org/packages/release/bioc/html/ggcyto.html) package. _Note: replicate wells with same name are merged._ Example figure : 
 
 
 # How to run
 
 ## First time setup
-For the first time, run the steps in R to to load all the required packages
-`install.packages('tidyverse')` ; and do the same for - 
-- reticulate
-- BiocManager
- 
-Use BiocManager to install the bioconductor packages - 
-`BiocManager::install("flowCore")` ; and others - 
-- ggcyto
-- openCyto
+1. Setup git on your computer (if you haven't already) - [git helper]() 
+2. Please clone this R-python hybrid code into your computer with  the command `git clone https://github.com/ppreshant/flow_cytometry.git` or the `ssh` version of this (_which is more secure, and takes a couple mins extra setting up_)
+3. For the first time, run the steps in R to to load all the required packages `install.packages('tidyverse')` ; and do the same for - 
+	- reticulate
+	- BiocManager
+	 
+	Use BiocManager to install the bioconductor packages - 
+	`BiocManager::install("flowCore")` ; and others - 
+	- ggcyto
+	- openCyto
+4. use conda to setup the python requirements : Mostly need the standard `pandas`, `matplotlib`, `numpy` etc.
 
 ## Data, and config
 1. Put your data into the `flowcyt_data` directory.
@@ -50,10 +52,12 @@ Use BiocManager to install the bioconductor packages -
 		1. base_directory <- 'flowcyt_data' or 'processed_data'
 		2. folder_name <- '..' : the folder your individual `.fcs` files are in within the base_directory
 		3. file.name_input <- '..' : Use this option if you have a single `.fcs` file holding multiple data (such as from Guava machines). _After unpacking these data you will use the same name for the `folder_name` option
+		4. template_source <- 'googlesheet' # use 'googlesheet' or 'excel' options depending on where you are providing the plate layout to name the wells.
 	2. `scripts_general_fns/g10_user_config.py` : for python steps
 		1. fcs_experiment_folder = '..' : the folder your individual `.fcs` files are in within the base_directory
 		2. density_gating_fraction = .5 ; might need to adjust
 3. Put sample names into the excel file `flowcyt_data/plate_layoyts.xlsx` or a google sheet. Each well with sample will have the format `plasmid1_positive`. The value after the '\_' is the `sample_category` : used to colour plots ; and the value before is `assay_variable` will be on the x/y-axis of the plots.
+	1. `excel` option is easier but if you would prefer to use the `googlesheet` for naming the samples, then duplicate the `Flow cytometry layouts` tab into your own googlesheet, and put it's url in the `0-general_functions_fcs.R/sheeturls` for the `plate_layouts_pk` option.
 
 -  If you have a single `.fcs` file with multiple data run and you want to run the flowCal workflow. Run the `# prelims` and `# load data` sections in the code `analyze_fcs.R`. This will unpack each individual well into a separate `.fcs` file in a folder. For subsequent steps, change the `folder_name` option to the name of the new folder and change `file.name_input` to be empty `''`. Now you can go ahead with the python module and come back the the R module.
 

@@ -17,7 +17,7 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 # Metada based sample filtering : to plot a subset 
 samples_to_include <- 
   pData(fl.set) %>% 
-  filter(!str_detect(name, 'NA|Beads|PBS'), # remove samples without metadata or beads/pbs
+  filter(!str_detect(name, 'NA|Beads|beads|PBS'), # remove samples without metadata or beads/pbs
          str_detect(well, '.*')) %>% # select with regex for wells : Example row D : 'D[:digit:]+'
   rownames() # take the sample names to be plotted
 
@@ -64,7 +64,7 @@ ggsave(str_c('FACS_analysis/plots/',
 
 
 # Ridgeline plot
-# The ordering on this plot requires that flowcal_summary_analysis.R is run to get the median data from FlowCal output
+# Plot is ordered in descending order of fliorescence 
 
 plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
                        aes_string(x = as.name(fluor_chnls[['red']]), 
@@ -92,7 +92,9 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
   } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
   
   facet_wrap(facets = NULL) + # control facets
-  scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  # scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  scale_x_log10() + 
+  
   theme(legend.position = 'top') +
   ggtitle(title_name) + ylab('Sample name')
 
@@ -116,9 +118,12 @@ pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
                                 y = as.name(fluor_chnls[['green']]) )) +  # fluorescence channels
 
   # geom_point(alpha = 0.1) +
-  geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
-  scale_x_logicle() + scale_y_logicle() +
+  geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution. Strating at 64
+  # scale_x_logicle() + scale_y_logicle() +
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  
+  scale_x_flowjo_biexp() + scale_y_log10() + # temporary use
+  
   ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
   
   # visual changes
@@ -139,6 +144,8 @@ ggsave(str_c('FACS_analysis/plots/',
        # height = 8, width = 20) # change height and width by number of panels
        height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
 
+# error possible ; logicle scale did not converge. Known issue from Nov 2022 ggplot update
+# https://github.com/RGLab/ggcyto/issues/88
 
 
 # plot fwd-side scatterplots of all samples in the set
@@ -178,7 +185,13 @@ ggsave(str_c('FACS_analysis/plots/',
 # rmarkdown::render('exploratory_plots.rmd', output_file = str_c('./FACS_analysis/', title_name, '.html'))
 
 
+
+
+
 # Gating practice ----
+# ignore this section
+# Run manually the script 11-manual_gating_workflow.R in the scripts_archive folder, which has the tested functions
+
 
 # practice gating on cytoframe
 

@@ -7,26 +7,49 @@
 
 # Gets the 96 well layout with template names matching the experiment ID from filename in a google sheet
 get_template_for <- function(bait, sheet_url = sheeturls$plate_layouts_PK)
-{ # Looking for WWx or Stdx - example WW21 or Std7 within the filename; Assumes plate spans from row B to N (1 row below the matching ID)
+{ # Looking for WWx or Stdx - example WW21 or Std7 within the filename; 
+  # Assumes plate spans from row B to N (1 row below the matching ID)
+  
+  # get template from google sheets or excel file
   
   # Finding the plate to be read
-  plate_names_row <- googlesheets4::read_sheet(sheet_url, sheet = 'Flow cytometry layouts', range = 'C:C', col_types = 'c')
+  plate_names_row <- if(template_source == 'googlesheet') # googlesheet vs excel options
+    
+  {googlesheets4::read_sheet(sheet_url, sheet = 'Flow cytometry layouts', range = 'C:C', col_types = 'c') } else {
+    
+    readxl::read_excel(path = 'flowcyt_data/plate_layoyts.xlsx', range = cell_cols('C:C'), col_types = 'text')
+  } 
+  
+  # get the plate ID from the full filename / bait
+  plate_id <- str_extract(bait, '^S[:alnum:]*') # get the first part containing the plate ID
+  
+  # find the row number that matches the plate_id
   m_row <- plate_names_row %>% unlist() %>% as.character() %>% 
-    # find the row with standard beginnings matching the filename
-    str_detect(., str_c('^', bait %>% str_match('^(S)[:digit:]*') %>% .[1]) ) %>% # select the S0xy digits part of the file
-    # str_detect(., bait) %>% 
-    which() + 1
-  range_to_get <- str_c('B', m_row + 1, ':N', m_row + 9)
+    {str_extract(., '^S[:alnum:]*') == plate_id} %>% # select the q0xya digits/letters part of the filename
+    which() + 1 # extract the row with an exact match to the plate_id and add 1 to get the plate contents
   
   # Eror message and terminate if plate ID is not unique
-  if(length(m_row) > 1) {stop( str_c('Plate ID of :', bait, 'repeats in', paste0(m_row, collapse = ' & '), 
+  if(length(m_row) > 1) {stop( str_c('Plate ID :', plate_id, 
+                                     'of filename :', bait, 
+                                     'repeats in', paste0(m_row, collapse = ' & '), 
                                      'row numbers. Please fix and re-run the script', sep = ' ')) 
+    
     # or if no matching plate is found
   } else if(!length(m_row)) stop( str_c('Plate ID of :', bait, 'does not match anything on the plate layout. 
     Please fix and re-run the script', sep = ' '))
   
-  # read the template corresponding to the file name
-  plate_template_raw <- googlesheets4::read_sheet(sheet_url, sheet = 'Flow cytometry layouts', range = range_to_get)
+  # make the full range for the specific plate
+  range_to_get <- str_c('B', m_row + 1, ':N', m_row + 9) 
+  
+  # read the template corresponding to the file name -- from the range determined above
+  plate_template_raw <- 
+    if(template_source == 'googlesheet') # googlesheet vs excel options
+      
+    {googlesheets4::read_sheet(sheet_url, sheet = 'Flow cytometry layouts', range = range_to_get)} else {
+      
+      readxl::read_excel(path = 'flowcyt_data/plate_layoyts.xlsx', range = range_to_get)
+    }
+  
   
   # Convert the 96 well into a single column, alongside the well
   plate_template <- read_plate_to_column(plate_template_raw, 'Sample_name_bulk') # convert plate template (Sample_names) into a single vector, columnwise

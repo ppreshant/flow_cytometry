@@ -16,7 +16,7 @@ sample_metadata <- get_and_parse_plate_layout(str_c(folder_name, file.name_input
 # Load data ----
 
 flowcal_summary <- 
-  read_csv(str_c(summary_base_directory, str_replace(folder_name, '/', '-summary.csv')) )  %>% 
+  read_csv(str_c(summary_base_directory, str_replace(folder_name, '/', '_flowcal-summary.csv')) )  %>% 
      
      rename(filename = well) %>% 
      mutate(well = str_extract(filename, '[A-H][:digit:]+')) %>% # detect the well numbers

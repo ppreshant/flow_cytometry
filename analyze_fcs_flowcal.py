@@ -199,7 +199,7 @@ def process_fcs_dir(make_processing_plots= None):
         summary_stats_list[1]) | p(pd.concat, px, axis = 1)
     
     # Save summary statistic to csv file
-    summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-summary.csv',
+    summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '_flowcal-summary.csv',
                         index_label='well')
     
     # %% violin plots 

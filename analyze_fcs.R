@@ -75,7 +75,7 @@ new_pdata <- pData(fl.set) %>%
 
 pData(fl.set) <- new_pdata # replace the pData
 
-# Inspecting data ----
+# Inspecting data (*manual) ----
 
 # Run this script to make ggplots of density and scatter for all files -- time intensive, so run required subsets
 # source('scripts_general_fns/7-exploratory_data_view.R')
@@ -88,6 +88,7 @@ pData(fl.set) <- new_pdata # replace the pData
 
 metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore') # used for grouping and while making factors for ordering
 
+# get summary statistics
 flowworkspace_summary <-
   summary(fl.set) %>%
   map( ~ .x[, fluor_chnls]) %>% # select the relevant channels
@@ -158,12 +159,18 @@ list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary,
 # proc.time() - ptm # time duration of the run
 
 
-# Gating ---
+# Save summary stats ----
+# These are slightly different from the flowCal data (due to some wierd transformations).
+# But this will match the distributions plotted by R
 
-# Processing ---
+write.csv(flowworkspace_summary, 
+          str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
+          na = '')
 
-# Plotting ---
+# Gating (*manual) ----
 
-# Save dataset ---
+# Run manually the script 11-manual_gating_workflow.R in the scripts_archive folder
 
+# Note: Will need to select the representative data to gate on ; around line 11
+# single_fcs <- fl.set[[x]] # select a representative sample to set gates on
 

@@ -33,8 +33,9 @@ _The R section is not fully automated yet, but it should work pretty well once y
 # How to run
 
 ## First time setup
-1. Setup git on your computer (if you haven't already) - [git helper]() 
-2. Please clone this R-python hybrid code into your computer with  the command `git clone https://github.com/ppreshant/flow_cytometry.git` or the `ssh` version of this (_which is more secure, and takes a couple mins extra setting up_)
+1. Setup git on your computer if you haven't already - [git helper](https://rogerdudler.github.io/git-guide/) 
+2. Please clone this R-python hybrid code into your computer with the command `git clone https://github.com/ppreshant/flow_cytometry.git` or the `ssh` version `git clone git@github.com:ppreshant/flow_cytometry.git` (_which is more secure, and takes a couple mins extra setting up, but I would recommend it - here's some [help](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)_). 
+	- The same folder will hold your flow cytometry data and the outputs so it can get large. Choose the folder location accordingly. 
 3. For the first time, run the steps in R to to load all the required packages `install.packages('tidyverse')` ; and do the same for - 
 	- reticulate
 	- BiocManager
@@ -44,6 +45,8 @@ _The R section is not fully automated yet, but it should work pretty well once y
 	- ggcyto
 	- openCyto
 4. use conda to setup the python requirements : Mostly need the standard `pandas`, `matplotlib`, `numpy` etc.
+	1. Install miniconda : a minimal version of the package and environment manager `conda`. use instructions from the [documentation page](https://docs.conda.io/en/latest/miniconda.html) 
+	2. Use the command `conda env create -f flowcal_wrappers_environment.yaml`. _This will create an environment with the name `flowcal` and install all the python dependancies listed in the file to your conda environment_
 
 ## Data, and config
 1. Put your data into the `flowcyt_data` directory.
@@ -57,12 +60,16 @@ _The R section is not fully automated yet, but it should work pretty well once y
 		1. fcs_experiment_folder = '..' : the folder your individual `.fcs` files are in within the base_directory
 		2. density_gating_fraction = .5 ; might need to adjust
 3. Put sample names into the excel file `flowcyt_data/plate_layoyts.xlsx` or a google sheet. Each well with sample will have the format `plasmid1_positive`. The value after the '\_' is the `sample_category` : used to colour plots ; and the value before is `assay_variable` will be on the x/y-axis of the plots.
-	1. `excel` option is easier but if you would prefer to use the `googlesheet` for naming the samples, then duplicate the `Flow cytometry layouts` tab into your own googlesheet, and put it's url in the `0-general_functions_fcs.R/sheeturls` for the `plate_layouts_pk` option.
+	- `excel` option is easier but if you would prefer to use the `googlesheet` for naming the samples, then duplicate the `Flow cytometry layouts` tab from this [sheet](https://docs.google.com/spreadsheets/d/1RffyflHCQ_GzlRHbeH3bAkiYo4zNlnFWx4FXo7xkUt8/edit#gid=2024050710) into your own googlesheet, and put its url in the `0-general_functions_fcs.R/sheeturls` for the `plate_layouts_pk` option.
 
 -  If you have a single `.fcs` file with multiple data run and you want to run the flowCal workflow. Run the `# prelims` and `# load data` sections in the code `analyze_fcs.R`. This will unpack each individual well into a separate `.fcs` file in a folder. For subsequent steps, change the `folder_name` option to the name of the new folder and change `file.name_input` to be empty `''`. Now you can go ahead with the python module and come back the the R module.
 
 ## python module : density gating, MEFL
 
+1. open a suitable terminal that works for `conda` and activate the `flowcal` environment that you created above with `conda activate flowcal`
+2. launch your favorite IDE to access python. `jupyter-lab` should be installed in this environment, so type it's name in the same terminal and a browser window will open
+3. Follow instructions in the [[#Data, and config]] above and, add your directory name etc. to the config file `scripts_general_fns/g10_user_config.py` 
+4. Open the jupyter notebook `flowcal_pipeline_report.ipnb` and execute the two cells and your data should be ready in about 3 min!
 .. _to be elaborated_
 
 

@@ -77,12 +77,15 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
 # TODO : add median values on the chart? Fix error
 # TODO : generalize to plot all fluorophores on different charts? 
 # TODO : replace aes_string with aes(tidy eval stuff)
+
+plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5)))
+
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
              '-ridge density', fl_suffix, 
              '.png'),
-       plot = plt_ridges,
+       plot = plt_ridges, # plt_trunc_ridges
        height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
 
 

@@ -14,54 +14,30 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 # remove samples matching the regular expression :: Example row D : 'D[:digit:]+'
 # samples_to_include <- samples_in_fl[str_detect(samples_in_fl, '.*')] # use: .* to keep everything  
 
-# Metada based sample filtering : to plot a subset 
+# Metada based sample filtering : to plot a subset
+non_data_stuff <- 'NA|Beads|beads|PBS'
+specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
+ 
 samples_to_include <- 
   pData(fl.set) %>% 
-  filter(!str_detect(name, 'NA|Beads|beads|PBS'), # remove samples without metadata or beads/pbs
+  filter(!str_detect(name, non_data_stuff), # remove samples without metadata or beads/pbs
+         
+         str_detect(name, specific_data), # select specific data by name
          str_detect(well, '.*')) %>% # select with regex for wells : Example row D : 'D[:digit:]+'
   rownames() # take the sample names to be plotted
 
 fl.subset <- fl.set[samples_to_include] # filter out wells by regex
 
-# for selecting a single sample
-# fl.subset <- fl.set[expand_wellname('A06')] # get a single sample
-
-# Reorder samples by factors
-# fl.set
 
 # Exploratory plotting ----
 
 # estimate dimensions to save the plot in
 # num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels after making pltden_red
-num_of_unique_samples <- new_pdata$name %>% unique() %>% length()
+num_of_unique_samples <- pData(fl.subset) %>% pull(name) %>% unique() %>% length()
 est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
 
 # overview plots : take a long time to show 
-
-# Plot density of all samples in the set - red channel
-pltden_red <- ggcyto(fl.subset, # select subset of samples to plot
-                 aes_string(x = as.name(fluor_chnls[['red']]), 
-                            fill = 'sample_category')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
-                 # subset = 'A'
-                 ) +
-  
-  geom_density(fill = 'red', alpha = 0.3) +
-  # geom_stats() + # only works after geom_gate
-  
-  scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  ggtitle(title_name)
-
-
-# save plot
-ggsave(str_c('FACS_analysis/plots/', 
-             title_name,  # title_name, 
-             '-density', fl_suffix, 
-             '.png'),
-       plot = pltden_red,
-       # height = 8, width = 8) # change height and width by number of panels
-       height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
-
 
 # Ridgeline plot
 # Plot is ordered in descending order of fliorescence 
@@ -100,7 +76,7 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
 
 # TODO : add median values on the chart? Fix error
 # TODO : generalize to plot all fluorophores on different charts? 
-
+# TODO : replace aes_string with aes(tidy eval stuff)
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
@@ -176,6 +152,36 @@ ggsave(str_c('FACS_analysis/plots/',
        plot = plt_scatter,
        # height = 8, width = 20) # change height and width by number of panels
        height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
+
+
+# Older plots for density
+
+# Plot density of all samples in the set - red channel
+pltden_red <- ggcyto(fl.subset, # select subset of samples to plot
+                     aes_string(x = as.name(fluor_chnls[['red']]), 
+                                fill = 'sample_category')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+                     # subset = 'A'
+) +
+  
+  geom_density(fill = 'red', alpha = 0.3) +
+  # geom_stats() + # only works after geom_gate
+  
+  # scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+  scale_x_log10() +
+  ggtitle(title_name)
+
+
+# save plot
+ggsave(str_c('FACS_analysis/plots/', 
+             title_name,  # title_name, 
+             '-density', fl_suffix, 
+             '.png'),
+       plot = pltden_red,
+       # height = 8, width = 8) # change height and width by number of panels
+       height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
+
+
+
 
 
 # # testing simple plotting : is not as customizable

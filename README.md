@@ -25,7 +25,9 @@ _The R section is not fully automated yet, but it should work pretty well once y
 
 - The R section of the pipeline uses the processed data saved by flowcal. _If you wish, you can skip the cleanup in python and look at the raw data with the same R scripts as well.
 - It attaches the sample names to wells from a 96-well layout in google sheet/.csv file. 
-- After this R provides commands to use for gating based on a single representative `.fcs`, and broadcasts the gate to all other data. Using the  [`openCyto`](https://www.bioconductor.org/packages/release/bioc/html/openCyto.html)  package for this 
+- After this R provides commands to use for gating based on a single representative `.fcs`, and broadcasts the gate to all other data. Using the  [`openCyto`](https://www.bioconductor.org/packages/release/bioc/html/openCyto.html)  package for this. 
+	- Currently I use the function `openCyto::mindensity(..)` which  draws a gate threshold at the minimum density region in 1d, so is applicable when the sample has a bimodal distribution with two populations
+	- Look at the documentations in `openCyto`'s [autogating](https://www.bioconductor.org/packages/release/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html) for other gating schemes in 1D and 2D. And [`flowCore`](https://bioconductor.org/packages/release/bioc/vignettes/flowCore/inst/doc/HowTo-flowCore.pdf) for `rectangleGate()` and `quadGate()`
 - Calculates population statistics for all the data using [.flowWorkspace](https://bioconductor.org/packages/release/bioc/html/flowWorkspace.html) package and save data into `.csv` file 
 - Plots distributions of data as highly customizable ggplots. The plots can be made with a one liner code using the powerful [`ggcyto`](https://www.bioconductor.org/packages/release/bioc/html/ggcyto.html) package. _Note: replicate wells with same name are merged._ Example figure : 
 
@@ -72,4 +74,11 @@ _The R section is not fully automated yet, but it should work pretty well once y
 4. Open the jupyter notebook `flowcal_pipeline_report.ipnb` and execute the two cells and your data should be ready in about 3 min!
 .. _to be elaborated_
 
+## R : gating and visualizations
 
+1. Ensure that the data is in the folder and config file specific to `R` : `./0.5-user_inputs.R` is updated
+2. run `source('./analyze_fcs.R')` to load the data into R
+3. run `7-exploratory_data_view.R` for saving overview of all data. Example : 
+4. run `11-manual_gating_workflow.R` for gating and saving counts of populations above the gated thresholds
+
+Do contact me if you have any questions about running this by creating an issue [here](https://github.com/ppreshant/flow_cytometry/issues)

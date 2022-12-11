@@ -1,7 +1,13 @@
 # 7-exploratory_data_view.R
 
-# Open multiple .fcs in directory as flowset and plot density and dot plots (takes long time)
-# Each dataset will appear in a separate panel --
+# Open multiple .fcs in directory as flowset and plot fluorescence density and dot plots (takes long time)
+# Each dataset will appear in a separate panel for exploratory overview --
+# Ridge plots will put data close to each other for easier comparisions
+
+
+# Load data by running analyze_fcs atleast till line 37 (sample_metadata <- ..)
+  # Run till the end : line 137 for ordering the ridge plot (list_of_ordered_levels <- ..)
+source('./analyze_fcs.R')
 
 
 # Subset data ----
@@ -11,12 +17,9 @@
 
 samples_in_fl <- sampleNames(fl.set) # get all the sample names
 
-# remove samples matching the regular expression :: Example row D : 'D[:digit:]+'
-# samples_to_include <- samples_in_fl[str_detect(samples_in_fl, '.*')] # use: .* to keep everything  
-
-# Metada based sample filtering : to plot a subset
+# Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
-specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
+specific_data <- '48|51|F1|MG1655' # use '.*' for everything ; use '51|MG1655' for specific data
  
 samples_to_include <- 
   pData(fl.set) %>% 
@@ -26,12 +29,12 @@ samples_to_include <-
          str_detect(well, '.*')) %>% # select with regex for wells : Example row D : 'D[:digit:]+'
   rownames() # take the sample names to be plotted
 
-fl.subset <- fl.set[samples_to_include] # filter out wells by regex
+fl.subset <- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset
 
 
 # Exploratory plotting ----
 
-# estimate dimensions to save the plot in
+# estimate dimensions to save the plot in (for automated workflow)
 # num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels after making pltden_red
 num_of_unique_samples <- pData(fl.subset) %>% pull(name) %>% unique() %>% length()
 est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
@@ -43,8 +46,8 @@ est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5
 # Plot is ordered in descending order of fliorescence 
 
 plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
-                       aes_string(x = as.name(fluor_chnls[['red']]), 
-                                  fill = 'sample_category')#,  
+                       aes(x = .data[[ fluor_chnls[['red']] ]], 
+                                  fill = sample_category) #,  
                      # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
                        # subset = 'A'
                        ) +
@@ -76,7 +79,6 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
 
 # TODO : add median values on the chart? Fix error
 # TODO : generalize to plot all fluorophores on different charts? 
-# TODO : replace aes_string with aes(tidy eval stuff)
 
 plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5)))
 
@@ -85,7 +87,7 @@ ggsave(str_c('FACS_analysis/plots/',
              title_name,  # title_name, 
              '-ridge density', fl_suffix, 
              '.png'),
-       plot = plt_ridges, # plt_trunc_ridges
+       plot = plt_trunc_ridges, # plt_ridges
        height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
 
 
@@ -93,12 +95,12 @@ ggsave(str_c('FACS_analysis/plots/',
 # plot scatterplots of all samples in the set
 
 pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
-                     aes_string(x = as.name(fluor_chnls[['red']]), 
-                                y = as.name(fluor_chnls[['green']]) )) +  # fluorescence channels
+                     aes(x = .data[[fluor_chnls[['red']]]], 
+                         y = .data[[fluor_chnls[['green']]]] )) +  # fluorescence channels
 
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution. Strating at 64
-  # scale_x_logicle() + scale_y_logicle() +
+  # scale_x_logicle() + scale_y_logicle() + # hidden until some ggplot error is fixed
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
   
   scale_x_flowjo_biexp() + scale_y_log10() + # temporary use
@@ -129,8 +131,8 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # plot fwd-side scatterplots of all samples in the set
 plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
-                           aes_string(x = as.name(scatter_chnls[['fwd']]), 
-                                      y = as.name(scatter_chnls[['side']]) )) +  # fluorescence channels
+                           aes(x = .data[[scatter_chnls[['fwd']]]], 
+                               y = .data[[scatter_chnls[['side']]]] )) +  # fluorescence channels
   
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
@@ -161,7 +163,7 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # Plot density of all samples in the set - red channel
 pltden_red <- ggcyto(fl.subset, # select subset of samples to plot
-                     aes_string(x = as.name(fluor_chnls[['red']]), 
+                     aes(x = .data[[fluor_chnls[['red']]]],
                                 fill = 'sample_category')#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
                      # subset = 'A'
 ) +
@@ -227,7 +229,7 @@ plt_fl_single + geom_gate(gate_quad) + geom_stats()
 
 # fluorescence plot of single sample -- troubleshooting
 plt_fluor_single <- 
-  {ggcyto(single_fcs, aes_string(x = as.name(fluor_chnls[['red']]), y = as.name(fluor_chnls[['green']]))) + 
+  {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['red']]]], y = .data[[fluor_chnls[['green']]]])) + 
       geom_hex(bins = 120) + 
       geom_density2d(colour = 'black') + 
       
@@ -238,8 +240,8 @@ plt_fluor_single <-
 
 # FSC-SSC plot of single sample
 plt_sctr_single <- 
-  {ggcyto(single_fcs, aes_string(x = as.name(scatter_chnls[['fwd']]), 
-                                y = as.name(scatter_chnls[['side']]))) + 
+  {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
+                          y = .data[[scatter_chnls[['side']]]])) + 
       geom_hex(bins = 120) + 
       geom_density2d(colour = 'black') + 
       
@@ -260,13 +262,13 @@ plt_sctr_single <-
 
 
 # fluor vs Scatter
-plt_red_scatter <- {ggcyto(single_fcs, aes_string(x = as.name(fluor_chnls[['red']]), y = 'SSC-A')) + 
+plt_red_scatter <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['red']]]], y = `SSC-A`)) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
   scale_x_logicle()} %>% print()
 
-plt_green_scatter <- {ggcyto(single_fcs, aes_string(x = as.name(fluor_chnls[['green']]), y = 'SSC-A')) + 
+plt_green_scatter <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['green']]]], y = `SSC-A`)) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
@@ -275,7 +277,7 @@ plt_green_scatter <- {ggcyto(single_fcs, aes_string(x = as.name(fluor_chnls[['gr
 
 # Density
 ggcyto(single_fcs, 
-       aes_string(x = as.name(fluor_chnls[['red']]) )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+       aes(x = .data[[fluor_chnls[['red']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
        # subset = 'A'
 ) +
   geom_density(fill = 'red', alpha = 0.3) + 

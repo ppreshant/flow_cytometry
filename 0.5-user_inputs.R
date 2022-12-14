@@ -7,11 +7,22 @@
 
 # include the trailing slash "/" in the folder paths
 base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
-folder_name <- 'S040_test run_SA3800/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
+folder_name <- 'S043_28-3-22/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
 
 # for single file fcs guava data
 file.name_input <- '' # input file name without .fcs
 # Relevant only when reading a multi-data .fcs file (from Guava)
+
+# get templates from google sheet or from data excel file
+template_source <- 'googlesheet' # googlesheet/excel = parse through a list of templates in the respective formats and
+# get the template with the matching qxx ID. 'excel' looks for the file 'excel files/Plate layouts.xlsx'
+
+# regular expression to load only a subset of files : use '.*' for taking full data
+# fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
+fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.fcs'
+
+
+# secondary inputs ----
 
 # title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
 fl_suffix = if_else(str_detect(base_directory, 'processed_data'), '-processed', '-raw')
@@ -19,18 +30,16 @@ fl_suffix = if_else(str_detect(base_directory, 'processed_data'), '-processed', 
 title_name <- stringr::str_replace(folder_name, '/$', fl_suffix) # Use the folder name without the slash, -raw suffix
 # TODO : make an if for raw vs processed based on the base_directory with str_detect()..
 
+summary_base_directory <- 'FACS_analysis/tabular_outputs/'
 
-# regular expression to load only a subset of files : use '.*' for taking full data
-# fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
-fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.fcs'
 
 # Other parameters ----
-# for future autodetection stuff 
+# for future automating autodetection of channel names 
 
-summary_base_directory <- 'FACS_analysis/tabular_outputs/'
 
 Machine_type <- 'Sony' # Sony or Guava/Bennett or Guava/SEA # use this to plot appropriate variables automatically
 # To be implemented in future: using an if() to designate the names of the fluorescent channels 
+# probably obsolete?
 
 
 # Channel names ----

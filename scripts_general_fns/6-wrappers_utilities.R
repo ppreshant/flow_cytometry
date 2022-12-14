@@ -23,6 +23,9 @@ arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = 'red', .sorter
 { # usage
   # arrange_in_order_of_fluorophore(processed_flowcal) -> t1
   
+  
+  # TODO : change this to arrange in descending order and invert the levels later..
+  
   # create a temporary array : filter out only the desired fluorescence
   temp_df <- 
     filter(.df, Fluorophore == fluor_chnls[[.fluor_colour]]) %>% # filter relevant fluorophores

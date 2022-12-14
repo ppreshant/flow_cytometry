@@ -91,8 +91,8 @@ Advantage of flowcal
 
 ### File/fcs handling
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)
-- [ ] Getting plate layout google sheet : Can use the same approach to call the existing R function to do this for us
-- [ ] Merge data for replicates : as simple as ndarray.concatenate? do before plotting violins/ distributions 
+- [x] (_not doing this_) Getting plate layout google sheet : Can use the same approach to call the existing R function to do this for us
+- [x] (_doing this in R, automatic_) Merge data for replicates : as simple as ndarray.concatenate? do before plotting violins/ distributions 
 	> All fluorescence histograms shown are composed of three histograms taken from samples on three separate days and combined into 128 logarithmically spaced bins between 101–106 MEFL units (Supplementary Fig. [15c](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6#MOESM1)) unless otherwise stated. *[Source](https://www-nature-com.ezproxy.rice.edu/articles/s41589-019-0286-6): Schmidl, Sebastian R., et al. "Rewiring bacterial two-component systems by modular DNA-binding domain swapping." _Nature Chemical Biology_ 15.7 (2019): 690-698.*
 
 - [x] Saving output .fcs: Idea - from `FCSData/numpy ndarray` use [fcswrite](https://github.com/ZELLMECHANIK-DRESDEN/fcswrite) to convert to .fcs 3.0 file. Can write [any numpy array](https://github.com/ZELLMECHANIK-DRESDEN/fcswrite/blob/master/examples/numpy2fcs.py). For metadata etc, can convert to the data format used by [fcsparser](https://pypi.org/project/fcsparser/) or [flowcytometry tools](https://pypi.org/project/FlowCytometryTools/) which are alluded to in fcswrite documentation.
@@ -103,7 +103,7 @@ Advantage of flowcal
 
 ### Gating
 - [x] Make a variable for density gating percentage, 
-	- [ ] (_fancy) get it from user input after showing a plot of 50%, interactive analysis.?_
+	- [ ] (_fancy_) get the density gating percentage from user input after showing a plot of 50%, interactive analysis.?
 
 
 ### Other information
@@ -156,7 +156,7 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 
 - [ ] What is TIME in `fl.set %>% colnames()`? _Time is recorded as each event passes through._. _Since the first 4 in S032 have fewer, it was because I terminated the PBS samples as they were taking too long.._
 - [x] Need to figure out how to get the `wellid` from .fcs file headers. _used it to name the individual files when saving them._
-	- Could record these `wellid`s and put them into a column that I could use to merge metadata
+	- [x] Could record these `wellid`s and put them into a column that I could use to merge metadata
 - [ ] Learn how to explore a `flowworkspace::cytoset`
 - [ ] Make exploratory_plots.rmd run a loop and plot each `colname` modality of data as scatter and histogram -- the file will be pretty bulky already :(
 - [ ] How to incorporate sample names into the cytoset (would be great to show up on the automatic plots)
@@ -166,8 +166,15 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 
 ## file handling
 Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
-- [ ] How to solve the problem of non unique names?
-- [ ] Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too -- need to merge before attaching names_
+- [ ] How to solve the problem of non unique names of wells within different runs inside S050?
+- [ ] Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
+- [ ] Why does R/flowWorkspace's `load_cytoset_from_fcs()` give different values than python/FlowCal's `..`. 
+	- Start with the `transformation` parameter in [`load_cytoframe..`](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) : 
+		> `linearize` (default), `linearize-with-PnG-scaling`, or `scale`. `linearize` transformation applies the appropriate power transform to the data.. Also, when the transformation keyword of the FCS header is set to "custom" or "applied", no transformation will be used. 
+
+	- `FlowCal` : 		
+		> An FCS file normally stores raw numbers as they are are reported by the instrument sensors. These are referred to as “channel numbers”. The FCS file also contains enough information to transform these numbers back to proper fluorescence units, called Relative Fluorescence Intensities (RFI), or more commonly, arbitrary fluorescence units (a.u.). Depending on the instrument used, this conversion sometimes involves a simple scaling factor, but other times requires a non-straigthforward exponential transformation. The latter is our case.
+	 - Look at `.fcs` header : using FlowCal/R for both raw data and processed data. Look for the transformation keyword to figure out if R is doing the right thing by ignoring the linearize transform - I'm passing `trasformation = FALSE` by default. _Don't know why I did that._ Maybe need to use the ignored `FlowCal.transform.to_rfi()` command and redo all the FlowCal processing?
 
 ### Questions :
 - [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
@@ -208,6 +215,7 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
+- [ ] Re-arrange the ridgeline plots in descending order of fluorescence
 - [ ] Show the density of highly fluorescent events in FSC-SSC plot : _Would be useful to see if any gating/density filtration by FlowCal is distorting the data_
 - _Note_: The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
@@ -259,7 +267,7 @@ Tasks
 
 - For now, I'm moving onto using flowcal; since flopR is too slow and failing with the density plot of beads.  Decision was initially reconsidered after issue with _cells not found_ was fixed
 
-# R/others
+# R/other packages
 FlopR looks to be better than flowcal, does doublet discrimination and background subtraction as well (though it is trivial)
 
 FlowAI does some QC truncation of data based on flow rate anomalies ([OUP, 2016](https://academic-oup-com.ezproxy.rice.edu/bioinformatics/article/32/16/2473/2240408?login=true))

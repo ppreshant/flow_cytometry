@@ -64,8 +64,8 @@ new_pdata <- pData(fl.set) %>%
   mutate(well = str_extract(name, '[A-H][:digit:]+')) %>% # detect the well numbers
   rename(original_name = name) %>% # rename the "name" column
   
-  left_join(sample_metadata) %>% # join the metadata -- assay_variable, Sample_category etc. 
-  mutate(name = str_c(assay_variable, sample_category, sep = " /")) %>% # make a fusion for name
+  left_join(sample_metadata, by = 'well') %>% # join the metadata -- assay_variable, Sample_category etc. 
+  
   
   column_to_rownames('original_name') # remake the rownames -- to enable attachment
   
@@ -90,9 +90,10 @@ metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore') # us
 
 # get summary statistics
 flowworkspace_summary <-
-  summary(fl.set) %>%
+  summary(fl.set) %>% # base R's summary function : gives min, max, mean, median and quartiles; a column for each well and channel
   map( ~ .x[, fluor_chnls]) %>% # select the relevant channels
-
+  
+  # Convert to a cleaner format
   {map2_df(.x = ., .y = names(.),
           ~ as_tibble(.x, rownames = 'statistic') %>% # make a dataframe with fluor channels only
             pivot_wider(names_from = statistic,
@@ -105,17 +106,13 @@ flowworkspace_summary <-
             )} %>%
   select(filename, everything()) %>%  # gives the min, max quartiles, mean for fluorescence channels
   
-  # use write_csv to save and continue the pipeline
-  # write_csv(flowworkspace_summary, 
-  #           str_c(summary_base_directory, str_replace(folder_name, '/', '-R-summary.csv'))) %>% 
   
-  
-  # attaching metadata, ordering etc
-  
+  # attach metadata
   mutate(well = str_extract(filename, '[A-H][:digit:]+')) %>% # detect the well numbers
   
-  left_join(sample_metadata) %>%  # attach the metadata : sample names from google sheets
+  left_join(sample_metadata, by = 'well') %>%  # attach the metadata : sample names from google sheets
 
+  
   # reshape data for ease of use by code
   pivot_longer(matches('-A$'),
                names_to = c('measurement', 'Fluorophore'), # split columns
@@ -136,9 +133,30 @@ list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary,
 
 
 
+# Save summary stats ----
+# These are slightly different from the flowCal data (due to some wierd transformations).
+# But this will match the distributions plotted by R
+
+write.csv(flowworkspace_summary, 
+          str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
+          na = '')
+
+# Gating (*manual) ----
+
+# Run manually the script 11-manual_gating_workflow.R in the scripts_archive folder
+
+# Note: Will need to select the representative data to gate on ; around line 11
+# single_fcs <- fl.set[[x]] # select a representative sample to set gates on
 
 
-# Currently using processed files from custom python script based on FlowCal.py
+
+# Obsolete/ R processing ----
+
+# Currently using processed files from custom python script based on FlowCal.py ; So ignore this section
+
+
+# The below was attempts to use R based processing similar to FlowCal -- fails in gating for cells due to noisy data
+# is also 60 times slower than FlowCal (without plotting for both)
 
 # # using FlopR single file processing : : error : 'x' must be object of class 'flowFrame'
 # process_fcs('flowcyt_data/S044_new fusions_4-5-22/96 Well Plate (deep)/Sample Group - 1/Unmixing-1/F11 Well - F11 WLSM.fcs',
@@ -157,20 +175,3 @@ list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary,
 #                 mef_peaks = beads_values
 #                 )
 # proc.time() - ptm # time duration of the run
-
-
-# Save summary stats ----
-# These are slightly different from the flowCal data (due to some wierd transformations).
-# But this will match the distributions plotted by R
-
-write.csv(flowworkspace_summary, 
-          str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
-          na = '')
-
-# Gating (*manual) ----
-
-# Run manually the script 11-manual_gating_workflow.R in the scripts_archive folder
-
-# Note: Will need to select the representative data to gate on ; around line 11
-# single_fcs <- fl.set[[x]] # select a representative sample to set gates on
-

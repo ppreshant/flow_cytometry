@@ -20,16 +20,29 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
 specific_data <- '48|51|F1|MG1655' # use '.*' for everything ; use '51|MG1655' for specific data
- 
-samples_to_include <- 
-  pData(fl.set) %>% 
+
+# subset the summary dataset : for overlaying medians onto plots 
+fcssummary.subset <- 
+  flowworkspace_summary %>% 
   filter(!str_detect(name, non_data_stuff), # remove samples without metadata or beads/pbs
          
          str_detect(name, specific_data), # select specific data by name
-         str_detect(well, '.*')) %>% # select with regex for wells : Example row D : 'D[:digit:]+'
-  rownames() # take the sample names to be plotted
+         str_detect(well, '.*')) # select with regex for wells : Example row D : 'D[:digit:]+'
 
-fl.subset <- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset
+# get the full filenames of the samples to be included  
+samples_to_include <- pull(fcssummary.subset, filename) %>%  # take the sample names to be plotted
+  unique()
+
+# subset the cytoset carrying the `.fcs` data
+fl.subset <- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset. 
+# Warning::  editing this fl.subset might change the original fl.set as well since this is a symbolic link
+
+
+# Get unique values
+fcsunique.subset <- 
+  select(fcssummary.subset, 
+         assay_variable, sample_category, Fluorophore, mean_medians) %>% 
+  unique()
 
 
 # Exploratory plotting ----
@@ -57,15 +70,14 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
     ggridges::geom_density_ridges(aes
                              (y = fct_relevel(assay_variable, 
                                               list_of_ordered_levels[['assay_variable']])), 
-                             alpha = 0.3
+                             alpha = 0.3,
                              
                              
-                             # adding mean/meadian -- doesn't work. Error:  Computation failed in `stat_density_ridges()`:
-                                                                    # unused argument (probs = probs) 
+                             # adding mean/meadian lines
                              # source: https://datavizpyr.com/add-mean-line-to-ridgeline-plot-in-r-with-ggridges/
                              
-                             # quantile_lines = TRUE, # to show median
-                             # quantile_fun = function(x) mean(x) # make a function to calculate median
+                             quantile_lines = TRUE, # to show median
+                             quantile_fun = function(x, ...) median(x) # make a function to calculate median
     )
     
   } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
@@ -74,13 +86,18 @@ plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
   # scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
   scale_x_log10() + 
   
+  # Labels
+  geom_text(data = filter(fcsunique.subset, Fluorophore == fluor_chnls[['red']]),
+              mapping = aes(x = mean_medians, y = assay_variable,
+                            label = round(mean_medians, 0))) + 
+  
   theme(legend.position = 'top') +
   ggtitle(title_name) + ylab('Sample name')
 
-# TODO : add median values on the chart? Fix error
+# TODO : add the values for the medians on the chart -- 
 # TODO : generalize to plot all fluorophores on different charts? 
 
-plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5)))
+plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5))) # arbitrary axis limits
 
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 

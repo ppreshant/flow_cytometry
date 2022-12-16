@@ -19,7 +19,7 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
-specific_data <- '48|51|F1|MG1655' # use '.*' for everything ; use '51|MG1655' for specific data
+specific_data <- '42|pKJK|Putida|S17' # use '.*' for everything ; use '51|MG1655' for specific data
 
 # subset the summary dataset : for overlaying medians onto plots 
 fcssummary.subset <- 
@@ -38,7 +38,7 @@ fl.subset <- fl.set[samples_to_include] # select only a subset of the .fcs data 
 # Warning::  editing this fl.subset might change the original fl.set as well since this is a symbolic link
 
 
-# Get unique values
+# Get unique values : for adding labels to plot/medians
 fcsunique.subset <- 
   select(fcssummary.subset, 
          assay_variable, sample_category, Fluorophore, mean_medians) %>% 
@@ -53,61 +53,77 @@ num_of_unique_samples <- pData(fl.subset) %>% pull(name) %>% unique() %>% length
 est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
 
+
 # overview plots : take a long time to show 
 
 # Ridgeline plot
 # Plot is ordered in descending order of fliorescence 
 
-plt_ridges <- ggcyto(fl.subset, # select subset of samples to plot
-                       aes(x = .data[[ fluor_chnls[['red']] ]], 
-                                  fill = sample_category) #,  
-                     # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
-                       # subset = 'A'
-                       ) +
-  
-  # conditional plotting of ridges : if ordering exists or not
-  {if (exists('list_of_ordered_levels')) {
-    ggridges::geom_density_ridges(aes
-                             (y = fct_relevel(assay_variable, 
-                                              list_of_ordered_levels[['assay_variable']])), 
-                             alpha = 0.3,
-                             
-                             
-                             # adding mean/meadian lines
-                             # source: https://datavizpyr.com/add-mean-line-to-ridgeline-plot-in-r-with-ggridges/
-                             
-                             quantile_lines = TRUE, # to show median
-                             quantile_fun = function(x, ...) median(x) # make a function to calculate median
-    )
-    
-  } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
-  
-  facet_wrap(facets = NULL) + # control facets
-  # scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  scale_x_log10() + 
-  
-  # Labels
-  geom_text(data = filter(fcsunique.subset, Fluorophore == fluor_chnls[['red']]),
-              mapping = aes(x = mean_medians, y = assay_variable,
-                            label = round(mean_medians, 0))) + 
-  
-  theme(legend.position = 'top') +
-  ggtitle(title_name) + ylab('Sample name')
-
-# TODO : add the values for the medians on the chart -- 
+plt_ridges <- 
+  map(fluor_chnls, # run the below function for each colour of fluorescence
+      
+      ~ ggcyto(fl.subset, # select subset of samples to plot
+               aes(x = .data[[.x]], 
+                   fill = sample_category) #,  
+               # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+               # subset = 'A'
+      ) +
+        
+        # conditional plotting of ridges : if ordering exists or not
+        {if (exists('list_of_ordered_levels')) {
+          ggridges::geom_density_ridges(aes
+                                        (y = fct_relevel(assay_variable, 
+                                                         list_of_ordered_levels[['assay_variable']])), 
+                                        alpha = 0.3,
+                                        
+                                        
+                                        # adding mean/meadian lines
+                                        # source: https://datavizpyr.com/add-mean-line-to-ridgeline-plot-in-r-with-ggridges/
+                                        
+                                        quantile_lines = TRUE, # to show median
+                                        quantiles = 2
+                                        # quantile_fun = function(x, ...) median(x) # make a function to calculate median
+          )
+          
+        } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
+        
+        facet_wrap(facets = NULL) + # control facets
+        scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+        # scale_x_flowjo_biexp() + # temporary instead of logicle scale (similar principle)  # scale_x_flowjo_biexp() + # temporary instead of logicle scale
+        # scale_x_log10() + # simple logarithmic scale (backup for logicle)
+        
+        # Labels
+        geom_text(data = filter(fcsunique.subset, Fluorophore == .x),
+                  mapping = aes(x = mean_medians, y = assay_variable,
+                                label = round(mean_medians, 0)),
+                  nudge_y = -0.1) + 
+        # median text is imperfect : showing the mean of the medians of 3 replicates. Refer to link for better alternative
+        # https://stackoverflow.com/questions/52527229/draw-line-on-geom-density-ridges
+        
+        theme(legend.position = 'top') +
+        ggtitle(title_name) + ylab('Sample name')
+  )
+      
+# CAVEAT : The median values shown on the chart are slightly different from the lines 
+# Text: (mean of median/replicate) ; lines :  (median/combined distribution?)
 # TODO : generalize to plot all fluorophores on different charts? 
+# TODO : put the subsetting + ridge plots into a two functions for easily calling adhoc
 
-plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5))) # arbitrary axis limits
+# plotting limited axis ranges
+# plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5))) # arbitrary axis limits for log10 scale
 
-# save plot
-ggsave(str_c('FACS_analysis/plots/', 
-             title_name,  # title_name, 
-             '-ridge density', fl_suffix, 
-             '.png'),
-       plot = plt_trunc_ridges, # plt_ridges
-       height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
+# save plots
 
-
+map(fluor_chnls, # iterate over fluorescence channels
+    
+    ~ggsave(str_c('FACS_analysis/plots/', 
+                  title_name,  # title_name, 
+                  '-ridge density', fl_suffix, names(.x), 
+                  '.png'),
+            plot = plt_ridges[[.x]], # plt_ridges
+            height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
+)
+# TODO : convert into a function? call for specific colour..
 
 # plot scatterplots of all samples in the set
 
@@ -117,12 +133,12 @@ pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
 
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution. Strating at 64
-  # scale_x_logicle() + scale_y_logicle() + # hidden until some ggplot error is fixed
+  scale_x_logicle() + scale_y_logicle() + # hidden until some ggplot error is fixed
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
   
-  scale_x_flowjo_biexp() + scale_y_log10() + # temporary use
+  # scale_x_flowjo_biexp() + scale_y_log10() + # temporary use
   
-  ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
+  # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
   
   # visual changes
   # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
@@ -142,9 +158,6 @@ ggsave(str_c('FACS_analysis/plots/',
        # height = 8, width = 20) # change height and width by number of panels
        height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
 
-# error possible ; logicle scale did not converge. Known issue from Nov 2022 ggplot update
-# https://github.com/RGLab/ggcyto/issues/88
-
 
 # plot fwd-side scatterplots of all samples in the set
 plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
@@ -155,7 +168,7 @@ plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
   scale_x_logicle() + scale_y_logicle() +
   # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) + # maybe won't work for Guava?
+  # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) + # maybe won't work for Guava?
   
   # visual changes
   # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"

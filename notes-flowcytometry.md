@@ -143,10 +143,14 @@ Nice plot from tabor lab, 4c : Schmidl, Sebastian R., et al. "Rewiring bacterial
 # R/cytoset/cytoframes
 
 ## Packages/tools
-- flowCore : core data format (flowFrame et.)
+- flowCore : core data format (flowFrame etc.)
 - [flowWorkspace](https://www.bioconductor.org/packages/release/bioc/vignettes/flowWorkspace/inst/doc/flowWorkspace-Introduction.html#01_Purpose) : gating and operations on facs : 
 > samples, groups, transformations, compensation matrices, gates, and population statistics in the gating tree, which is represented as a `GatingSet` object in `R`. 
+	- Also includes the more efficient formats : `cytosets` for holding .fcs data
 - [openCyto](https://bioconductor.org/packages/devel/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html) - Automated gating functions and workflows for serial gating
+- ggcyto - plotting with ggplot semantics
+
+(note) : _When installing these packages, specify the location of install for BiocManager with the command_  : `BiocManager::install('ggcyto', lib = .libPaths()[1])` ; 1 being the path in the local "My Documents" folder instead of program files which needs write permissions.
 
 ## data format
 
@@ -168,7 +172,14 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
 - [ ] How to solve the problem of non unique names of wells within different runs inside S050?
 - [ ] Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
-- [ ] Why does R/flowWorkspace's `load_cytoset_from_fcs()` give different values than python/FlowCal's `..`. 
+- Another application : to join data from different experiments to plot on the same graph (48 + 51 + 78, 79 etc.). _temporary fix would be to just copy the (processed) files/renamed with expt and sample name into a temp folder ; since it is just a few files not too much space consumed_
+
+### Questions :
+- [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
+	- _keyword(single_fcs) and element P1D shows "Logarithmic,6,1"_ 
+	- does that mean the data needs to be log transformed and is this done by the default linearize option?  
+	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
+- [ ] (_related to scaling_) Why does R/flowWorkspace's `load_cytoset_from_fcs()` give different values than python/FlowCal's `..`. 
 	- Start with the `transformation` parameter in [`load_cytoframe..`](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) : 
 		> `linearize` (default), `linearize-with-PnG-scaling`, or `scale`. `linearize` transformation applies the appropriate power transform to the data.. Also, when the transformation keyword of the FCS header is set to "custom" or "applied", no transformation will be used. 
 
@@ -176,11 +187,6 @@ Implement a regex command to capture files from multiple directories (S050 - mul
 		> An FCS file normally stores raw numbers as they are are reported by the instrument sensors. These are referred to as “channel numbers”. The FCS file also contains enough information to transform these numbers back to proper fluorescence units, called Relative Fluorescence Intensities (RFI), or more commonly, arbitrary fluorescence units (a.u.). Depending on the instrument used, this conversion sometimes involves a simple scaling factor, but other times requires a non-straigthforward exponential transformation. The latter is our case.
 	 - Look at `.fcs` header : using FlowCal/R for both raw data and processed data. Look for the transformation keyword to figure out if R is doing the right thing by ignoring the linearize transform - I'm passing `trasformation = FALSE` by default. _Don't know why I did that._ Maybe need to use the ignored `FlowCal.transform.to_rfi()` command and redo all the FlowCal processing?
 
-### Questions :
-- [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
-	- _keyword(single_fcs) and element P1D shows "Logarithmic,6,1"_ 
-	- does that mean the data needs to be log transformed and is this done by the default linearize option?  
-	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
 
 Directory checking in `1-reading_multidata_fcs`
 - [x] Check for empty directory to future proof when a directory exists but has no files in it
@@ -191,8 +197,9 @@ Directory checking in `1-reading_multidata_fcs`
 - [ ] Equalize processing for Guava vs Sony :: use alias feature to harmonize names to green/red or fluorophores.. `#manually supply the alias vs channel options mapping as a data.frame` in [read.FCS](https://rdrr.io/bioc/flowCore/man/read.FCS.html)
 
 ## Processing 
-- [ ] `R/flowWorkspace`  and `python/FlowCal`'s data encoding seems different. Seen in S040 graphs - ridgeline/R vs points/Python
-	- why does the `R/flowWorkspace`'s calculation have positive medians vs negative medians for `python/FlowCal`'s median calculation and output -- happens only for a few samples on the lower end -- but needs to be sorted if using data from both sources to label the plot ![[Pasted image 20221006162045.png |1000]]
+- [ ] How to merge replicates of data before taking `summary()` stats, ~median
+- [ ] `R/flowWorkspace` and `python/FlowCal`'s data encoding seems different. Seen in S040 graphs - ridgeline/R vs points/Python
+	- why does the `R/flowWorkspace`'s calculation have positive medians vs negative medians for `python/FlowCal`'s median calculation but with exact same magnitude. This happens only for a few samples on the lower end -- but needs to be sorted if using data from both sources to label the plot ![[Pasted image 20221006162045.png |1000]]
 - [x] (_use ggcyto for plotting, no need to get raw data out_) How to get the raw-data from the cytoset to just plot mean/median _similar to how Lauren Gambill's script does with flow..python_
 - [ ] Break the processing modules into functions that can be called interactively _ex: while figuring out the correct density fraction etc._
 - [x] (_ggcyto is already merging them_) Merge data from biological replicates (_as mentioned in paper_) : ideas [CytoTree](https://rdrr.io/bioc/CytoTree/man/runExprsMerge.html) ; post issue in [flowWorkspace](https://github.com/RGLab/flowWorkspace/issues) or flowCore?
@@ -207,7 +214,8 @@ Directory checking in `1-reading_multidata_fcs`
 
 
 ## Gating
-- [ ] Is there a `flowWorkspace` way to gate (quad gate..?) on a single sample and use the same gating parameters across all samples?
+- [ ] Is there a way to gate a `mindensity` to be in the middle of two samples (one positive and one negative)? _Start looking at openCyto and then flowWorkspace documentations_
+- [x] Is there a `flowWorkspace` way to gate (quad gate..?) on a single sample and use the same gating parameters across all samples?
 	- [x] (_use biexp_): `mindensity` gate value causes convergence problems with logicle transform
 - [ ] figure out how to add filterID with mindensity
 
@@ -215,8 +223,11 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
+- [ ] _figure out the mystery_ : `scale_x_log10()` is plotting different values compared to `scale_x_flowjo_biexp()`. The biexp shows negative values too, and MG1655 is centered around 0 almost which is what we expect from the machine's current calibration. The mean_median labels match the data better in this case too
+- [ ] Overlay the correct median labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_
 - [ ] Re-arrange the ridgeline plots in descending order of fluorescence
-- [ ] Show the density of highly fluorescent events in FSC-SSC plot : _Would be useful to see if any gating/density filtration by FlowCal is distorting the data_
+- [ ] Ensure that 
+- [ ] _extra plot_ : Show the density of highly fluorescent events in FSC-SSC plot : _Would be useful to see if any gating/density filtration by FlowCal is distorting the data_
 - _Note_: The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
 - [ ] _Error:_ `xlim(c(-100, 1e3))` not working on ggcyto + geomhex + geomdensity2d plot

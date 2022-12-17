@@ -29,7 +29,7 @@ _The R section is not fully automated yet, but it should work pretty well once y
 	- Currently I use the function `openCyto::mindensity(..)` which  draws a gate threshold at the minimum density region in 1d, so is applicable when the sample has a bimodal distribution with two populations
 	- Look at the documentations in `openCyto`'s [autogating](https://www.bioconductor.org/packages/release/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html) for other gating schemes in 1D and 2D. And [`flowCore`](https://bioconductor.org/packages/release/bioc/vignettes/flowCore/inst/doc/HowTo-flowCore.pdf) for `rectangleGate()` and `quadGate()`
 - Calculates population statistics for all the data using [.flowWorkspace](https://bioconductor.org/packages/release/bioc/html/flowWorkspace.html) package and save data into `.csv` file 
-- Plots distributions of data as highly customizable ggplots. The plots can be made with a one liner code using the powerful [`ggcyto`](https://www.bioconductor.org/packages/release/bioc/html/ggcyto.html) package. _Note: replicate wells with same name are merged._ Example figure : 
+- Plots distributions of data as highly customizable ggplots both with and without gating. The plots can be made with a one liner code using the powerful [`ggcyto`](https://www.bioconductor.org/packages/release/bioc/html/ggcyto.html) package. _Note: replicate wells with same name are merged._ Example figure with lots of customizations (no gating here) : ![[FACS_analysis/plots/S043_28-3-22-processed-ridge density-processed-red.png]]
 
 
 # How to run
@@ -78,7 +78,7 @@ _The R section is not fully automated yet, but it should work pretty well once y
 
 1. Ensure that the data is in the folder and config file specific to `R` : `./0.5-user_inputs.R` is updated
 2. run `source('./analyze_fcs.R')` to load the data into R
-3. run `7-exploratory_data_view.R` for saving overview of all data. Example : 
+3. run `7-exploratory_data_view.R` for saving overview of all data. 
 4. run `11-manual_gating_workflow.R` for gating and saving counts of populations above the gated thresholds
 
 Do contact me if you have any questions about running this by creating an issue [here](https://github.com/ppreshant/flow_cytometry/issues)

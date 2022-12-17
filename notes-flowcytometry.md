@@ -312,6 +312,10 @@ Error
 # Jupyter-lab - to save html of plots
 - [x] Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
 
+# Quarto transition
+Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?
+- Rstudio - conda help : https://community.rstudio.com/t/using-rstudio-within-a-conda-environment/128780
+- 
 
 # Notes of individual analyses
 ## S050

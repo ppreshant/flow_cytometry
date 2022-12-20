@@ -13,6 +13,8 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
                               
 {
   
+  # Multi-FCS file check ----
+  
   # key -- Should I read the multi-file .fcs or not 
   # TRUE = read multi-fcs file, write to individual files with numbering and read them back as a multi-fcs cytoset
   # FALSE = just read the individual files (which will already be present)
@@ -42,6 +44,9 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
       }
   }
   
+  
+  #  Split multi-FCS file ----
+  
   if(read_multi_file_key) # if the file has to be read
   {
     
@@ -67,6 +72,8 @@ read_multidata_fcs <- function(multi_data_fcs_path, # path of the FCS file with 
     
   }
     
+  
+  # Read individual .fcs files ----
   
   # Read the split FCS files back in to a single floSet
   fs <- flowWorkspace::load_cytoset_from_fcs(list.files(outpath, 

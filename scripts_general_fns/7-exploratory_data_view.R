@@ -19,7 +19,7 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
-specific_data <- '42|pKJK|Putida|S17' # use '.*' for everything ; use '51|MG1655' for specific data
+specific_data <- '48 |51|MG1655' # use '.*' for everything ; use '51|MG1655' for specific data
 
 # subset the summary dataset : for overlaying medians onto plots 
 fcssummary.subset <- 
@@ -44,6 +44,13 @@ fcsunique.subset <-
          assay_variable, sample_category, Fluorophore, mean_medians) %>% 
   unique()
 
+
+# Optional (for cross experiment analysis): save subset of .fcs data with easier names (write.FCS)
+# mutate(fcssummary.subset, 
+#        new_flnames = str_c(str_replace(name, ' /', '_'), '_', well)) %>% # unique names by well
+#   pull(new_flnames) %>% unique %>% # get the new filenames
+#   {str_c('processed_data/ramfacs_S1_variants/', ., '.fcs')} %>% # make file path (ensure folder exists)
+#   {for (i in 1:length(.)) {write.FCS(fl.subset[[i]], filename = .[i])}} # save each .fcs files
 
 # Exploratory plotting ----
 

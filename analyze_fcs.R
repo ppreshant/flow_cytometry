@@ -8,6 +8,10 @@ source('./0-general_functions_fcs.R') # call the function to load libraries and 
 source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent channel names
 
 
+# Run python/flowcal wrapper through R : for trimming data and doing MEFLs
+# Experimental feature: This might be faster to run in direct python w jupyter-lab?
+# rmarkdown::render('flowcal_html_output.Rmd', output_file = str_c('./FACS_analysis/html_outputs/', title_name, '.html'))
+
 
 fl.path = str_c(base_directory, folder_name, file.name_input, '.fcs')
 
@@ -134,12 +138,13 @@ list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary,
 
 
 # Save summary stats ----
-# These are slightly different from the flowCal data (due to some wierd transformations).
+# These are slightly different from the flowCal data (due to some weird transformations).
 # But this will match the distributions plotted by R
 
-write.csv(flowworkspace_summary, 
+write.csv(flowworkspace_summary,
           str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
           na = '')
+# could prevent rewrites using file.exists() function..
 
 # Gating (*manual) ----
 

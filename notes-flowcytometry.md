@@ -181,7 +181,7 @@ Implement a regex command to capture files from multiple directories (S050 - mul
 	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
 - [ ] (_related to scaling_) Why does R/flowWorkspace's `load_cytoset_from_fcs()` give different values than python/FlowCal's `..`. 
 	- Start with the `transformation` parameter in [`load_cytoframe..`](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) : 
-		> `linearize` (default), `linearize-with-PnG-scaling`, or `scale`. `linearize` transformation applies the appropriate power transform to the data.. Also, when the transformation keyword of the FCS header is set to "custom" or "applied", no transformation will be used. 
+		> `linearize` (default), `linearize-with-PnG-scaling`, or `scale`. `linearize` transformation applies the appropriate power transform to the data.. Also, when the transformation keyword of the [FCS header](https://bioconductor.org/packages/release/bioc/vignettes/flowCore/inst/doc/fcs3.html#3.1) is set to "custom" or "applied", no transformation will be used. 
 
 	- `FlowCal` : 		
 		> An FCS file normally stores raw numbers as they are are reported by the instrument sensors. These are referred to as “channel numbers”. The FCS file also contains enough information to transform these numbers back to proper fluorescence units, called Relative Fluorescence Intensities (RFI), or more commonly, arbitrary fluorescence units (a.u.). Depending on the instrument used, this conversion sometimes involves a simple scaling factor, but other times requires a non-straigthforward exponential transformation. The latter is our case.
@@ -313,9 +313,33 @@ Error
 - [x] Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
 
 # Quarto transition
-Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?
-- Rstudio - conda help : https://community.rstudio.com/t/using-rstudio-within-a-conda-environment/128780
-- 
+## connecting to conda env
+Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?. Works with R's `reticulate` library if `Sys.setenv(RETICULATE_PYTHON = "C:/Users/new/.conda/envs/flowcal/python.exe"` is used before `library(reticulate)`.
+- Using python with Rstudio IDE :  [documentation](https://support.posit.co/hc/en-us/articles/1500007929061-Using-Python-with-the-RStudio-IDE)
+- Alternate way : create a quarto project : [docs](https://quarto.org/docs/tools/rstudio.html)
+- (_useless_) Rstudio - conda help : https://community.rstudio.com/t/using-rstudio-within-a-conda-environment/128780
+
+## convert .ipnb to .qmd : jupytext?
+need to convert onetime only and not link notebooks
+- Use `quarto convert` - from jupytext docs below
+- Check jupytext [docs](https://jupytext.readthedocs.io/en/latest/formats.html?highlight=quarto#quarto)
+
+## run with custom output.html like .Rmd?
+how to do this? Need to get the `quarto` library says [quarto docs](https://quarto.org/docs/computations/r.html#rendering)
+> From the R console using the **quarto** R package:
+```
+library(quarto)
+quarto_render("document.qmd") # defaults to html
+quarto_render("document.qmd", output_format = "pdf")
+```
+
+## Notes
+quarto produces some extraneous folder that holds random files, is this going to be overwritten when running multiple datasets or needs to be saved for actual html to be visible?
+
+## Rmd test run
+Seems to take longer but not sure. 
+The markdown calls from python are displayed as output `<IPython.core.display.Markdown object>`. Maybe quarto will do better?
+
 
 # Notes of individual analyses
 ## S050

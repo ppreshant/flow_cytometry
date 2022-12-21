@@ -14,11 +14,12 @@ Created on Wed Jun  1 01:00:43 2022
 # paths are relative to the working directory
 # without the trailing slash "/"
 fcs_root_folder = 'flowcyt_data'
-fcs_experiment_folder = 'S055_51 in 8 organisms'
+fcs_experiment_folder = 'S044_new fusions_4-5-22'
 
 # Input a regular expression to subset a limited number of wells
 
 # Choose a density gate fraction : 0.5 (50%) is decent, if you need to retain more events try 80%
+# for very poor data with lots of debris/noise, try 30% 
 density_gating_fraction = .5
 
 # Important: Select "all" ONLY if you want detailed plots of the processing steps for each .fcs file
@@ -30,7 +31,7 @@ make_processing_plots = None
 
 
 # Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset / else skips MEFLing
-beads_match_name =  'beads' # beads data is saved in a group/folder named beads for (Sony)
+beads_match_name =  None # use well; Ex: 'A06'. Searches for match to the path -- I make a group for beads when running samples to save in a folder named 'beads' (for Sony machines)
 
 # Optional: Get a custom beads file from a different folder with regex (if not present in current dataset)
 retrieve_custom_beads_file = False # make true to use the file from below else will autodetect from dataset / skip MEFLing if not found

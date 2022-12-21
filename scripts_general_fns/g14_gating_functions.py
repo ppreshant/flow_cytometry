@@ -100,5 +100,5 @@ def gate_and_reduce_dataset(single_fcs,
     # confirm that the gating only retains the good high density area
     # where H and A are linear
     
-    return singlefcs_singlets90
+    return singlefcs_singlets90;
     

@@ -46,10 +46,10 @@ fcsunique.subset <-
 
 
 # Optional (for cross experiment analysis): save subset of .fcs data with easier names (write.FCS)
-# mutate(fcssummary.subset, 
+# mutate(fcssummary.subset,
 #        new_flnames = str_c(str_replace(name, ' /', '_'), '_', well)) %>% # unique names by well
 #   pull(new_flnames) %>% unique %>% # get the new filenames
-#   {str_c('processed_data/ramfacs_S1_variants/', ., '.fcs')} %>% # make file path (ensure folder exists)
+#   {str_c('processed_data/ramfacs_S1_variants/', ., '-S044.fcs')} %>% # make file path (ensure folder exists)
 #   {for (i in 1:length(.)) {write.FCS(fl.subset[[i]], filename = .[i])}} # save each .fcs files
 
 # Exploratory plotting ----
@@ -121,11 +121,11 @@ plt_ridges <-
 
 # save plots
 
-map(fluor_chnls, # iterate over fluorescence channels
+map(names(fluor_chnls), # iterate over fluorescence channels
     
-    ~ggsave(str_c('FACS_analysis/plots/', 
+    ~ ggsave(str_c('FACS_analysis/plots/', 
                   title_name,  # title_name, 
-                  '-ridge density', fl_suffix, names(.x), 
+                  '-ridge density', fl_suffix, .x, 
                   '.png'),
             plot = plt_ridges[[.x]], # plt_ridges
             height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel

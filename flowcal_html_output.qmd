@@ -1,0 +1,23 @@
+---
+title: "??"
+author: "Prashant Kalvapalle's script"
+format: html
+editor: visual
+---
+
+<!--# TODO : make title a variable from R, set flatly theme with table of content ; figure out how to call the render with an output name set -->
+
+## flowcytometry cleanup steps
+
+Clean \`.fcs\` data by excluding saturated events, retaining singlets and events among densest region to exclude debris
+
+```{python}
+#| echo: false
+from analyze_fcs_flowcal import process_fcs_dir # function for complete processing
+from scripts_general_fns.g10_user_config import make_processing_plots # Import plotting key
+
+process_fcs_dir(make_processing_plots) # Run the pipeline
+# reading .fcs data, beads processing, cleanup and calibration, saving summary statistics and cleaned files
+
+# TODO : test if it works
+```

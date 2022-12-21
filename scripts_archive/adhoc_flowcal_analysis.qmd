@@ -1,0 +1,81 @@
+---
+title: "adhoc_flowcal_analysis"
+author: "Prashant Kalvapalle"
+format: html
+editor: visual
+---
+
+## Prerequisites
+
+```{r setup}
+knitr::opts_knit$set(root.dir = normalizePath('..')) # set path to the project head
+
+# reticulate options
+Sys.setenv(RETICULATE_PYTHON = 'C:/Users/new/.conda/envs/flowcal/python.exe')
+library(reticulate)
+# py_config() # check if the correct python is loaded
+```
+
+```{python}
+# import os ; os.chdir("..") # set path to the head directory of the project
+# Utilities
+from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
+
+# flowcal prerequisites
+import FlowCal # flow cytometry processing
+import numpy as np # for array manipulations - faster
+import pandas as pd # for small data frames, csv outputs
+import re # for regular expression : string matching
+```
+
+```{python}
+# import local packages
+from scripts_general_fns.g4_file_inputs import get_fcs_files
+from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
+
+# import config : directory name and other definitions
+from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
+    make_processing_plots, beads_match_name,\
+    channel_lookup_dict, use_channel_dimension
+import scripts_general_fns.g10_user_config as config # in case you need more stuff
+```
+
+```{python}
+# Load fcs file list and names
+fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
+
+# subset
+from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
+regex_to_subset = '.*' # 'F05|D06' or '.*' for all
+
+fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
+fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
+
+# load the subset of the .fcs files
+fcs_data_subset = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
+    
+# Load one file for testing
+single_fcs = fcs_data_subset[5]
+```
+
+```{python}
+# get the relevant channels present in the data
+relevant_channels = single_fcs.channels | p(subset_matching_regex, px, use_channel_dimension) 
+
+# autodetect the channels
+fluorescence_channels, scatter_channels = tuple\
+    (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
+```
+
+## Check one .fcs
+
+```{python}
+f'{single_fcs.__len__()} : number of events' # check that this is a non-empty file
+```
+
+```{python}
+# Show plots of a dataset, adjust gating fraction manually
+gate_and_reduce_dataset(single_fcs,\
+           scatter_channels, fluorescence_channels, density_gating_fraction=.5,
+           make_plots = True) ;
+```

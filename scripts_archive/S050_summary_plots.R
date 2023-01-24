@@ -121,6 +121,8 @@ ggsave(plot_as('S050_rGFP look for leak'), width = 6, height = 4)
 plot_median_data('pRV01 \\+ pEMF02')
 ggsave(plot_as('S050_AHL_pflip'), width = 6, height = 3)
 
+plot_median_data('pRV01 \\+ rGFP')
+ggsave(plot_as('S050_AHL'), width = 6, height = 3)
 
 plot_median_data('pSS079', 'mcherry')
 ggsave(plot_as('S050_pSS079'), width = 6, height = 3)

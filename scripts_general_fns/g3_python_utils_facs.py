@@ -133,3 +133,15 @@ def subset_matching_regex(list_strings, regex_string):
     return [str for str in list_strings
             if re.search(regex_string, str)]
     
+    
+# %% wrapper to select well and show effect on gating percentage
+def select_well_and_show_gating(well_regex, dens_gating_fraction):
+    """ss work in progress here. Issue # 1
+    Need too many things input to this function ; check if it's worth / do when free
+    
+    """
+    
+    
+    gate_and_reduce_dataset(single_fcs,\
+           scatter_channels, fluorescence_channels, density_gating_fraction=.5,
+           make_plots = True) ;

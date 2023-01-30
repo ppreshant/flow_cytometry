@@ -27,7 +27,7 @@ density_gating_fraction = .5
 # Select 'first n' to generate the first few plots for visualization -- first 3 or 5 is good idea
 # Select 'random n' to generate plots for n random .fcs files
 # select None to skip plots -- None is without quotes
-make_processing_plots = None
+make_processing_plots = 'random 5'
 
 
 # Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset / else skips MEFLing

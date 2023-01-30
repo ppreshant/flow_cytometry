@@ -209,7 +209,7 @@ def process_fcs_dir(make_processing_plots= None):
     
     # Make violin plot and show medians
     FlowCal.plot.violin(processed_fcs_data,
-                        channel = fluorescence_channels[1], # 'mScarlet-I-A'
+                        channel = fluorescence_channels[-1], # 'mScarlet-I-A' ; last fluor channel
                         draw_summary_stat=True,
                         draw_summary_stat_fxn=np.median)  
     

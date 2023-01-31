@@ -19,7 +19,7 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
-specific_data <- '48 |51|MG1655' # use '.*' for everything ; use '51|MG1655' for specific data
+specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
 
 # subset the summary dataset : for overlaying medians onto plots 
 fcssummary.subset <- 
@@ -64,7 +64,7 @@ est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5
 # overview plots : take a long time to show 
 
 # Ridgeline plot
-# Plot is ordered in descending order of fliorescence 
+# Plot is ordered in descending order of fluorescence 
 
 plt_ridges <- 
   map(fluor_chnls, # run the below function for each colour of fluorescence
@@ -84,7 +84,7 @@ plt_ridges <-
                                         alpha = 0.3,
                                         
                                         
-                                        # adding mean/meadian lines
+                                        # adding mean/median lines
                                         # source: https://datavizpyr.com/add-mean-line-to-ridgeline-plot-in-r-with-ggridges/
                                         
                                         quantile_lines = TRUE, # to show median
@@ -92,18 +92,19 @@ plt_ridges <-
                                         # quantile_fun = function(x, ...) median(x) # make a function to calculate median
           )
           
-        } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } +
+        } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } + # TODO : put quantile lines here
         
         facet_wrap(facets = NULL) + # control facets
         scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
         # scale_x_flowjo_biexp() + # temporary instead of logicle scale (similar principle)  # scale_x_flowjo_biexp() + # temporary instead of logicle scale
         # scale_x_log10() + # simple logarithmic scale (backup for logicle)
         
-        # Labels
+        # Labels of the median line
+        {if (exists('fcsunique.subset')) { # only if the labelling subset data exists
         geom_text(data = filter(fcsunique.subset, Fluorophore == .x),
                   mapping = aes(x = mean_medians, y = assay_variable,
                                 label = round(mean_medians, 0)),
-                  nudge_y = -0.1) + 
+                  nudge_y = -0.1) } } + 
         # median text is imperfect : showing the mean of the medians of 3 replicates. Refer to link for better alternative
         # https://stackoverflow.com/questions/52527229/draw-line-on-geom-density-ridges
         
@@ -243,7 +244,8 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # practice gating on cytoframe
 
-single_fcs <- fl.set[[3]] # choose a single file to test things on
+# single_fcs <- fl.set[[3]] # choose a single file to test things on
+single_fcs <- fl.set[expand_wellname('F01')] # select single file based on wellname
 
 # set gate
 gate_quad <- openCyto:::.quadGate.tmix(single_fcs, channels = fluor_chnls, K = 3, usePrior = "no")
@@ -286,6 +288,18 @@ plt_sctr_single <-
   
   print()
 
+# singlet plot : FSC-H vs -A
+plt_singlet_FSC <- 
+  {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
+                          y = 'FSC-H')) + 
+      geom_hex(bins = 120) + 
+      geom_density2d(colour = 'black') + 
+      
+      scale_x_logicle() + scale_y_logicle()} %>% 
+  
+  print()
+
+
 
 # custom save plot
 # ggsave(str_c('FACS_analysis/plots/', 
@@ -305,18 +319,46 @@ plt_red_scatter <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['red']]]], y 
   
   scale_x_logicle()} %>% print()
 
-plt_green_scatter <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['green']]]], y = `SSC-A`)) + 
+plt_green_FSC <- {ggcyto(single_fcs, aes(x = `FSC-A`, y = .data[[fluor_chnls[['green']]]])) + 
   geom_hex(bins = 120) + 
   geom_density2d(colour = 'black') + 
   
-  scale_x_logicle()} %>% print()
+  scale_x_logicle() + scale_y_logicle()} %>% print()
 
+plt_SSC_green <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['green']]]], y = `SSC-A`)) + 
+    geom_hex(bins = 120) + 
+    geom_density2d(colour = 'black') + 
+
+    scale_x_logicle() + scale_y_logicle()} %>% print()
+
+    
 
 # Density
 ggcyto(single_fcs, 
-       aes(x = .data[[fluor_chnls[['red']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+       aes(x = .data[[fluor_chnls[['green']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
        # subset = 'A'
 ) +
-  geom_density(fill = 'red', alpha = 0.3) + 
+  geom_density(fill = 'green', alpha = 0.3) + 
   
   scale_x_logicle()
+
+
+# scatter FSC vs SSC plot coloured by fluorescence
+plt_sctr_with_fluor <- 
+  {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
+                          y = .data[[scatter_chnls[['side']]]],
+                          z = .data[[fluor_chnls[['green']]]])) + 
+      stat_summary_hex(bins = 120) + 
+      geom_density2d(colour = 'black') + 
+      
+      scale_x_logicle() + scale_y_logicle()} %>% 
+  
+  print()
+# error in `.data[["mGreenLantern cor-A"]]`:
+# ! Column `mGreenLantern cor-A` not found in `.data`.
+
+
+# scatter and fluor correlation arrangement (since the above colour method failed)
+library(patchwork)
+
+(plt_SSC_green + plt_sctr_single) / (plt_singlet_FSC + plt_green_FSC) # align the fluor vs fsc and ssc (plot_spacer())

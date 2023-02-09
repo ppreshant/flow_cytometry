@@ -90,17 +90,19 @@ pData(fl.set) <- new_pdata # replace the pData
 
 # Saving summary stats from flowWorkspace function
 
-metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore') # used for grouping and while making factors for ordering
+# used for grouping and while making factors for ordering
+metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore') 
 
 # get summary statistics
 flowworkspace_summary <-
   summary(fl.set) %>% # base R's summary function : gives min, max, mean, median and quartiles; a column for each well and channel
-  map( ~ .x[, fluor_chnls]) %>% # select the relevant channels
+  map( ~ as_tibble(.x, rownames = 'statistic') %>% # convert array into dataframe
+         .[, c('statistic', fluor_chnls)]) %>% # select the relevant channels (avoiding dplyr, renaming issue with named vector)
   
   # Convert to a cleaner format
   {map2_df(.x = ., .y = names(.),
-          ~ as_tibble(.x, rownames = 'statistic') %>% # make a dataframe with fluor channels only
-            pivot_wider(names_from = statistic,
+          ~ pivot_wider(.x,
+                        names_from = statistic,
                         values_from = all_of(set_names(fluor_chnls, NULL)),
                         names_glue = "{statistic}_{.value}"
             ) %>%

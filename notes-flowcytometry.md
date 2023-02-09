@@ -76,6 +76,7 @@ Advantage of flowcal
 - [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
   
 ## Tasks
+- [ ] Make a list of samples with the # of events before filtering to check if something is wrong? 
 - [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
 
 - [x] Read in a bunch of `.fcs` files from given directory into a vectorized `FlowCal.io.FCSRead`

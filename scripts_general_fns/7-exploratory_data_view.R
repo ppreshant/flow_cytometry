@@ -126,7 +126,7 @@ map(names(fluor_chnls), # iterate over fluorescence channels
     
     ~ ggsave(str_c('FACS_analysis/plots/', 
                   title_name,  # title_name, 
-                  '-ridge density', fl_suffix, .x, 
+                  '-ridge density', fl_suffix, '-', .x, 
                   '.png'),
             plot = plt_ridges[[.x]], # plt_ridges
             height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
@@ -245,7 +245,7 @@ ggsave(str_c('FACS_analysis/plots/',
 # practice gating on cytoframe
 
 # single_fcs <- fl.set[[3]] # choose a single file to test things on
-single_fcs <- fl.set[expand_wellname('F01')] # select single file based on wellname
+single_fcs <- fl.set[expand_wellname('G05')] # select single file based on wellname
 
 # set gate
 gate_quad <- openCyto:::.quadGate.tmix(single_fcs, channels = fluor_chnls, K = 3, usePrior = "no")
@@ -265,6 +265,8 @@ plt_fl_single + geom_gate(gate_quad) + geom_stats()
 
 # Single plots ----
 
+# set single_fcs if not set before gating
+# single_fcs <- fl.set[expand_wellname('G05')] # select single file based on wellname
 
 # fluorescence plot of single sample -- troubleshooting
 plt_fluor_single <- 
@@ -362,3 +364,6 @@ plt_sctr_with_fluor <-
 library(patchwork)
 
 (plt_SSC_green + plt_sctr_single) / (plt_singlet_FSC + plt_green_FSC) # align the fluor vs fsc and ssc (plot_spacer())
+
+# optional save
+ggsave(plot_as(title_name, 'D01-tr'))

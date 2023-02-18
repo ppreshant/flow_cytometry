@@ -96,7 +96,7 @@ def process_single_fcs_flowcal(single_fcs,
             # confirm that MEFLs are different from a.u 
             FlowCal.plot.hist1d(\
                 [singlefcs_singlets90.gated_data, calibrated_fcs],
-                channel = fluorescence_channels[1], legend=True,
+                channel = fluorescence_channels[-1], legend=True,  # 'mScarlet-I-A' / last fluor channel
                 legend_labels = ['A.U.', 'MEFL'])
             plt.show()
 

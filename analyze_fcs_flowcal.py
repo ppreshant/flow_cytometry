@@ -190,13 +190,18 @@ def process_fcs_dir(make_processing_plots= None):
     summary_stats_list = (['mean', 'median', 'mode'], # use these labels and functions below
                       [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
 
-    # Generate a combined pandas DataFrame for mean, median and mode respectively
+    # Generate a combined pandas DataFrame for mean, median and mode respectively : Complex map pipe
     summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in processed_fcs_data] |\
         p(pd.DataFrame, 
           columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
           index = fcslist), # rownames as the .fcs file names
-        summary_stats_list[0], # x for the map, y is below
+        summary_stats_list[0], # x = summary stat names for the map, below has y = summary stat functions
         summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+    
+    # Get final counts in the cleaned dataset
+    final_counts = pd.DataFrame({'final_event_count' : [single_fcs.__len__() for single_fcs in processed_fcs_data]},
+                               index = fcslist) # make index as the filenames -- to match to the summary stats                                
+    summary_stats = pd.concat([summary_stats, final_counts], axis=1) # concatenate to the summary stats data
     
     # Save summary statistic to csv file
     summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '_flowcal-summary.csv',
@@ -209,7 +214,7 @@ def process_fcs_dir(make_processing_plots= None):
     
     # Make violin plot and show medians
     FlowCal.plot.violin(processed_fcs_data,
-                        channel = fluorescence_channels[-1], # 'mScarlet-I-A' ; last fluor channel
+                        channel = fluorescence_channels[-1], # 'mScarlet-I-A' / last fluor channel
                         draw_summary_stat=True,
                         draw_summary_stat_fxn=np.median)  
     

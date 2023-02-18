@@ -135,13 +135,37 @@ def subset_matching_regex(list_strings, regex_string):
     
     
 # %% wrapper to select well and show effect on gating percentage
-def select_well_and_show_gating(well_regex, dens_gating_fraction):
+def select_well_and_show_gating(well_regex, dens_gating_fraction, fcspaths, fcslist):
     """ss work in progress here. Issue # 1
     Need too many things input to this function ; check if it's worth / do when free
     
     """
+    import FlowCal
+    from scripts_general_fns.g14_gating_functions import gate_and_reduce_dataset
+    from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
+    # import config : directory name and other definitions
+    from scripts_general_fns.g10_user_config import channel_lookup_dict, use_channel_dimension
+    
+    regex_to_subset = well_regex # 'F05|D06' or '.*' for all
+
+    fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
+    fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
+    
+    # load the subset of the .fcs files
+    fcs_data_subset = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
+
+    # Load one file for testing
+    single_fcs = fcs_data_subset[0]
+
+    # get the relevant channels present in the data
+    relevant_channels = single_fcs.channels | p(subset_matching_regex, px, use_channel_dimension) 
+
+    # autodetect the channels
+    fluorescence_channels, scatter_channels = tuple\
+        (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())    
     
     
+    # DO THE GATING
     gate_and_reduce_dataset(single_fcs,\
-           scatter_channels, fluorescence_channels, density_gating_fraction=.5,
+           scatter_channels, fluorescence_channels, density_gating_fraction=dens_gating_fraction,
            make_plots = True) ;

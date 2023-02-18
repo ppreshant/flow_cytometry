@@ -20,11 +20,13 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
 specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
+exclude_category <- 'd1' # use 'none' for everything
 
 # subset the summary dataset : for overlaying medians onto plots 
 fcssummary.subset <- 
   flowworkspace_summary %>% 
   filter(!str_detect(name, non_data_stuff), # remove samples without metadata or beads/pbs
+         !str_detect(sample_category, exclude_category), # exclude a specific category
          
          str_detect(name, specific_data), # select specific data by name
          str_detect(well, '.*')) # select with regex for wells : Example row D : 'D[:digit:]+'
@@ -65,6 +67,8 @@ est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5
 
 # Ridgeline plot
 # Plot is ordered in descending order of fluorescence 
+
+# Ridgeline ----
 
 plt_ridges <- 
   map(fluor_chnls, # run the below function for each colour of fluorescence
@@ -167,6 +171,8 @@ ggsave(str_c('FACS_analysis/plots/',
        height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
 
 
+# scatter FSC-SSC ----
+
 # plot fwd-side scatterplots of all samples in the set
 plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
                            aes(x = .data[[scatter_chnls[['fwd']]]], 
@@ -187,6 +193,7 @@ plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
   
   theme_gray()
 
+# TODO : Need some relative scale for each panel -- it is hard to see here. Maybe good for catching low events?
 
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 

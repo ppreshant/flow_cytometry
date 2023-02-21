@@ -85,10 +85,11 @@ Advantage of flowcal
 
 
 ### Plotting - matplotlib
-  - [ ] Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
+  - [ ] Plot the final event count (x-axis) by well name (short, y-axis) for easy identification of outliers
+  - [ ] (_ignore, can do in R_) Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
 	  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
     - [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
-  - [ ] Plot summary stats - median..? with violin along with sample names: [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
+  - [ ] Add sample names to the median violin plots? [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
 
 ### File/fcs handling
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)

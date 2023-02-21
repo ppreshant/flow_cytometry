@@ -20,7 +20,7 @@ samples_in_fl <- sampleNames(fl.set) # get all the sample names
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
 specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
-exclude_category <- 'd1' # use 'none' for everything
+exclude_category <- 'none' # use 'none' for everything : experiment/data specific
 
 # subset the summary dataset : for overlaying medians onto plots 
 fcssummary.subset <- 

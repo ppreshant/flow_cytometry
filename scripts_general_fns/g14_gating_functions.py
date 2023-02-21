@@ -93,6 +93,13 @@ def gate_and_reduce_dataset(single_fcs,
                                       hist_channels=fluorescence_channels)
         plt.tight_layout(); plt.show()
         
+        # print('---> singlet in linear scale') # Not useful mostly ; due to large variations
+        # FlowCal.plot.density2d(singlefcs_densitygate.gated_data,
+        #                               channels=singlet_channels,
+        #                               mode='scatter',
+        #                               xscale='linear', yscale='linear')
+        # plt.tight_layout(); plt.show()
+        
         
         print(f'{singlefcs_densitygate.gated_data.__len__()} : number of singlet events retained')
         print('--------------------------------------------------------------\n\n')

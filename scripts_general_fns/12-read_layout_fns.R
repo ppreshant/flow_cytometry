@@ -61,6 +61,7 @@ get_template_for <- function(bait, sheet_url = sheeturls$plate_layouts_PK)
 # gets plate layout from 96 well format and parse it into individual columns
 get_and_parse_plate_layout <- function(flnm)
 {
+  # TODO : Extend to multiple variables for category that are optional? -- flexibility vs clarity trade off 
   
   plate_template <- get_template_for(flnm, sheeturls$plate_layouts_PK) %>% # read samplenames from googlesheets
     
@@ -75,7 +76,7 @@ get_and_parse_plate_layout <- function(flnm)
     group_by(assay_variable, sample_category) %>% 
     mutate('biological_replicates' = row_number()) %>%  # Infer biological replicates in order of occurrence
     mutate(name = str_c(assay_variable, sample_category, sep = " /")) # make a fusion column for unique name per replicate
-                               # I don't recall why I put the extra space before the "/"
+                               # I don't recall why I put the extra space before the "/" or why I didn't retain "_"
 }
 
 # Convert the 96 well into a single column, alongside the well

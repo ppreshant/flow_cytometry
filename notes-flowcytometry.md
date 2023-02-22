@@ -92,6 +92,8 @@ Advantage of flowcal
   - [ ] Add sample names to the median violin plots? [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
 
 ### File/fcs handling
+- [x] Is pData saved with `write.FCS()`? _NO; needs to me remade
+- [x] (_mutliple blocks analysis_) How to load multiple folders, join metadata and analyze together? Useful when samples are split among multiple blocks, ex: S062, S063 or multi-day S050 like experiments. _join file loading and pData replacement into a function and run map2 with plate number/day do add a feature_. How to cat multiple cytosets? try `rbind2 and flowset_to_cytoset()` 
 - [ ] _(Guava data)_ To expand single .fcs file into multiple .fcs : use `subprocess.run` module to open an R function [use case](https://stackoverflow.com/questions/19894365/running-r-script-from-python); [documentation](https://docs.python.org/3/library/subprocess.html#subprocess.run)
 - [x] (_not doing this_) Getting plate layout google sheet : Can use the same approach to call the existing R function to do this for us
 - [x] (_doing this in R, automatic_) Merge data for replicates : as simple as ndarray.concatenate? do before plotting violins/ distributions 
@@ -225,10 +227,9 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
-- [ ] _figure out the mystery_ : `scale_x_log10()` is plotting different values compared to `scale_x_flowjo_biexp()`. The biexp shows negative values too, and MG1655 is centered around 0 almost which is what we expect from the machine's current calibration. The mean_median labels match the data better in this case too
+- [ ] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_
 - [ ] Overlay the correct median labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_
-- [ ] Re-arrange the ridgeline plots in descending order of fluorescence
-- [ ] Ensure that 
+- [ ] _(archive) figure out the mystery_ : `scale_x_log10()` is plotting different values compared to `scale_x_flowjo_biexp()`. The biexp shows negative values too, and MG1655 is centered around 0 almost which is what we expect from the machine's current calibration. The mean_median labels match the data better in this case too
 - [ ] _extra plot_ : Show the density of highly fluorescent events in FSC-SSC plot : _Would be useful to see if any gating/density filtration by FlowCal is distorting the data_
 - _Note_: The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?

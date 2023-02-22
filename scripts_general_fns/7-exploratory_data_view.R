@@ -43,7 +43,8 @@ fl.subset <- fl.set[samples_to_include] # select only a subset of the .fcs data 
 # Get unique values : for adding labels to plot/medians
 fcsunique.subset <- 
   select(fcssummary.subset, 
-         assay_variable, sample_category, Fluorophore, mean_medians) %>% 
+         assay_variable, sample_category, any_of('other_categories'), # other_categories for pooled datasets
+         Fluorophore, mean_medians) %>% 
   unique()
 
 

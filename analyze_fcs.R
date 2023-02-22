@@ -116,7 +116,7 @@ flowworkspace_summary <-
   # attach metadata
   mutate(well = str_extract(filename, '[A-H][:digit:]+')) %>% # detect the well numbers
   
-  left_join(sample_metadata, by = 'well') %>%  # attach the metadata : sample names from google sheets
+  left_join(sample_metadata) %>%  # attach the metadata : sample names from google sheets (, by = 'well')
 
   
   # reshape data for ease of use by code

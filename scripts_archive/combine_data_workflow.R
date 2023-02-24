@@ -44,24 +44,31 @@ new_pdata <- pData(fl.set) %>%
 
 pData(fl.set) <- new_pdata # replace the pData
 
+
+# Skip till here if loading combined cytoset directly
+
+# Polish 2/start here ----
+
 # get a subset of the pData to continue workflow from regular analyze_fcs.R workflow
 sample_metadata <- mutate(new_pdata, filename = name) # duplicate column with 'filename' for matching
 
 
-# Autodetect channels and flowworkspace_summary
+# Autodetect channels and flowworkspace_summary / run sample_metadata command above
 
 # run from analyze_fcs.R
 
 # Plotting ----
 
-# use 7-exploratory_data_view to plot
+# use 7-exploratory_data_view to plot ridges ; then run command below to facet the plot
+
+
+# determine the fig width based on # of facets
+n_facets_plt = pull(fcssummary.subset, other_category) %>% unique() %>% length()
 
 plt_ridges_facets <- 
   map(plt_ridges, # add facets
-    ~ .x + facet_wrap(facets = vars(other_category))) # control facets
-
-# determine the fig width based on # of facets
-est_plt_width = pull(fcssummary.subset, other_category) %>% unique() %>% length()
+    ~ .x + facet_wrap(facets = vars(other_category), ncol = n_facets_plt,
+                      scales = 'free_x')) # control facets
 
 # save plots
 
@@ -69,10 +76,10 @@ map(names(fluor_chnls), # iterate over fluorescence channels
     
     ~ ggsave(str_c('FACS_analysis/plots/', 
                    title_name,  # title_name, 
-                   '-ridge density', fl_suffix, '-', .x, 
+                   '-', .x, 
                    '.png'),
              plot = plt_ridges_facets[[.x]], # plt_ridges
-             height = est_plt_side, width = 3 * est_plt_width) # use automatic estimate for plt sides : 2 / panel
+             height = est_plt_side, width = 3 * n_facets_plt) # use automatic estimate for plt sides : 2 / panel
 )
 
 # Summary stats ----

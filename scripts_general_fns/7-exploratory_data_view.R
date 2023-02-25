@@ -12,48 +12,16 @@ source('./analyze_fcs.R')
 
 # Subset data ----
 
-# Make a subset of data to plot :: Remove PBS controls, beads etc. 
-# Using this for plotting in nice a orientation mimicking the plate wells if possible
-
-samples_in_fl <- sampleNames(fl.set) # get all the sample names
-
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
 specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
 exclude_category <- 'none' # use 'none' for everything : experiment/data specific
 
-# subset the summary dataset : for overlaying medians onto plots 
-fcssummary.subset <- 
-  flowworkspace_summary %>% 
-  filter(!str_detect(name, non_data_stuff), # remove samples without metadata or beads/pbs
-         !str_detect(sample_category, exclude_category), # exclude a specific category
-         
-         str_detect(name, specific_data), # select specific data by name
-         str_detect(well, '.*')) # select with regex for wells : Example row D : 'D[:digit:]+'
+# subset the fl.set according to above variables and return a unique metadata + mean_median data
+source('scripts_general_fns/16-subset_cytoset.R') # source the script
+fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category) # use for labeling ridges' medians
+# Side effect : creates a global variable fl.subset
 
-# get the full filenames of the samples to be included  
-samples_to_include <- pull(fcssummary.subset, filename) %>%  # take the sample names to be plotted
-  unique()
-
-# subset the cytoset carrying the `.fcs` data
-fl.subset <- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset. 
-# Warning::  editing this fl.subset might change the original fl.set as well since this is a symbolic link
-
-
-# Get unique values : for adding labels to plot/medians
-fcsunique.subset <- 
-  select(fcssummary.subset, 
-         assay_variable, sample_category, any_of('other_category'), # other_categories for pooled datasets
-         Fluorophore, mean_medians) %>% 
-  unique()
-
-
-# Optional (for cross experiment analysis): save subset of .fcs data with easier names (write.FCS)
-# mutate(fcssummary.subset,
-#        new_flnames = str_c(str_replace(name, ' /', '_'), '_', well)) %>% # unique names by well
-#   pull(new_flnames) %>% unique %>% # get the new filenames
-#   {str_c('processed_data/ramfacs_S1_variants/', ., '-S044.fcs')} %>% # make file path (ensure folder exists)
-#   {for (i in 1:length(.)) {write.FCS(fl.subset[[i]], filename = .[i])}} # save each .fcs files
 
 # Exploratory plotting ----
 
@@ -62,83 +30,18 @@ fcsunique.subset <-
 num_of_unique_samples <- pData(fl.subset) %>% pull(name) %>% unique() %>% length()
 est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
-
-
-# overview plots : take a long time to show 
+# overview plots : take a long time to show - so save them and open the png to visualize
 
 # Ridgeline plot
-# Plot is ordered in descending order of fluorescence 
+# Plot is ordered in descending order of fluorescence if `list_of_ordered_levels` provided
 
-# Ridgeline ----
+# Ridgeline plots ----
 
-plt_ridges <- 
-  map(fluor_chnls, # run the below function for each colour of fluorescence
-      
-      ~ ggcyto(fl.subset, # select subset of samples to plot
-               aes(x = .data[[.x]], 
-                   fill = sample_category) #,  
-               # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
-               # subset = 'A'
-      ) +
-        
-        # conditional plotting of ridges : if ordering exists or not
-        {if (exists('list_of_ordered_levels')) {
-          ggridges::geom_density_ridges(aes
-                                        (y = fct_relevel(assay_variable, 
-                                                         list_of_ordered_levels[['assay_variable']])), 
-                                        alpha = 0.3,
-                                        
-                                        
-                                        # adding mean/median lines
-                                        # source: https://datavizpyr.com/add-mean-line-to-ridgeline-plot-in-r-with-ggridges/
-                                        
-                                        quantile_lines = TRUE, # to show median
-                                        quantiles = 2
-                                        # quantile_fun = function(x, ...) median(x) # make a function to calculate median
-          )
-          
-        } else ggridges::geom_density_ridges(aes(y = assay_variable), alpha = 0.3) } + # TODO : put quantile lines here
-        
-        facet_wrap(facets = NULL) + # control facets
-        scale_x_logicle() +  # some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-        # scale_x_flowjo_biexp() + # temporary instead of logicle scale (similar principle)  # scale_x_flowjo_biexp() + # temporary instead of logicle scale
-        # scale_x_log10() + # simple logarithmic scale (backup for logicle)
-        
-        # Labels of the median line
-        {if (exists('fcsunique.subset')) { # only if the labelling subset data exists
-        geom_text(data = filter(fcsunique.subset, Fluorophore == .x),
-                  mapping = aes(x = mean_medians, y = assay_variable,
-                                label = round(mean_medians, 0)),
-                  nudge_y = -0.1) } } + 
-        # median text is imperfect : showing the mean of the medians of 3 replicates. Refer to link for better alternative
-        # https://stackoverflow.com/questions/52527229/draw-line-on-geom-density-ridges
-        
-        theme(legend.position = 'top') +
-        ggtitle(title_name) + ylab('Sample name')
-  )
-      
-# CAVEAT : The median values shown on the chart are slightly different from the lines 
-# Text: (mean of median/replicate) ; lines :  (median/combined distribution?)
-# TODO : generalize to plot all fluorophores on different charts? 
-# TODO : put the subsetting + ridge plots into a two functions for easily calling adhoc
+source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
+plt_ridges <- plot_ridges_fluor() # make plots and optionally save them with title_name + suffixes
 
-# plotting limited axis ranges
-# plt_trunc_ridges <- plt_ridges + ggcyto_par_set(limits = list(x = c(10, 3e5))) # arbitrary axis limits for log10 scale
 
-# save plots
-
-map(names(fluor_chnls), # iterate over fluorescence channels
-    
-    ~ ggsave(str_c('FACS_analysis/plots/', 
-                  title_name,  # title_name, 
-                  '-ridge density', fl_suffix, '-', .x, 
-                  '.png'),
-            plot = plt_ridges[[.x]], # plt_ridges
-            height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel
-)
-# TODO : convert into a function? call for specific colour..
-
-# plot scatterplots of all samples in the set
+# plot scatterplots of fluorescences -- fails if only a single fluorophore is present
 
 pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
                      aes(x = .data[[fluor_chnls[['red']]]], 

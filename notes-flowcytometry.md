@@ -174,8 +174,8 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 
 ## file handling
 Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
-- [ ] How to solve the problem of non unique names of wells within different runs inside S050?
-- [ ] Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
+- [x] How to solve the problem of non unique names of wells within different runs inside S050? _This is solved in `combine_data_workflow.R` 
+- [x] (_solved, by replacing `pData` and `sampleNames`_) Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
 - Another application : to join data from different experiments to plot on the same graph (48 + 51 + 78, 79 etc.). _temporary fix would be to just copy the (processed) files/renamed with expt and sample name into a temp folder ; since it is just a few files not too much space consumed_
 
 ### Questions :
@@ -227,6 +227,7 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
+- [ ] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_
 - [ ] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_
 - [ ] Overlay the correct median labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_
 - [ ] _(archive) figure out the mystery_ : `scale_x_log10()` is plotting different values compared to `scale_x_flowjo_biexp()`. The biexp shows negative values too, and MG1655 is centered around 0 almost which is what we expect from the machine's current calibration. The mean_median labels match the data better in this case too

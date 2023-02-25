@@ -68,7 +68,7 @@ n_facets_plt = pull(fcssummary.subset, other_category) %>% unique() %>% length()
 plt_ridges_facets <- 
   map(plt_ridges, # add facets
     ~ .x + facet_wrap(facets = vars(other_category), ncol = n_facets_plt,
-                      scales = 'free_x')) # control facets
+                      scales = 'free_y')) # control facets
 
 # save plots
 
@@ -79,7 +79,7 @@ map(names(fluor_chnls), # iterate over fluorescence channels
                    '-', .x, 
                    '.png'),
              plot = plt_ridges_facets[[.x]], # plt_ridges
-             height = est_plt_side, width = 3 * n_facets_plt) # use automatic estimate for plt sides : 2 / panel
+             height = est_plt_side/n_facets_plt, width = 3 * n_facets_plt) # use automatic estimate for plt sides : 2 / panel
 )
 
 # Summary stats ----

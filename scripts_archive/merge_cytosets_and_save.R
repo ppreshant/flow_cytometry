@@ -1,16 +1,12 @@
-# adhoc script to combine data from multiple plates ; will generalize slowly
-# S063 1a, 1b, 2
+# merge_cytosets_and_save.R
 
-# User inputs ---- 
+# run till line 14 of `analyze_combined_fcs.R`
 
+
+
+# adhoc script to merge cytosets and save them into a folder
 fcs_export_folder_name <- 'S063_combined' # the combined dataset will be exported to this folder inside 'processed_data/..'
-title_name <- 'S063_Marine promoters-2'
 
-# Label x axis (assay_variable) : attaches plasmid numbers with informative names for plotting
-sample_name_translation <- c('(^10.|110|119).*' = 'J23x', # 'oldnames|regex' = informative_name
-                            '^HW.*' = 'H.Wang P-RBS', 
-                            '^(S|P|Empty).*' = 'Salis, others',
-                            '^(54|^6.|^9.|^13.|112|113).*' = 'Origins')
 
 # Get data ----
 
@@ -27,7 +23,7 @@ library(magrittr) # required for assignment pipe : "%<>%"
 
 # walk over each flset and add a prefix to their sample names 
 walk2(list(flset1, flset2, flset3),
-     letters[1:3],
+      letters[1:3],
       ~ sampleNames(.x) %<>% {str_c(.y, '_', .)})
 # TODO : add the letters into individual pData first before combining cytosets?
 
@@ -44,27 +40,6 @@ new_pdata <- pData(fl.set) %>%
 
 pData(fl.set) <- new_pdata # replace the pData
 
-
-# Skip till here if loading combined cytoset directly
-
-# Polish 2/start here ----
-
-# get a subset of the pData to continue workflow from regular analyze_fcs.R workflow
-sample_metadata <- mutate(new_pdata, filename = name) # duplicate column with 'filename' for matching
-
-
-# Autodetect channels and flowworkspace_summary / run sample_metadata command above
-
-# run from analyze_fcs.R
-
-# Plotting ----
-
-# Call function to plot ridges ; optionally save them with title_name + suffixes
-source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
-plt_ridges <- plot_ridges_fluor(.show_medians = F, .facets_other_category = T) 
-
-
-# Summary stats ----
 
 # Data export ----
 
@@ -85,6 +60,3 @@ mutate(new_pdata,
   {for (i in 1:length(.)) {write.FCS(fl.set[[i]], filename = .[i])}} # save each .fcs file by looping
 
 
-# TODO : create another script to read in from these combined datasets now / check if pData is still retained!
-
-# Save summary stats

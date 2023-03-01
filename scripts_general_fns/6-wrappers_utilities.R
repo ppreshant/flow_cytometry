@@ -35,13 +35,15 @@ arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = 'red', .sorter
     
     mutate(across(where(is.factor), fct_drop)) %>% # drop the levels that were filtered out of fluorophores
     
-    arrange(across(any_of(.sorter_vars))) %>% # arrange by the provided variable - usually numeric 
-    mutate(across(any_of(meta_variables), fct_inorder)) # freeze the order
+    arrange(desc(across(any_of(.sorter_vars)))) %>% # arrange by the provided variable/ descending - usually numeric 
+    mutate(across(any_of(meta_variables), fct_inorder)) # freeze the order or metadata variables
+  
+  # TODO : need to order descending: .sorter_vars ; then reverse the factor levels below :: levels() %>% rev()
   
   # get a list of the levels
   ordering_list <- 
     map(meta_variables, 
-        ~ temp_df[[.x]] %>% levels) %>% 
+        ~ temp_df[[.x]] %>% levels %>% rev) %>% # reverse the levels to go in ascending order
     
     setNames(meta_variables) # name the elements
   

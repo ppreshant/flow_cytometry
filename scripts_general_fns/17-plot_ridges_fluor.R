@@ -13,7 +13,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
   
   if(.facets_other_category)
   {# determine the fig width based on # of facets
-  n_facets_plt = pull(fcssummary.subset, other_category) %>% unique() %>% length()
+  n_facets_plt = pull(fcsunique.subset, other_category) %>% unique() %>% length()
   }
   
   

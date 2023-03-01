@@ -30,15 +30,12 @@ source('scripts_general_fns/18-load_combined_cytosets.R') # source script
 fl.set <- load_combined_cytosets(folder_name)
 
 
-# Autodetect channels and flowworkspace_summary / run sample_metadata command above
-
-# run from analyze_fcs.R
-
-
 # Side processing ----
 
+# ------------------------ NOTE ----------------------------
 # run `Autodetect channels` and `Processing` from `analyze_fcs.R`
 # Get a subset of the data -- run the `Subset data` section from `7-exploratory_data_view.R`
+# Also run the variables in the first 2 lines of the `Exploratory plots` section in `7-..R`
 
 
 # Plotting ----

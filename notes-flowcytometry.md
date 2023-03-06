@@ -109,6 +109,19 @@ Advantage of flowcal
 - [x] Make a variable for density gating percentage, 
 	- [ ] (_fancy_) get the density gating percentage from user input after showing a plot of 50%, interactive analysis.?
 
+### Processing
+- [ ] Investigate the bimodality around 0 for non fluorescent cells. Ex: S055/S063. _is this an artifact of the Sony flow cyt software doing background subtraction?_ compare S055 : 
+Raw ![[S055_51 in 8 organisms-raw-ridge density-raw.png|250]] Processed ![[S055_51 in 8 organisms-processed-ridge density-processed.png|250]]
+- Take the negative control sample from this dataset and trace the intermediate distributions in the flowCal process - _Is this because of subsetting the data or due to MEFL transformation?_ How is it that S061 sensory only doesn't have the bimodal
+- trying on negative control of S063c/D01 (SS marine) : 
+	Raw ![[S063c_Ds_empty-raw.png|250]]  Processed : ![[S063c_Ds_empty-processed.png|250]] MEFLing : ![[S063c_Ds_empty-MEFLing.png|500]] ; 
+	Histogram at 200 bins : ![[S063c_Ds_empty-processed_200bins.png|250]]
+	- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal
+	- [x] Follow up to trace steps in the processing to the origination of bimodality ; 
+		- Looks fine after `gate_and_reduce()` : Plotted with this `FlowCal.plot.hist1d(processed_single_fcs.gated_data, channel = fluorescence_channels[0], xlim = (-100, 100), bins = 1000)`
+		- Seeing bimodal around 0 after MEFLing
+- Effect of the FlowCal processing on a positive sample : Ex: 'S063a_B02_gr_raw..'
+Raw : ![[S063a_B02_gr_raw.png|250]] Processed : ![[S063a_B02_gr_processed.png|250]]
 
 ### Other information
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 
@@ -178,20 +191,6 @@ Implement a regex command to capture files from multiple directories (S050 - mul
 - [x] (_solved, by replacing `pData` and `sampleNames`_) Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
 - (_done_) Another application : to join data from different experiments to plot on the same graph (48 + 51 + 78, 79 etc.). _temporary fix would be to just copy the (processed) files/renamed with expt and sample name into a temp folder ; since it is just a few files not too much space consumed_ // Can copy the logfiles and delete the processed folders -- _these can always be remade with FlowCal given the logfile parameters_
 
-### Questions :
-- [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
-	- _keyword(single_fcs) and element P1D shows "Logarithmic,6,1"_ 
-	- does that mean the data needs to be log transformed and is this done by the default linearize option when loading the file?  
-	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
-- [ ] (_related to scaling_) Why does R/flowWorkspace's `load_cytoset_from_fcs()` give different values than python/FlowCal's `..`. 
-	- Start with the `transformation` parameter in [`load_cytoframe..`](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) : 
-		> `linearize` (default), `linearize-with-PnG-scaling`, or `scale`. `linearize` transformation applies the appropriate power transform to the data.. Also, when the transformation keyword of the [FCS header](https://bioconductor.org/packages/release/bioc/vignettes/flowCore/inst/doc/fcs3.html#3.1) is set to "custom" or "applied", no transformation will be used. 
-
-	- `FlowCal` : 		
-		> An FCS file normally stores raw numbers as they are are reported by the instrument sensors. These are referred to as “channel numbers”. The FCS file also contains enough information to transform these numbers back to proper fluorescence units, called Relative Fluorescence Intensities (RFI), or more commonly, arbitrary fluorescence units (a.u.). Depending on the instrument used, this conversion sometimes involves a simple scaling factor, but other times requires a non-straigthforward exponential transformation. The latter is our case.
-	 - Look at `.fcs` header : using FlowCal/R for both raw data and processed data. Look for the transformation keyword to figure out if R is doing the right thing by ignoring the linearize transform - I'm passing `trasformation = FALSE` by default. _Don't know why I did that._ Maybe need to use the ignored `FlowCal.transform.to_rfi()` command and redo all the FlowCal processing?
-
-
 Directory checking in `1-reading_multidata_fcs`
 - [x] Check for empty directory to future proof when a directory exists but has no files in it
 - [ ] Change sampleNames of the fcs set when [reading files](https://rdrr.io/bioc/flowWorkspace/man/load_cytoset_from_fcs.html) by passing a vector(?) to  
@@ -199,6 +198,24 @@ Directory checking in `1-reading_multidata_fcs`
 
 - [ ] Remove biological replicate counts from cytometry template layouts (metadata) - **justification** _Could attach the numbering in R, will save some effort while making template?, Unless you want to mark biological replicates from technical replicates, which will complicate the analysis by making more columns .. etc._  Could also think about this when multiple dilutions are read and need to be analyzed?
 - [ ] Equalize processing for Guava vs Sony :: use alias feature to harmonize names to green/red or fluorophores.. `#manually supply the alias vs channel options mapping as a data.frame` in [read.FCS](https://rdrr.io/bioc/flowCore/man/read.FCS.html)
+
+## FCS format notes :
+- [ ] _Scaling_: Do we need to do any non default transformation (such as Pn6 scaling - power transform for parameters stroed on a log scale) : 
+	- _keyword(single_fcs) and element P1D shows "Logarithmic,6,1"_ 
+	- does that mean the data needs to be log transformed and is this done by the default linearize option when loading the file?  
+	- Ref [documentation](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) for `load_cytoframe_from_fcs`
+- [ ] (_related to scaling_) Why does R/flowWorkspace's `load_cytoset_from_fcs()` give different values than python/FlowCal's `..`. The summary stats differ between the software. _The difference in graphs could be in their logicle transformations, but difference in summary stats needs explanation_ 
+	- Start with the `transformation` parameter in [`load_cytoframe..`](https://rdrr.io/bioc/flowWorkspace/man/load_cytoframe_from_fcs.html) : 
+		> `linearize` (default), `linearize-with-PnG-scaling`, or `scale`. `linearize` transformation applies the appropriate power transform to the data.. Also, when the transformation keyword of the [FCS header](https://bioconductor.org/packages/release/bioc/vignettes/flowCore/inst/doc/fcs3.html#3.1) is set to "custom" or "applied", no transformation will be used. 
+	- `FlowCal` : 		
+		> An FCS file normally stores raw numbers as they are are reported by the instrument sensors. These are referred to as “channel numbers”. The FCS file also contains enough information to transform these numbers back to proper fluorescence units, called Relative Fluorescence Intensities (RFI), or more commonly, arbitrary fluorescence units (a.u.). Depending on the instrument used, this conversion sometimes involves a simple scaling factor, but other times requires a non-straigthforward exponential transformation. The latter is our case.
+	 - Look at `.fcs` header : using FlowCal/R for both raw data and processed data. Look for the transformation keyword to figure out if R is doing the right thing by ignoring the linearize transform - I'm passing `trasformation = FALSE` by default. _Don't know why I did that._ Maybe need to use the ignored `FlowCal.transform.to_rfi()` command and redo all the FlowCal processing?
+
+
+- [x] Why are there negative values in the fluorescence? _ex: S063_Marine promoters-2-green.png_. Do the FSC, SSC also have negatives? _Take one sample and test it ; check other expts_
+	- _is this an artifact of the `logicle` scaling?_ : Re-look at the Github issues on FlowCal about negative values
+	- Negative values could result from : [baseline subtraction](https://lists.purdue.edu/pipermail/cytometry/2007-February/032409.html) ; or [compensation](https://flowjo.typepad.com/the_daily_dongle/2007/02/negative_fluore.html)
+	- FSC and SSC also have negative values : Ex: 'S063_B02_FSC_raw' : ![[S063a_B02_FSC-flowcal.png|350]]
 
 ## Processing 
 - [ ] How to merge replicates of data before taking `summary()` stats, ~median
@@ -227,6 +244,8 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
+- [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. Ex: S063a_B02: 
+![[S063a_B02_raw.png|200]] vs flowcal ![[S063a_B02_raw-flowcal.png|300]]
 - [x] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_
 - [ ] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_
 - [ ] Overlay the correct median labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_

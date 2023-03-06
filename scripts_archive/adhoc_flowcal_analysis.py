@@ -84,7 +84,7 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 # Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = '.*' # 'F05|D06'
+regex_to_subset = 'D01' # 'F05|D06' or '.*' for all
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
@@ -118,11 +118,18 @@ fluorescence_channels, scatter_channels = tuple\
 # %% tags=[]
 f'{single_fcs.__len__()} : number of events' # check that this is a non-empty file
 
-# %% tags=[] jupyter={"outputs_hidden": true}
-# Show plots of a dataset, adjust gating fraction manually
-gate_and_reduce_dataset(fcs_data_subset[7],\
+# %% tags=[]
+# Show plots of a dataset, adjust gating fraction manually. Use next code block for quick change of well too!
+gated_single_fcs = \
+gate_and_reduce_dataset(single_fcs,\
            scatter_channels, fluorescence_channels, density_gating_fraction=.5,
            make_plots = True) ;
+
+# %% jupyter={"outputs_hidden": true} tags=[]
+# Show plots of a dataset, adjust gating fraction manually for any well.
+from scripts_general_fns.g3_python_utils_facs import select_well_and_show_gating
+select_well_and_show_gating('F04', 0.5, fcspaths, fcslist)
+
 
 # %% [markdown]
 # # Troubleshooting basic python
@@ -142,15 +149,22 @@ f'list is : {*a,}'
 # # Process the beads
 
 # %%
-# Get a custom beads file from a different folder and process it - test
-beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + 'S050/S050_d-1/*/Beads/')
-# Tips: need to coerce the list to string before using "beads_filepath"
+# Get beads within the folder  
+beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
+if len(beads_filepaths_list) > 0 : # if beads are found
+    beads_found = True
+    beads_filepath = beads_filepaths_list[1] # take the first beads file
 
-# Test beads processing function
-from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+# %%
+# Get a custom beads file from a different folder and process it
+beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + 'S063c/S050_d-1/*/Beads/') 
+# Tips: need to coerce the list to string before using "beads_filepath"
 
 
 # %%
+# Test beads processing function
+from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+
 # get standard beads file from the data
 beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
 if len(beads_filepaths_list) > 0 : # if beads are found
@@ -159,7 +173,7 @@ if len(beads_filepaths_list) > 0 : # if beads are found
 else :
     beads_found = False
 
-# %% tags=[] jupyter={"outputs_hidden": true}
+# %% tags=[]
 to_mef = process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
 
 # %% [markdown] tags=[]
@@ -272,7 +286,7 @@ singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data_subset[1], scatter_chann
 # %% [markdown]
 # # Testing other features
 
-# %% tags=[]
+# %% tags=[] jupyter={"outputs_hidden": true}
 # get summary stats and test pandas on the base data / processed data
 summary_stats_list = (['mean', 'median', 'mode'],
                       [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
@@ -286,7 +300,40 @@ summary_stats_processed = map(lambda x, y: [y(single_fcs,
      index = fcslist_subset), summary_stats_list[0], summary_stats_list[1]) | p(pd.concat, px, axis = 1)
 
 # %%
-summary_stats_processed
+# 2d density plots : FSC, SSC
+FlowCal.plot.density2d(single_fcs, channels = scatter_channels, mode = 'scatter')
+
+# %% [markdown]
+# ## Process single fcs
+
+# %%
+to_mef = process_beads_file(beads_filepath[0], scatter_channels, fluorescence_channels) # works!
+
+# %% [markdown]
+# ## Plotting 1d histograms
+
+# %% tags=[] jupyter={"outputs_hidden": true}
+# Make processed data
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+
+processed_single_fcs = \
+process_single_fcs_flowcal(single_fcs,
+                           to_mef,
+                           scatter_channels, fluorescence_channels,
+                           make_plots=True)
+
+# %%
+# plot density of single FCS
+import FlowCal # flow cytometry processing
+
+FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0], xscale = 'logicle', xlim = (-100, 100), bins = 1000)
+
+
+# %%
+FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0], xlim = (-500, 500), bins = 200)
+
+# %%
+FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0])
 
 # %%
 summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + '-test-summary.csv',
@@ -296,3 +343,12 @@ summary_stats.to_csv('FACS_analysis/tabular_outputs/' + fcs_experiment_folder + 
 # adhoc run with functions
 from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal
 calibrated_single_fcs = process_single_fcs_flowcal(single_fcs, to_mef, scatter_channels, fluorescence_channels)
+
+# %% tags=[]
+fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
+
+# %%
+final_counts = np.array([single_fcs.__len__() for single_fcs in fcs_data])
+
+# %%
+tst = pd.DataFrame({ 'final_events' : [single_fcs.__len__() for single_fcs in fcs_data]})

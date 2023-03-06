@@ -10,6 +10,8 @@ plot_as <- function(plt_name, ...)  str_c('FACS_analysis/plots/', plt_name, ...,
 expand_wellname <- function(wellname) str_c(wellname, ' Well - ', wellname, ' WLSM.fcs')
 
 
+# General wrappers -----
+
 #' Arranges data in order for one fluorophore, and factorizes for easy visualization
 #' @param .df : dataframe of .fcs summary data
 #' @param .fluor_colour : pick which channel of the named fluor_channels vector you want the order based on. Default 'red'
@@ -60,4 +62,35 @@ arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = 'red', .sorter
       }
   
   
+}
+
+
+# Adhoc wrappers ----
+
+# to be generalized in due time
+
+#' Plot the density of the green fluorescent channel of a single well
+#' @param .cytoset : give the subsetted cytoset (other single fcs data might also work)
+#' @param plot_file_name : The name of the .png file to save as
+#' @param save_folder : plot save folder inside 'FACS_analysis/plots/..' ; use NULL to not save. Default 'Archive/'
+
+
+plot_single_density_green <- function(.cytoset,
+                                      plot_file_name,
+                                      save_folder = 'Archive/')
+{
+  
+  plt <- 
+    ggcyto(single_fcs, 
+           aes(x = .data[[fluor_chnls[['green']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
+           # subset = 'A'
+    ) +
+    geom_density(fill = 'green', alpha = 0.3) + 
+    
+    scale_x_logicle()
+  
+  # save plot if save_folder is specified
+  if(!is.null(save_folder)) ggsave(plot_as(str_c(save_folder, plot_file_name)))
+  
+  return(plt)
 }

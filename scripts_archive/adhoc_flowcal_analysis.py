@@ -153,9 +153,11 @@ f'list is : {*a,}'
 beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
 if len(beads_filepaths_list) > 0 : # if beads are found
     beads_found = True
-    beads_filepath = beads_filepaths_list[1] # take the first beads file
+    beads_filepath = beads_filepaths_list[0] # take the first beads file
 
 # %%
+# RUN THIS INSTEAD OF THE ABOVE CELL
+# ----------------------------------
 # Get a custom beads file from a different folder and process it
 beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + 'S063c/S050_d-1/*/Beads/') 
 # Tips: need to coerce the list to string before using "beads_filepath"

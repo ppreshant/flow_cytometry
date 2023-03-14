@@ -21,6 +21,9 @@ template_source <- 'googlesheet' # googlesheet/excel = parse through a list of t
 # fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
 fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.fcs'
 
+# Channel to order ridgeplots by
+order_by_channel <- 'green' # decide 'red' or 'green' or other colour key within "channel_colour_lookup" above
+
 # Save summary stats through R as .csv: mean, median, quartiles
 save_summary_stats <- FALSE
 
@@ -53,14 +56,14 @@ use_channel_dimension <- '-A$' # indicate the first letter : for Area, Height or
 # -HLog for Guava/Bennett ; 
 # TODO: Will try to autodetect the scatter channels and designate other ones as fluorescence -- will only work for Sony/BRC currently
 
-channel_colour_lookup <- c('(mScarlet|mcherry|YEL).*' = 'red', # uses regex matching to assign the colour
+channel_colour_lookup <- c('(mScarlet|mcherry|YEL).*' = 'red', # uses regex matching to assign the colour to colourkey
                            '(mGreenLantern|gfp|GRN).*' = 'green')
 
 scatter_direction_lookup <- c('FSC.*' = 'fwd', 'SSC.*' = 'side') # regex matching to assign the side/fwd
 
 
 
-# Fluorescence channel names :: default / if not autodetecting
+# Fluorescence channel names :: default / ignore this if not autodetecting, check "channel_colour_lookup" above
 fluor_chnls <- c('red' = 'mScarlet-I-A', # change according to cytometer, fluorophores and for changing from area to width height etc.
         'green' = 'mGreenLantern cor-A')
 # red = 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA ; and variable for Sony

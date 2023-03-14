@@ -19,7 +19,7 @@ expand_wellname <- function(wellname) str_c(wellname, ' Well - ', wellname, ' WL
 #' @param meta_variables : a char vector of the variables that will be factorized
 #' @param to_return : NULL or char - returns a rearranged tibble if NULL, and returns a list of levels if anything else
 
-arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = 'red', .sorter_vars = 'mean_medians',
+arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = order_by_channel, .sorter_vars = 'mean_medians',
                                              meta_variables = metadata_variables,
                                              to_return = NULL) # to_return = 'order' returns a list of the levels
 { # usage

@@ -100,7 +100,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
           
           ~ ggsave(str_c('FACS_analysis/plots/', 
                          title_name,  # title_name, 
-                         '-ridge density', fl_suffix, '-', .x, 
+                         '-ridge', '-', .x, 
                          '.png'),
                    plot = plt_ridges[[.x]], # plt_ridges
                    height = est_plt_side, width = 5) # use automatic estimate for plt sides : 2 / panel

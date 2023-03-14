@@ -130,8 +130,10 @@ Raw : ![[S063a_B02_gr_raw.png|250]] Processed : ![[S063a_B02_gr_processed.png|25
 
 ### Quality controls
 - [x] Write an output log file as `.txt` in the output folder - include the initial event count, density fraction gated, final event fraction, _calibrated or not_, what beads file was used
-- [ ] Show the number of (_final gated?_) events in all files loaded -- look for anomalies? _some automated metric with a warning would be nice, looking through each file would be tedious, unless.. below _
-	- [ ] Implement a QC data output - count the number of cells in each gating step for every .fcs file and save as csv file -- _and_/Or make a plot to help look for anomalies?
+- [ ] Add initial event count to the summary data from python workflow (Hint: _Line 209 in_ `analyze_fcs.py`)
+- [x] (_Added to output .csv data_) Show the number of (_final gated?_) events in all files loaded
+- [ ] (_will do graph instead_) Look for anomalies in event count with any automated metric and add a warning.
+	- [ ] (_too much information, ignore for now_) Implement a QC data output by counting events in each gating step (for every .fcs) and save as csv file -- _and_/Or make a plot to help look for anomalies?
 
 
 ### html output
@@ -187,7 +189,8 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 	- How to ensure that the order of samples is matched by the replacement file name? I guess the data.frame workflow might be easier, make a new column called well
 
 ## file handling
-Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
+- [ ] Move the multifile .fcs to `Archive` when expanded into a folder already
+- [ ] Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
 - [x] How to solve the problem of non unique names of wells within different runs inside S050? _This is solved in `combine_data_workflow.R` 
 - [x] (_solved, by replacing `pData` and `sampleNames`_) Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
 - (_done_) Another application : to join data from different experiments to plot on the same graph (48 + 51 + 78, 79 etc.). _temporary fix would be to just copy the (processed) files/renamed with expt and sample name into a temp folder ; since it is just a few files not too much space consumed_ // Can copy the logfiles and delete the processed folders -- _these can always be remade with FlowCal given the logfile parameters_
@@ -245,6 +248,7 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
+- [x] Plotting order : Currently using red as the default I assume, but can have a user key for primary fluorophore of interest 'red/2' or 'green/1'? Need to pass it to `.fluor_colour` in `arrange_in_order_of_fluorophore()`
 - [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. Ex: S063a_B02: 
 ![[S063a_B02_raw.png|200]] vs flowcal ![[S063a_B02_raw-flowcal.png|300]]
 - [x] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_

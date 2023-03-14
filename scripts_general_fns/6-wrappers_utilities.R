@@ -77,11 +77,11 @@ arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = order_by_chann
 
 plot_single_density_green <- function(.cytoset,
                                       plot_file_name,
-                                      save_folder = 'Archive/')
+                                      save_folder = 'Archive/') # make save_folder NULL to not save
 {
   
   plt <- 
-    ggcyto(single_fcs, 
+    ggcyto(.cytoset, 
            aes(x = .data[[fluor_chnls[['green']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
            # subset = 'A'
     ) +

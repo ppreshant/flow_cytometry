@@ -56,7 +56,8 @@ def process_fcs_dir(make_processing_plots= None):
     from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
     from datetime import datetime # date and time module for the log file
     import random # module for random numbers and shuffling vector
-    
+    from sys import exit
+
     # import local packages
     import scripts_general_fns.g3_python_utils_facs as myutils # general utlilties
     from scripts_general_fns.g4_file_inputs import get_fcs_files # reading in .fcs files
@@ -67,7 +68,9 @@ def process_fcs_dir(make_processing_plots= None):
     # import config : directory name and other definitions
     from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder,\
         beads_match_name, retrieve_custom_beads_file,\
-        channel_lookup_dict  # channels configuration
+        channel_lookup_dict, use_channel_dimension # channels configuration and dimension
+        
+    
     import scripts_general_fns.g10_user_config as config # for future reference of any variables
     
     # If needed, change the current working directory
@@ -116,12 +119,17 @@ def process_fcs_dir(make_processing_plots= None):
     
     # %% Autodetect channel names
     # get the relevant channels present in the data
-    relevant_channels = fcs_data[0].channels | p(myutils.subset_matching_regex, px, '-A$') 
+    relevant_channels = fcs_data[0].channels | p(myutils.subset_matching_regex, px, use_channel_dimension) 
 
     # autodetect the channels
     fluorescence_channels, scatter_channels = tuple\
         (myutils.subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
-
+    
+    # Error check : for no fluorescence channels (could happen for beads)
+    if len(fluorescence_channels) == 0 :
+        print('no fluorescence channels found in ' + fcslist[0])
+        exit(1)
+        
     
     # %% Beads processing
     

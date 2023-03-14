@@ -73,6 +73,7 @@ Advantage of flowcal
 
 ## Bugs
 - [ ] Code: input() function called from within a module in jupyterlab does not work. See `analyze_fcs_flowcal`/Line 121 for beads with low events
+- [x] code stops in the pipeline but runs adhoc : `to_mef()` step : on gfp and mcherry2 data `S066x_Ara dose-1` -- `fluorescence_channels` is empty, not being recognized -- due to PBS
 - [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
   
 ## Tasks

@@ -7,9 +7,9 @@
 
 # include the trailing slash "/" in the folder paths
 base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
-folder_name <- 'S043_28-3-22/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
+folder_name <- 'S066x_Ara dose-1/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
 
-# for single file fcs guava data
+# for single file fcs guava data / Leave empty '' for multiple .fcs files in the above folder_name
 file.name_input <- '' # input file name without .fcs
 # Relevant only when reading a multi-data .fcs file (from Guava)
 
@@ -72,3 +72,10 @@ scatter_chnls <- c('fwd' = 'FSC-A', # set according to cytometer machine convent
 
 # FEATURE: can rename channels so that generic names can be used throughout the script : cf_rename_channel(x, old, new)
 # FEATURE: in the future, can build in robustness to consider as fl channels the colnames "*-A" that are not FSC and SSC 
+
+
+# Error checks ----
+
+# ensure that folder_name has a '/' in the end
+if(!str_detect(folder_name, '/$')) stop('Did you forget the slash (/) in the folder_name?')
+

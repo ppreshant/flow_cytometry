@@ -8,25 +8,29 @@ source('./analyze_fcs.R')
 
 # Select sample(s) ----
 
-single_fcs <- fl.set[[58]] # select a representative sample to set gates on
+single_fcs <- fl.set[[expand_wellname('B01')]] # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
 # Visualize sample ----
 
-pltscatter_single <- ggcyto(single_fcs, # select subset of samples to plot
-                     aes(x = 'mScarlet-I-A', y = 'mGreenLantern cor-A')) +  # fluorescence channels
-  # geom_point(alpha = 0.1) +
-  geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
+pltscatter_single <- 
+  {ggcyto(single_fcs, # select subset of samples to plot
+          aes(x = .data[[fluor_chnls[['red']]]], 
+              y = .data[[fluor_chnls[['green']]]])) +  # fluorescence channels
+      # geom_point(alpha = 0.1) +
+      geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
+      # geom_point(alpha = 0.01) +
+      
+      # rescale
+      scale_x_logicle() + scale_y_logicle() + # hidden until some ggplot error is fixed
+      # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
+      
+      # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
+      
+      facet_wrap('name', ncol = 10, scales = 'free') + # control facets
+      ggtitle(title_name)} %>% 
   
-  # rescale
-  # scale_x_logicle() + scale_y_logicle() + # hidden until some ggplot error is fixed
-  # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-  scale_x_flowjo_biexp() + scale_y_flowjo_biexp() + # temporary use
-  
-  # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
-  
-  facet_wrap('name', ncol = 10, scales = 'free') + # control facets
-  ggtitle(title_name)
+  print
 
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
@@ -92,8 +96,8 @@ plt_den_1d_list <-
 gate_set <- GatingSet(fl.set) # create a gatingset for all the samples
 
 # Add the 1D gates we set above
-node1 <- gs_pop_add(gate_set, gates_1d_list[[1]], name = 'Red') # add gates to root node of gating set
-node2 <- gs_pop_add(gate_set, gates_1d_list[[2]], name = 'Green') # add gates to root node
+node1 <- gs_pop_add(gate_set, gates_1d_list[[1]], name = 'Green') # add gates to root node of gating set
+node2 <- gs_pop_add(gate_set, gates_1d_list[[2]], name = 'Red') # add gates to root node // each is optional
 # These named populations correpond to the events ABOVE the gate/red line
 # Now all the gates are added to the gating tree but the actual data is not gated yet
 
@@ -110,7 +114,8 @@ gs_get_pop_paths(gate_set)
 recompute(gate_set)
 
 # check the gated data
-autoplot(gate_set[[13]]) + scale_x_flowjo_biexp() + scale_y_flowjo_biexp() # plot data doesn't show up
+autoplot(gate_set[[13]]) + scale_x_flowjo_biexp() + scale_y_flowjo_biexp() # check the gate on a random data
+# TODO : scale_x_logicle() doesn't converge here for some reason
 
 
 # User input ----
@@ -178,3 +183,24 @@ plt_counts <- {ggplot(counts_gated,
   
 # save plot
 ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 4)
+
+
+
+# /-- Work in progress ----
+
+# How to get intensity of only the gated events?
+# Idea : subset the gated events ; then run flowworkspace summary on this dataset
+
+
+# Subset gated events ----
+
+fl.subset2 <- gh_pop_get_data(gate_set, 'Green')
+
+# TODO : fix this to get the full sample set rather than just the first sample
+
+# check data
+fl.subset2 %>% class
+# this is a cytoframe vs the expected cytoset, what's going on? even 'root' gives only A01 data
+
+# plot to check
+plot_single_density_green(fl.subset2, save_folder = NULL)

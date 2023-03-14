@@ -86,7 +86,7 @@ Advantage of flowcal
 
 
 ### Plotting - matplotlib
-  - [ ] Plot the final event count (x-axis) by well name (short, y-axis) for easy identification of outliers
+  - [ ] Plot the initial and final event count (x-axis) by well name (short, y-axis) for easy identification of outliers and mis-processed wells. Or do a side by side scatter plot, labelling only the outliers (outside 2 SD..?). _requires deep dive into matplotlib :(_
   - [ ] (_ignore, can do in R_) Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
 	  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
     - [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
@@ -337,6 +337,11 @@ Error
 - [x] Idea: have the base python code as a standalone runnable script. and call the `..py` from jupyter or pluto when you need the plots to be saved.
 
 # Quarto transition
+Goal : Want to transition the jupyter notebook into a quarto (or Rmd) workflow so I can run it from within Rstudio.
+
+## Features
+1. (_convenience_) Need to read in the filename directly from R script `-.5-user_inputs.R` instead of the python file `g10.user_config.py` to prevent duplication 
+
 ## connecting to conda env
 Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?. Works with R's `reticulate` library if `Sys.setenv(RETICULATE_PYTHON = "C:/Users/new/.conda/envs/flowcal/python.exe"` is used before `library(reticulate)`.
 - Using python with Rstudio IDE :  [documentation](https://support.posit.co/hc/en-us/articles/1500007929061-Using-Python-with-the-RStudio-IDE)

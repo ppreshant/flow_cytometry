@@ -5,6 +5,7 @@
 *.ipynb_checkpoints/
 *__pycache__/
 .spyproject/
+flopr/
 FACS_analysis/
 documentation/
 *.fcs

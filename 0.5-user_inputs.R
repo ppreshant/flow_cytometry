@@ -21,6 +21,9 @@ template_source <- 'googlesheet' # googlesheet/excel = parse through a list of t
 # fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
 fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.fcs'
 
+# Save summary stats through R as .csv: mean, median, quartiles
+save_summary_stats <- FALSE
+
 
 # secondary inputs ----
 

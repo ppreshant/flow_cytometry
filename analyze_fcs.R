@@ -62,6 +62,7 @@ if(autodetect_channels) {
     set_names(str_replace_all(., channel_colour_lookup)) # set names
 }
 
+# TODO : make this into a function -- so it can be run in analyze_combined_fcs?
 
 # Attach metadata ----
 new_pdata <- pData(fl.set) %>% 
@@ -140,13 +141,17 @@ list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary,
 
 
 # Save summary stats ----
+
+
 # These are slightly different from the flowCal data (due to some weird transformations).
 # But this will match the distributions plotted by R
 
-write.csv(flowworkspace_summary,
-          str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
-          na = '')
-# could prevent rewrites using file.exists() function..
+if(save_summary_stats) {
+  write.csv(flowworkspace_summary,
+            str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
+            na = '')   }
+
+# TODO : could prevent rewrites using file.exists() function..
 
 # Gating (*manual) ----
 

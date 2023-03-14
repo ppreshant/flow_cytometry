@@ -248,6 +248,8 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
+- [ ] _De-clutter ridges_ : Remove labels and medians for overlapping sample names only. 
+	- [x] Or (_Currently doing with user input_) remove all medians and labels when > 2 categories (colours) occur for > 5 sample names for exploratory plotting
 - [x] Plotting order : Currently using red as the default I assume, but can have a user key for primary fluorophore of interest 'red/2' or 'green/1'? Need to pass it to `.fluor_colour` in `arrange_in_order_of_fluorophore()`
 - [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. Ex: S063a_B02: 
 ![[S063a_B02_raw.png|200]] vs flowcal ![[S063a_B02_raw-flowcal.png|300]]

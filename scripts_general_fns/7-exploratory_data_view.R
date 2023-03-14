@@ -38,7 +38,7 @@ est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5
 # Ridgeline plots ----
 
 source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
-plt_ridges <- plot_ridges_fluor() # make plots and optionally save them with title_name + suffixes
+plt_ridges <- plot_ridges_fluor(.show_medians = show_medians) # make plots and optionally save them with title_name + suffixes
 
 
 # plot scatterplots of fluorescences -- fails if only a single fluorophore is present
@@ -190,6 +190,8 @@ plt_fluor_single <-
   
   print()
 
+# TODO : make wrapper functions for all these single plots!
+
 # FSC-SSC plot of single sample
 plt_sctr_single <- 
   {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
@@ -247,6 +249,8 @@ plt_SSC_green <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['green']]]], y 
     
 
 # Density
+
+# Fluorescence density
 ggcyto(single_fcs, 
        aes(x = .data[[fluor_chnls[['green']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
        # subset = 'A'
@@ -254,6 +258,19 @@ ggcyto(single_fcs,
   geom_density(fill = 'green', alpha = 0.3) + 
   
   scale_x_logicle()
+
+# TODO : make a neat function wrapper to do this --
+
+
+# FSC density
+ggcyto(single_fcs, 
+       aes(x = .data[[scatter_chnls[['fwd']]]] )) +
+  geom_density(fill = 'gray', alpha = 0.3) + 
+  
+  scale_x_logicle()
+
+
+# Complex plots ----
 
 
 # scatter FSC vs SSC plot coloured by fluorescence

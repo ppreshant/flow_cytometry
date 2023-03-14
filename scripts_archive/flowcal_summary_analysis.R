@@ -92,7 +92,8 @@ plot_median_data <- function(.filter = '.*', .fluor = '.*', .remove = 'nothing',
 # FIXTHIS: Warning message:
 #   Ignoring unknown parameters: .data 
 
-plot_median_data(.fluor = 'mScarlet')
+# plot_median_data(.fluor = 'mScarlet') # call with regex of the fluorophore name matching
+plot_median_data(.fluor = 'gfp')
 
 # plotly::ggplotly(plt.median_yfree, dynamicTicks = T) # interactive plot
 

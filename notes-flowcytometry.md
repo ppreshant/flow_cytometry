@@ -251,7 +251,7 @@ Directory checking in `1-reading_multidata_fcs`
 - [ ] _De-clutter ridges_ : Remove labels and medians for overlapping sample names only. 
 	- [x] Or (_Currently doing with user input_) remove all medians and labels when > 2 categories (colours) occur for > 5 sample names for exploratory plotting
 - [x] Plotting order : Currently using red as the default I assume, but can have a user key for primary fluorophore of interest 'red/2' or 'green/1'? Need to pass it to `.fluor_colour` in `arrange_in_order_of_fluorophore()`
-- [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. Ex: S063a_B02: 
+- [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. _Could this be related to the bin edge [issue](flowcal issue) that also causes bimodality of negative samples around 0?_ Ex: S063a_B02: 
 ![[S063a_B02_raw.png|200]] vs flowcal ![[S063a_B02_raw-flowcal.png|300]]
 - [x] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_
 - [ ] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_

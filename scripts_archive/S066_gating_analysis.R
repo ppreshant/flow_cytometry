@@ -1,5 +1,9 @@
 # S066_gating_analysis.R
 
+
+# Pre-steps/first time ----
+# Steps to get `counts_gated` data
+
 # Load data by running analyze_fcs atleast till line 37 (sample_metadata <- ..)
 # Run till the end : line 137 for ordering the ridge plot (list_of_ordered_levels <- ..)
 # source('./analyze_fcs.R')
@@ -7,8 +11,17 @@
 # run the manual gating workflow step by step to get `counts_gated`
 # 'scripts_archive/11-manual_gating_workflow.R'
 
+# Prelim ----
 
-view(counts_gated)
+# load packages
+library(tidyverse) # load mother of all pacakges!
+source('scripts_general_fns/13-formatting_plot_funs.R')
+
+
+# Load data ----
+title_name <- 'S066x_Ara dose-1-processed'
+
+counts_gated <- str_c('FACS_analysis/tabular_outputs/', title_name, '-gated_counts.csv') %>% read.csv
 
 
 # look at d0 fractions only

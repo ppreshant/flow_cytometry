@@ -146,12 +146,18 @@ list_of_ordered_levels <- arrange_in_order_of_fluorophore(flowworkspace_summary,
 # These are slightly different from the flowCal data (due to some weird transformations).
 # But this will match the distributions plotted by R
 
-if(save_summary_stats) {
+if(save_summary_stats_from_R) {
   write.csv(flowworkspace_summary,
             str_c('FACS_analysis/tabular_outputs/', title_name, '_R-summary', '.csv'),
             na = '')   }
 
 # TODO : could prevent rewrites using file.exists() function..
+
+
+# ridgeline plots ----
+
+source('scripts_general_fns/7-exploratory_data_view.R')
+
 
 # Gating (*manual) ----
 
@@ -162,7 +168,7 @@ if(save_summary_stats) {
 
 
 
-# Obsolete/ R processing ----
+# Obsolete/ FlopR processing ----
 
 # Currently using processed files from custom python script based on FlowCal.py ; So ignore this section
 

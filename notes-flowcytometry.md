@@ -352,6 +352,8 @@ Error
 # Quarto transition
 Goal : Want to transition the jupyter notebook into a quarto (or Rmd) workflow so I can run it from within Rstudio.
 
+`adhoc_flowcal_analysis.qmd` works when run in Rstudio chunk by chunk :) Should inspire the full workflow `flowcal_html_output.qmd` now!
+
 ## Features
 1. (_convenience_) Need to read in the filename directly from R script `-.5-user_inputs.R` instead of the python file `g10.user_config.py` to prevent duplication 
 

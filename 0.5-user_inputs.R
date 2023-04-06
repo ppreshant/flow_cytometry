@@ -24,11 +24,11 @@ fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.f
 # Channel to order ridgeplots by
 order_by_channel <- 'green' # decide 'red' or 'green' or other colour key within "channel_colour_lookup" above
 
-# Show median lines and labels in ridgeplot?
+# Show median lines and labels in ridgeplot? enable only when ridges don't overlap too much
 show_medians <- FALSE
 
 # Save summary stats through R as .csv: mean, median, quartiles
-save_summary_stats <- FALSE
+save_summary_stats_from_R <- FALSE
 
 
 # secondary inputs ----

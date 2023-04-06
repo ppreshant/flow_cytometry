@@ -68,7 +68,7 @@ def plot_number_of_events(fcs_data_list, plt_title='Flow cytometry events by wel
     
     # dict(sorted(tst.items(), key=lambda item: item[1])) # # Sort in ascending order of values
     
-    # Change dictionary for plotting
+    # Change to a dictionary for plotting
     event_data = {'Well' : events_by_well.keys(), 
                   'Event count' : events_by_well.values()}
     

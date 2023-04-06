@@ -31,7 +31,7 @@ make_processing_plots = 'random 5'
 
 
 # Give the pattern/well to match the bead file (ex: E01 etc.) - if present in current dataset / else skips MEFLing
-beads_match_name =  'beads' # use well; Ex: 'A06'. Searches for match to the path -- I make a group for beads when running samples to save in a folder named 'beads' (for Sony machines)
+beads_match_name = 'beads' # None skips beads continues processing. use well; Ex: 'A06' or foldername. Searches for match to the path -- I make a group for beads when running samples to save in a folder named 'beads' (for Sony machines)
 
 # Optional: Get a custom beads file from a different folder with regex (if not present in current dataset)
 retrieve_custom_beads_file = False # make true to use the file from below else will autodetect from dataset / skip MEFLing if not found

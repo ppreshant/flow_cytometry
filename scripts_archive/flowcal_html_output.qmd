@@ -1,18 +1,39 @@
 ---
-title: "??"
+title: title_name
 author: "Prashant Kalvapalle's script"
 format: html
 editor: visual
+knitr:
+  opts_knit: 
+    root.dir: 'C:/Users/new/Box Sync/Stadler lab/Data/Flow cytometry (FACS)'
 ---
 
 <!--# TODO : make title a variable from R, set flatly theme with table of content ; figure out how to call the render with an output name set -->
+
+```{r setup, include = FALSE}
+knitr::opts_knit$set(root.dir = normalizePath('..')) # set path to the project head
+```
 
 ## flowcytometry cleanup steps
 
 Clean \`.fcs\` data by excluding saturated events, retaining singlets and events among densest region to exclude debris
 
 ```{python}
-#| echo: false
+
+print('entered the first chunk')
+```
+
+Issues :
+
+-   Looks like there is problem with conda environment; how to enter the correct env?
+
+    -   `error : matplotlib not found..`
+
+```{python}
+# | echo: false
+# import os ; os.chdir("..") ; os.getcwd() # changing working dir;try global defaults
+# os.getcwd()
+
 from analyze_fcs_flowcal import process_fcs_dir # function for complete processing
 from scripts_general_fns.g10_user_config import make_processing_plots # Import plotting key
 

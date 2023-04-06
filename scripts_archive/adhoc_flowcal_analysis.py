@@ -84,7 +84,7 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 # Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = 'D01' # 'F05|D06' or '.*' for all
+regex_to_subset = 'E01' # 'F05|D06' or '.*' for all
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
@@ -125,10 +125,10 @@ gate_and_reduce_dataset(single_fcs,\
            scatter_channels, fluorescence_channels, density_gating_fraction=.5,
            make_plots = True) ;
 
-# %% jupyter={"outputs_hidden": true} tags=[]
+# %% tags=[]
 # Show plots of a dataset, adjust gating fraction manually for any well.
 from scripts_general_fns.g3_python_utils_facs import select_well_and_show_gating
-select_well_and_show_gating('F04', 0.5, fcspaths, fcslist)
+select_well_and_show_gating('B01', 0.5, fcspaths, fcslist)
 
 
 # %% [markdown]
@@ -156,8 +156,8 @@ if len(beads_filepaths_list) > 0 : # if beads are found
     beads_filepath = beads_filepaths_list[0] # take the first beads file
 
 # %%
-# RUN THIS INSTEAD OF THE ABOVE CELL
-# ----------------------------------
+# RUN THIS INSTEAD OF THE ABOVE CELL FOR KNOWN BEADS FILE PATH
+# -------------------------------------------------------------
 # Get a custom beads file from a different folder and process it
 beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + 'S063c/S050_d-1/*/Beads/') 
 # Tips: need to coerce the list to string before using "beads_filepath"

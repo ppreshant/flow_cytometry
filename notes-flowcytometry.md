@@ -86,11 +86,12 @@ Advantage of flowcal
 
 
 ### Plotting - matplotlib
-  - [ ] Plot the initial and final event count (x-axis) by well name (short, y-axis) for easy identification of outliers and mis-processed wells. Or do a side by side scatter plot, labelling only the outliers (outside 2 SD..?). _requires deep dive into matplotlib :(_
-  - [ ] (_ignore, can do in R_) Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
-	  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
-    - [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
-  - [ ] Add sample names to the median violin plots? [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
+- [ ] Plot the initial and final event count (x-axis) by well name (short, y-axis) for easy identification of outliers and mis-processed wells. Or do a side by side scatter plot, labelling only the outliers (outside 2 SD..?). _requires deep dive into matplotlib :(_
+- [ ] (_~ not urgent_) figure out the best channel to plot during `flowcal` processing
+- [ ] (_ignore, can do in R_) Add sample names to the plot using `plt.legend(list of names in the same order, loc = 'best')`
+  - [ ] Or figure out what variable in the .fcs file is being made the title of the plots?
+- [ ] Figure out how to compose multiple data into a matplotlib by colour etc. -- Don't know if it will work as good as ggplot; and if FlowCal does it automatically as flowworkspace
+- [ ] Add sample names to the median violin plots? [docs matplotlib](https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py)
 
 ### File/fcs handling
 - [x] Is pData saved with `write.FCS()`? _NO; needs to me remade
@@ -253,6 +254,12 @@ Directory checking in `1-reading_multidata_fcs`
 - [x] Plotting order : Currently using red as the default I assume, but can have a user key for primary fluorophore of interest 'red/2' or 'green/1'? Need to pass it to `.fluor_colour` in `arrange_in_order_of_fluorophore()`
 - [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. _Could this be related to the bin edge [issue](flowcal issue) that also causes bimodality of negative samples around 0?_ Ex: S063a_B02: 
 ![[S063a_B02_raw.png|200]] vs flowcal ![[S063a_B02_raw-flowcal.png|300]]
+
+Also check S067b1 : plotting with `geom_hex()` and `geom_point()` : hex is messing up representing the density bigtime - was there any change in the function behavior from the past?
+![[S067b1_143_ww-raw-sctr_hex.png | 300]]
+  ![[S067b1_143_ww-raw-sctr_point.png | 300]]
+
+
 - [x] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_
 - [ ] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_
 - [ ] Overlay the correct median labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_
@@ -349,12 +356,13 @@ Goal : Want to transition the jupyter notebook into a quarto (or Rmd) workflow s
 1. (_convenience_) Need to read in the filename directly from R script `-.5-user_inputs.R` instead of the python file `g10.user_config.py` to prevent duplication 
 
 ## connecting to conda env
-Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?. Works with R's `reticulate` library if `Sys.setenv(RETICULATE_PYTHON = "C:/Users/new/.conda/envs/flowcal/python.exe"` is used before `library(reticulate)`.
+Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?. Works with R's `reticulate` library if `Sys.setenv(RETICULATE_PYTHON = "C:/Users/new/.conda/envs/flowcal/python.exe")` is used before `library(reticulate)`.
 - Using python with Rstudio IDE :  [documentation](https://support.posit.co/hc/en-us/articles/1500007929061-Using-Python-with-the-RStudio-IDE)
 - Alternate way : create a quarto project : [docs](https://quarto.org/docs/tools/rstudio.html)
 - (_useless_) Rstudio - conda help : https://community.rstudio.com/t/using-rstudio-within-a-conda-environment/128780
 
 ## convert .ipnb to .qmd : jupytext?
+- Might be better to rewrite -- directory changes and modules loading might differ
 need to convert onetime only and not link notebooks
 - Use `quarto convert` - from jupytext docs below
 - Check jupytext [docs](https://jupytext.readthedocs.io/en/latest/formats.html?highlight=quarto#quarto)

@@ -43,6 +43,20 @@ def process_beads_file(beads_filepath,
     # Message about the beads file being read
     print('Reading beads from file : ' + os.path.basename(beads_filepath))
     
+    
+    # Error check : for fluorescence channels
+    fluor_channels_check = [i in beads_data.channels for i in fluorescence_channels] # check for presence
+    if not(all(fluor_channels_check)):
+        print("Fluorescence not found in the beads, to skip MEFLing, re-run with 'beads_match_name = None' \n\n\
+fluorescence channel check in beads")
+        print([f'{i} : {i in beads_data.channels}' for i in fluorescence_channels])
+        
+        print("\n Here are all channels in the beads : ") ; print(beads_data.channels)
+        ValueError('Code stopped because beads file didnt have the right fluor channels. happens when reusing beads from another run. Make sure to remove the beads file from the dataset before running!') 
+    
+    
+    
+    
     # Visualize raw data of beads : for troubleshooting 
     FlowCal.plot.density_and_hist(beads_data,
                                   density_channels=scatter_channels,
@@ -60,12 +74,13 @@ def process_beads_file(beads_filepath,
     # my Spherotech beads have lot of debris < 1,000, 
     # but threshold might change depending on gains.
     
+    # Error check : low beads after gating
     if beads_gate1.__len__() < 2000:
         if input('Beads have aberrant scatter profile, look at the plot and decide to proceed; yes (1) or no (0)'):
             ValueError('Code stopped by user intervention due to beads file. Change beads file and rerun')
-        
+    
     # TODO: Have a way to discard the aberrant files with a warning and continue running?
-     
+    
     
     # gate 30% # since my beads have lot of debris at low FSC, SSC ranges
     beads_densitygate30 = FlowCal.gate.density2d(beads_gate1,

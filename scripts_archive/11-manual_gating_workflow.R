@@ -8,7 +8,7 @@ source('./analyze_fcs.R')
 
 # Select sample(s) ----
 
-single_fcs <- fl.set[[expand_wellname('B04')]] # select a representative sample to set gates on
+single_fcs <- fl.set[[expand_wellname('B02')]] # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
 # Visualize sample ----
@@ -45,7 +45,11 @@ ggsave(str_c('FACS_analysis/plots/',
 # Gating ----
 
 # (setting 1D gates on both channels stored in vector 'fluor_chnls')
-gates_1d_list <- map(fluor_chnls, ~ openCyto::mindensity(single_fcs, channel = .x)) # draws a line at the minimum density region in 1d
+gates_1d_list <- 
+  map(fluor_chnls, 
+   ~ openCyto::mindensity(single_fcs, channel = .x, 
+                          gate_range = c(736, Inf) # manual use: need a gate range to set higher than cluster
+                          )) # draws a line at the minimum density region in 1d
 
 # Look at openCyto documentation for other gating functions 
 # https://www.bioconductor.org/packages/release/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html

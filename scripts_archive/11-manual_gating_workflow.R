@@ -148,7 +148,7 @@ counts_gated <- gs_pop_get_count_fast(gate_set) %>%
   mutate(across(Population, ~ str_replace(.x, '/', ''))) %>% 
   
   # summary statsfor replicate wells
-  group_by(assay_variable, Population) %>% # group within replicates
+  group_by(assay_variable, sample_category, Population) %>% # group within replicates
   mutate(across(c(Count, freq), # create mean of counts
                 mean,  
                 .names = 'mean_{.col}'), 

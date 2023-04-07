@@ -8,7 +8,7 @@ source('./analyze_fcs.R')
 
 # Select sample(s) ----
 
-single_fcs <- fl.set[[expand_wellname('B01')]] # select a representative sample to set gates on
+single_fcs <- fl.set[[expand_wellname('B04')]] # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
 # Visualize sample ----
@@ -150,8 +150,9 @@ counts_gated <- gs_pop_get_count_fast(gate_set) %>%
   # summary statsfor replicate wells
   group_by(assay_variable, Population) %>% # group within replicates
   mutate(across(c(Count, freq), # create mean of counts
-                mean,  .names = 'mean_{.col}', 
-                .before = well)) 
+                mean,  
+                .names = 'mean_{.col}'), 
+         .before = well) 
 
 
 # Save gated counts ----

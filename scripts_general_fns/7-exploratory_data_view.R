@@ -40,6 +40,8 @@ est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5
 source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
 plt_ridges <- plot_ridges_fluor(.show_medians = show_medians) # make plots and optionally save them with title_name + suffixes
 
+# TODO : change est_plt_side for ridge plots to include the max number of samples within the sample groups (and not total)
+# context : ridge plot width seems to change with number of sample_categories ; set to constant width = 5 
 
 
 # Other analysis ; run manually when required ; turned off when calling the whole script 

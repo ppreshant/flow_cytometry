@@ -79,3 +79,23 @@ gate_and_reduce_dataset(single_fcs,\
            scatter_channels, fluorescence_channels, density_gating_fraction=.5,
            make_plots = True) ;
 ```
+
+## Process beads
+
+```{python beads}
+
+# Get beads within the folder  
+beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
+if len(beads_filepaths_list) > 0 : # if beads are found
+    beads_found = True
+    beads_filepath = beads_filepaths_list[0] # take the first beads file
+    
+
+beads_data = FlowCal.io.FCSData(beads_filepath); # read in the beads
+beads_data.channels # check channels
+```
+
+```{python}
+print("fluorescence channel check in beads")
+[f'{i} : {i in beads_data.channels}' for i in fluorescence_channels]
+```

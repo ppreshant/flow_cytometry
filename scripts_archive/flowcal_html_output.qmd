@@ -3,15 +3,19 @@ title: title_name
 author: "Prashant Kalvapalle's script"
 format: html
 editor: visual
-knitr:
-  opts_knit: 
-    root.dir: 'C:/Users/new/Box Sync/Stadler lab/Data/Flow cytometry (FACS)'
+# knitr:
+#   opts_knit: 
+#     root.dir: 'C:/Users/new/Box Sync/Stadler lab/Data/Flow cytometry (FACS)'
 ---
 
 <!--# TODO : make title a variable from R, set flatly theme with table of content ; figure out how to call the render with an output name set -->
 
 ```{r setup, include = FALSE}
 knitr::opts_knit$set(root.dir = normalizePath('..')) # set path to the project head
+
+# reticulate options
+Sys.setenv(RETICULATE_PYTHON = 'C:/Users/new/.conda/envs/flowcal/python.exe')
+library(reticulate)
 ```
 
 ## flowcytometry cleanup steps

@@ -75,7 +75,40 @@ Advantage of flowcal
 - [ ] Code: input() function called from within a module in jupyterlab does not work. See `analyze_fcs_flowcal`/Line 121 for beads with low events
 - [x] code stops in the pipeline but runs adhoc : `to_mef()` step : on gfp and mcherry2 data `S066x_Ara dose-1` -- `fluorescence_channels` is empty, not being recognized -- due to PBS
 - [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
-  
+
+### Bimodality after MEFL issue
+- [ ] Investigate the bimodality around 0 for non fluorescent cells. Ex: S055/S063. _is this an artifact of the Sony flow cyt software doing background subtraction?_ 
+- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal
+compare S055 : 
+Raw ![[S055_51 in 8 organisms-raw-ridge density-raw.png|250]] Processed ![[S055_51 in 8 organisms-processed-ridge density-processed.png|250]]
+- Take the negative control sample from this dataset and trace the intermediate distributions in the flowCal process - _Is this because of subsetting the data or due to MEFL transformation?_ -- Looks like it is. How is it that S061 sensory only doesn't have the bimodal
+- trying on negative control of S063c/D01 (SS marine) : 
+	Raw ![[S063c_Ds_empty-raw.png|250]]  Processed : ![[S063c_Ds_empty-processed.png|250]] MEFLing : ![[S063c_Ds_empty-MEFLing.png|500]] ; 
+	Histogram at 200 bins : ![[S063c_Ds_empty-processed_200bins.png|250]]
+	- [x] Follow up to trace steps in the processing to the origination of bimodality ; 
+		- Looks fine after `gate_and_reduce()` : Plotted with this `FlowCal.plot.hist1d(processed_single_fcs.gated_data, channel = fluorescence_channels[0], xlim = (-100, 100), bins = 1000)`
+		- Seeing bimodal around 0 after MEFLing
+- Effect of the FlowCal processing on a positive sample : Ex: 'S063a_B02_gr_raw..'
+Raw : ![[S063a_B02_gr_raw.png|250]] Processed : ![[S063a_B02_gr_processed.png|250]]
+
+ - check some sample that is negative with the above method intermediate steps in flowcal. _ex: S067b1/B09; which is 143/So - d-1_U_ which loos clearly bimodal without zoom in ![[S067b1_143_B9_processed_bimodal.png | 200]]
+ Plotting density 2d is more informative than 1d. Here's `FlowCal.plot.density2d(.., mode = 'scatter')` 
+ Zoomed in here with smooth and with `smooth = False`
+  ![[S067b1_143_B9_raw_density.png | 300]] ![[S067b1_143_B9_processed_density.png| 300]] 
+- Scatter lot on linearscale (_this one should do no approximations, plotting exact data_) : Shows that MEFL is producing values away from 0 -- _need to inspect the MEFLing vector?_ 
+
+![[S067b1_143_B9_raw_scatter.png|300]] ![[S067b1_143_B9_processed_scatter.png|300]]
+ - [ ] MEFLing is producing a gap at 0 - check formula if 0 is not an output of MEFL transformation, this could cause the effect. How to get around it? 
+Running `to_mef.fitting()` with `full_output = True` gives these details about the calibration model
+'beads_params': array(6.84108707e-01, 4.13784424e+00, 3.43116109e+03),
+ `'beads_model_str': 'm*log(fl_rfi) + b = log(fl_mef_auto + fl_mef)'`
+ where m (slope) = 0.684 
+ b (intercept) = 4.137
+ fl_mef_auto (autofluor.) = 3.43e3 --- _this seems too high, is something weird going on?_
+
+ - [ ] Post a reply with the density plot - say that bin edges is not an issue, maybe the model parameters..
+
+
 ## Tasks
 - [ ] Make a list of samples with the # of events before filtering to check if something is wrong? 
 - [x] Practicing the [flowcal tutorial](https://taborlab.github.io/FlowCal/python_tutorial)
@@ -112,18 +145,7 @@ Advantage of flowcal
 	- [ ] (_fancy_) get the density gating percentage from user input after showing a plot of 50%, interactive analysis.?
 
 ### Processing
-- [ ] Investigate the bimodality around 0 for non fluorescent cells. Ex: S055/S063. _is this an artifact of the Sony flow cyt software doing background subtraction?_ compare S055 : 
-Raw ![[S055_51 in 8 organisms-raw-ridge density-raw.png|250]] Processed ![[S055_51 in 8 organisms-processed-ridge density-processed.png|250]]
-- Take the negative control sample from this dataset and trace the intermediate distributions in the flowCal process - _Is this because of subsetting the data or due to MEFL transformation?_ How is it that S061 sensory only doesn't have the bimodal
-- trying on negative control of S063c/D01 (SS marine) : 
-	Raw ![[S063c_Ds_empty-raw.png|250]]  Processed : ![[S063c_Ds_empty-processed.png|250]] MEFLing : ![[S063c_Ds_empty-MEFLing.png|500]] ; 
-	Histogram at 200 bins : ![[S063c_Ds_empty-processed_200bins.png|250]]
-	- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal
-	- [x] Follow up to trace steps in the processing to the origination of bimodality ; 
-		- Looks fine after `gate_and_reduce()` : Plotted with this `FlowCal.plot.hist1d(processed_single_fcs.gated_data, channel = fluorescence_channels[0], xlim = (-100, 100), bins = 1000)`
-		- Seeing bimodal around 0 after MEFLing
-- Effect of the FlowCal processing on a positive sample : Ex: 'S063a_B02_gr_raw..'
-Raw : ![[S063a_B02_gr_raw.png|250]] Processed : ![[S063a_B02_gr_processed.png|250]]
+
 
 ### Other information
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 

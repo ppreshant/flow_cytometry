@@ -6,7 +6,8 @@ Created: 1-10-22
 """
 
 def process_beads_file(beads_filepath,
-                       scatter_channels, fluorescence_channels):
+                       scatter_channels, fluorescence_channels,
+                      give_full_output=False):
     
     """ Load the beads .fcs file, gate it, plot and make calibration curve
     
@@ -18,6 +19,8 @@ def process_beads_file(beads_filepath,
         The channels to be used for scattering depending on instrument - ex: ['FSC-A', 'SSC-A']
     fluorescence_channels : list
         The channels to be used for fluorescence depending on experiment, instrument - ex: ['gfpmut3-A', 'mcherry2-A']
+    give_full_output : bool
+        Use True only for troubleshooting of the beads calibration model
     
     Returns
     -------
@@ -113,7 +116,8 @@ fluorescence channel check in beads")
     to_mef = FlowCal.mef.get_transform_fxn(beads_densitygate30.gated_data, 
                                            mef_values = [mGreenLantern_mefl_vals, mScarlet_mefl_vals],
                                            mef_channels = fluorescence_channels,
-                                           plot=True)
+                                           plot=True,
+                                          full_output = give_full_output)
     plt.show()
     
     

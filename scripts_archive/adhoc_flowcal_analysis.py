@@ -13,6 +13,9 @@
 #     name: python3
 # ---
 
+# %% [markdown]
+# # Load data, prelim code 
+
 # %%
 # Run the flow cytometry script components from outside 
 
@@ -46,6 +49,9 @@ import importlib # usage importlib.reload(module_name)
 # Utilities
 from sspipe import p, px # pipes usage: x | p(fn) | p(fn2, arg1, arg2 = px)
 
+# %% [markdown]
+# ## Load Flowcal interfacing functions
+
 # %%
 # flowcal prerequisites
 import FlowCal # flow cytometry processing
@@ -67,24 +73,26 @@ from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_
     channel_lookup_dict, use_channel_dimension
 import scripts_general_fns.g10_user_config as config # in case you need more stuff
 
-# %% get .fcs file list
-# Load fcs files
+# %% [markdown]
+# ## Load fcs files
 
-# If needed, change the current working directory
+# %% get .fcs file list
+# Load fcs files within folder, not reading in .fcs data yet
+
+# If this doesn't work, try changing the current working directory
 # os.chdir(r'C:\Users\new\Box Sync\Stadler lab\Data\Flow cytometry (FACS)')
 
 fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
 # Loads them as lists in alphabetical order I assume?
 
 # %% [markdown]
-# # Detect channel names
-# - Need to load a small subset of data
+# # Load a single .fcs file
 
 # %%
 # Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = 'B09' # 'F05|D06' or '.*' for all
+regex_to_subset = 'A02' # 'F05|D06' or '.*' for all
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
@@ -99,17 +107,21 @@ fcs_data_subset = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
 # Load one file for testing
 single_fcs = fcs_data_subset[0]
 
+# %% [markdown]
+# ## Detect channel names
+# Automatically detects channel names used in the loaded single data from among `channel_lookup_dict` in `g10_user_config.py` file so that the code can run in a generalized manner
+
 # %%
 # get the relevant channels present in the data
 relevant_channels = single_fcs.channels | p(subset_matching_regex, px, use_channel_dimension) 
 
-# autodetect the channels
+# autodetect the channvels
 fluorescence_channels, scatter_channels = tuple\
     (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
 
 # %%
 # check --
-# fluorescence_channels
+fluorescence_channels
 # fcslist_subset
 
 # %% [markdown]
@@ -117,6 +129,139 @@ fluorescence_channels, scatter_channels = tuple\
 
 # %% tags=[]
 f'{single_fcs.__len__()} : number of events' # check that this is a non-empty file
+
+# %% [markdown]
+# # Process the beads
+
+# %%
+# Get beads within the folder  
+beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
+if len(beads_filepaths_list) > 0 : # if beads are found
+    beads_found = True
+    beads_filepath = beads_filepaths_list[0] # take the first beads file
+
+# %%
+# RUN THIS INSTEAD OF THE ABOVE CELL FOR KNOWN BEADS FILE PATH ; IGNORE IF RUNNING ABOVE CELL
+# ----------------------------------------------------------------------------------------------
+# Get a custom beads file from a different folder and process it
+
+# uncomment below line
+# beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + 'S063c/S050_d-1/*/Beads/') 
+# Tips: need to coerce the list to string before using "beads_filepath"
+
+
+# %% tags=[]
+# Test beads processing function
+from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+
+to_mef = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels) # works!
+
+# %% [markdown]
+# # Bimodal troubleshooting : Plotting 1d histograms
+
+# %% tags=[]
+# Make processed data
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+
+processed_single_fcs = \
+process_single_fcs_flowcal(single_fcs,
+                           to_mef,
+                           scatter_channels, fluorescence_channels,
+                           make_plots=True)
+
+# %% [markdown]
+# ### Scatter2d plots
+
+# %%
+FlowCal.plot.scatter2d(single_fcs, channels = ('SSC-A', fluorescence_channels[0]), xlim = (80, 8e3), ylim = (-200, 500))
+# fluorescence_channels[0 or 1] = 'mScarlet-I-A'
+
+# %%
+FlowCal.plot.scatter2d(processed_single_fcs, channels = ('SSC-A', fluorescence_channels[0]), xlim=(100, 1000), ylim=(-1e3, 2e3))
+
+# %% [markdown] tags=[]
+# ### Scatter2d w linear scale
+# Histogram with linear scale doesn't work.. making a single bin for some reason
+# let's try density / scatter
+
+# %%
+# FlowCal.plot.density2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim = (80, 8e3), ylim = (-200, 500), smooth = False, yscale='linear')
+FlowCal.plot.scatter2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), 
+                       xlim = (80, 8e3), ylim = (-200, 500), 
+                       yscale='linear')
+
+# %%
+# FlowCal.plot.density2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim = (80, 8e3), ylim = (-200, 500), smooth = False, yscale='linear')
+FlowCal.plot.scatter2d(processed_single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), 
+                       xlim = (80, 1e3), ylim=(-1e3, 1.5e3),
+                       yscale='linear')
+
+# %%
+# ignore this
+FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0], xscale = 'linear', xlim = (0, 500), bins = 1024)
+# FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0], xscale = 'linear', xlim = (-200, 200), bins = 1000)
+
+# %% [markdown]
+# ### hist1d
+
+# %%
+# plot density of single FCS
+
+# see full range and then constrain below for better visual
+# FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0])
+FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0], xscale = 'logicle', xlim = (-200, 200), bins = 1000)
+
+
+# %%
+# see full range and then constrain below for better visual
+# FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0])
+
+FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0], xlim = (-2e3, 2e3), bins = 200)
+
+# %% [markdown]
+# ### Density2d plots
+
+# %%
+# FlowCal.plot.scatter2d(single_fcs, channels = ('SSC-A', 'FSC-A'))
+FlowCal.plot.density2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim = (80, 8e3), ylim = (-200, 500), smooth = False) #, yscale='linear')
+
+# %%
+FlowCal.plot.density2d(processed_single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim=(100, 1000), ylim=(-1e3, 2e3)) #, smooth = False)
+
+# %% [markdown]
+# ### Other investigations
+# Look at hist_bins
+
+# %%
+single_fcs.hist_bins
+
+# %%
+processed_single_fcs.hist_bins
+
+# %% [markdown]
+# ### Explore MEFL calibration prameters
+# As John Sexton [suggests](https://github.com/taborlab/FlowCal/issues/359).
+# Need to run to_mef `FlowCal.mef.get_transform_fxn` with `full_output==True`
+#  > (It would also be helpful to inspect the calibration model parameters and make sure they make sense--the exponential term should be near 1.0 for modern cytometers, and the linear scaling factor should depend on the detector voltage.
+
+# %% tags=[]
+mef_model = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels, give_full_output=True)
+
+# %%
+mef_model.fitting
+
+# %% [markdown]
+# Next steps :
+# - try plotting this model and check if there is a zero avoidance going on
+# - I assume m is the exponential term John Sexton is referring to, check when posting the reply
+# - Ask how this can be fixed - new beads etc.?
+
+# %%
+mef_model.selection
+
+# %% [markdown]
+# # Processing .fcs wrapper : gating to MEFL
+# (Optional)
 
 # %% tags=[] jupyter={"outputs_hidden": true}
 # Show plots of a dataset, adjust gating fraction manually. Use next code block for quick change of well too!
@@ -132,6 +277,36 @@ select_well_and_show_gating('B01', 0.5, fcspaths, fcslist)
 
 
 # %% [markdown]
+# # Testing other features
+
+# %% tags=[] jupyter={"outputs_hidden": true}
+# get summary stats and test pandas on the base data / processed data
+summary_stats_list = (['mean', 'median', 'mode'],
+                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
+
+# Generate a combined dataframe for mean, median and mode respectively
+summary_stats_processed = map(lambda x, y: [y(single_fcs, 
+                         channels = fluorescence_channels)\
+                   for single_fcs in processed_fcs_data] |\
+    p(pd.DataFrame, 
+      columns = [x + '_' + chnl for chnl in fluorescence_channels],
+     index = fcslist_subset), summary_stats_list[0], summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+
+# %%
+# adhoc run with functions
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal
+calibrated_single_fcs = process_single_fcs_flowcal(single_fcs, to_mef, scatter_channels, fluorescence_channels)
+
+# %% tags=[]
+fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
+
+# %%
+final_counts = np.array([single_fcs.__len__() for single_fcs in fcs_data])
+
+# %%
+tst = pd.DataFrame({ 'final_events' : [single_fcs.__len__() for single_fcs in fcs_data]})
+
+# %% [markdown] tags=[]
 # # Troubleshooting basic python
 
 # %%
@@ -145,29 +320,41 @@ indx, empties = zip(*[(i, a) for (i,a) in enumerate(processed_fcs_data) if a.__l
 a = range(3)
 f'list is : {*a,}'
 
-# %% [markdown]
-# # Process the beads
+# %% [markdown] tags=[]
+# # Testing utilities
+# - on single fcs files etc.
 
 # %%
-# Get beads within the folder  
-beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
-if len(beads_filepaths_list) > 0 : # if beads are found
-    beads_found = True
-    beads_filepath = beads_filepaths_list[0] # take the first beads file
+# process all .fcs files : (skips MEFLing if beads are absent)
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+
+processed_fcs_data = [process_single_fcs_flowcal\
+                       (single_fcs,
+                        to_mef,
+                        scatter_channels, fluorescence_channels,
+                        make_plots=None)\
+                  for single_fcs in fcs_data_subset]
 
 # %%
-# RUN THIS INSTEAD OF THE ABOVE CELL FOR KNOWN BEADS FILE PATH
-# -------------------------------------------------------------
-# Get a custom beads file from a different folder and process it
-beads_filepath, beads_filename = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + 'S063c/S050_d-1/*/Beads/') 
-# Tips: need to coerce the list to string before using "beads_filepath"
+# Remove .fcs data where no events are left after the filtering process
+empty_fcs_names = None # default
 
+empty_fcs_indices = [i for (i,single_fcs) in enumerate(processed_fcs_data) if single_fcs.__len__() == 0] # get the index of the empties
+empty_fcs_names = [x for i,x in enumerate(fcslist) if i in empty_fcs_indices]
 
-# %% tags=[]
-# Test beads processing function
-from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+fcslist_subset = [x for i,x in enumerate(fcslist_subset) if i not in empty_fcs_indices] 
+fcspaths_subset = [x for i,x in enumerate(fcspaths_subset) if i not in empty_fcs_indices] 
+processed_fcs_data = [x for i,x in enumerate(processed_fcs_data) if i not in empty_fcs_indices] 
 
-to_mef = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels) # works!
+# %%
+fcslist_subset.__len__()
+
+# %% jupyter={"outputs_hidden": true} tags=[]
+[fl.__len__() for fl in processed_fcs_data]
+
+# %% jupyter={"outputs_hidden": true} tags=[]
+# Gate and plot a single file - testing the density_gating_fraction
+singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data_subset[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
 
 # %% [markdown] tags=[]
 # # Run a customized analysis workflow : for efficiency/speed
@@ -239,170 +426,3 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
     # remove .fcs holding lists to save memory
     del fcs_data
     del calibrated_fcs_data
-
-# %% [markdown] tags=[]
-# # Testing utilities
-# - on single fcs files etc.
-
-# %%
-# process all .fcs files : (skips MEFLing if beads are absent)
-from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
-
-processed_fcs_data = [process_single_fcs_flowcal\
-                       (single_fcs,
-                        to_mef,
-                        scatter_channels, fluorescence_channels,
-                        make_plots=None)\
-                  for single_fcs in fcs_data_subset]
-
-# %%
-# Remove .fcs data where no events are left after the filtering process
-empty_fcs_names = None # default
-
-empty_fcs_indices = [i for (i,single_fcs) in enumerate(processed_fcs_data) if single_fcs.__len__() == 0] # get the index of the empties
-empty_fcs_names = [x for i,x in enumerate(fcslist) if i in empty_fcs_indices]
-
-fcslist_subset = [x for i,x in enumerate(fcslist_subset) if i not in empty_fcs_indices] 
-fcspaths_subset = [x for i,x in enumerate(fcspaths_subset) if i not in empty_fcs_indices] 
-processed_fcs_data = [x for i,x in enumerate(processed_fcs_data) if i not in empty_fcs_indices] 
-
-# %%
-fcslist_subset.__len__()
-
-# %% jupyter={"outputs_hidden": true} tags=[]
-[fl.__len__() for fl in processed_fcs_data]
-
-# %% jupyter={"outputs_hidden": true} tags=[]
-# Gate and plot a single file - testing the density_gating_fraction
-singlefcs_singlets90 = gate_and_reduce_dataset(fcs_data_subset[1], scatter_channels, fluorescence_channels, density_gating_fraction = 0.7, make_plots = True)
-
-# %% [markdown]
-# # Testing other features
-
-# %% tags=[] jupyter={"outputs_hidden": true}
-# get summary stats and test pandas on the base data / processed data
-summary_stats_list = (['mean', 'median', 'mode'],
-                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
-
-# Generate a combined dataframe for mean, median and mode respectively
-summary_stats_processed = map(lambda x, y: [y(single_fcs, 
-                         channels = fluorescence_channels)\
-                   for single_fcs in processed_fcs_data] |\
-    p(pd.DataFrame, 
-      columns = [x + '_' + chnl for chnl in fluorescence_channels],
-     index = fcslist_subset), summary_stats_list[0], summary_stats_list[1]) | p(pd.concat, px, axis = 1)
-
-# %% [markdown]
-# ## Bimodal troubleshooting : Plotting 1d histograms
-
-# %% tags=[]
-# Make processed data
-from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
-
-processed_single_fcs = \
-process_single_fcs_flowcal(single_fcs,
-                           to_mef,
-                           scatter_channels, fluorescence_channels,
-                           make_plots=True)
-
-# %% [markdown]
-# ### Logicle scale (default)
-
-# %%
-# plot density of single FCS
-
-# see full range and then constrain below for better visual
-# FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0])
-FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0], xscale = 'logicle', xlim = (-200, 200), bins = 1000)
-
-
-# %%
-# see full range and then constrain below for better visual
-# FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0])
-
-FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0], xlim = (-2e3, 2e3), bins = 200)
-
-# %% [markdown]
-# ### Density2d plots
-
-# %%
-# FlowCal.plot.scatter2d(single_fcs, channels = ('SSC-A', 'FSC-A'))
-FlowCal.plot.density2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim = (80, 8e3), ylim = (-200, 500), smooth = False) #, yscale='linear')
-
-# %%
-FlowCal.plot.density2d(processed_single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim=(100, 1000), ylim=(-1e3, 2e3)) #, smooth = False)
-
-# %% [markdown]
-# ### Scatter2d plots
-
-# %%
-FlowCal.plot.scatter2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), xlim = (80, 8e3), ylim = (-200, 500))
-
-# %%
-FlowCal.plot.scatter2d(processed_single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), xlim=(100, 1000), ylim=(-1e3, 2e3))
-
-# %% [markdown] tags=[]
-# ### linear scale
-# Histogram doesn't work.. making a single bin for some reason
-# let's try density / scatter
-
-# %%
-# FlowCal.plot.density2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim = (80, 8e3), ylim = (-200, 500), smooth = False, yscale='linear')
-FlowCal.plot.scatter2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), 
-                       xlim = (80, 8e3), ylim = (-200, 500), 
-                       yscale='linear')
-
-# %%
-# FlowCal.plot.density2d(single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), mode = 'scatter', xlim = (80, 8e3), ylim = (-200, 500), smooth = False, yscale='linear')
-FlowCal.plot.scatter2d(processed_single_fcs, channels = ('SSC-A', 'mScarlet-I-A'), 
-                       xlim = (80, 1e3), ylim=(-1e3, 1.5e3),
-                       yscale='linear')
-
-# %%
-FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0], xscale = 'linear', xlim = (0, 500), bins = 1024)
-# FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0], xscale = 'linear', xlim = (-200, 200), bins = 1000)
-
-# %% [markdown]
-# ### Other investigations
-# Look at hist_bins
-
-# %%
-single_fcs.hist_bins
-
-# %%
-processed_single_fcs.hist_bins
-
-# %% [markdown]
-# ### Explore MEFL calibration prameters
-# As John Sexton [suggests](https://github.com/taborlab/FlowCal/issues/359).
-# Need to run to_mef `FlowCal.mef.get_transform_fxn` with `full_output==True`
-#  > (It would also be helpful to inspect the calibration model parameters and make sure they make sense--the exponential term should be near 1.0 for modern cytometers, and the linear scaling factor should depend on the detector voltage.
-
-# %% jupyter={"outputs_hidden": true} tags=[]
-mef_model = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels, give_full_output=True) # works!
-
-# %%
-mef_model.fitting
-
-# %% [markdown]
-# Next steps :
-# - try plotting this model and check if there is a zero avoidance going on
-# - I assume m is the exponential term JS is referring to, check when posting the reply
-# - Ask how this can be fixed - new beads etc.?
-
-# %%
-mef_model.selection
-
-# %%
-# adhoc run with functions
-from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal
-calibrated_single_fcs = process_single_fcs_flowcal(single_fcs, to_mef, scatter_channels, fluorescence_channels)
-
-# %% tags=[]
-fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
-
-# %%
-final_counts = np.array([single_fcs.__len__() for single_fcs in fcs_data])
-
-# %%
-tst = pd.DataFrame({ 'final_events' : [single_fcs.__len__() for single_fcs in fcs_data]})

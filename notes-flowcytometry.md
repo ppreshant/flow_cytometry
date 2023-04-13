@@ -106,7 +106,24 @@ Running `to_mef.fitting()` with `full_output = True` gives these details about t
  b (intercept) = 4.137
  fl_mef_auto (autofluor.) = 3.43e3 --- _this seems too high, is something weird going on?_
 
- - [ ] Post a reply with the density plot - say that bin edges is not an issue, maybe the model parameters..
+ - [x] Post a reply with the density plot - say that bin edges is not an issue, maybe the model parameters..
+
+#### Check cleak peak : S055 
+Checking the bead calibration of S055_B2 (MG1655 control) which looks clean (not bimodal) in a mGreenLantern plot ; it is still bimodal in mScarlet!
+fluorphore order : green (good), red (bimodal)
+``'beads_params': [array([  0.89199098,   2.5864598 , 792.15587603]),  array([7.93298660e-01, 2.76010590e+00, 1.09402666e+03])],`
+
+_the m (slope) close to 1 seems to be less bimodal_
+
+The values are not that different but see the scatterplots
+![[S055_B2_green_good.png|300]] ![[S055_B2_red_bad.png|300]]
+
+### S063c_2 bimodal
+Here's the calibration parameters for green : `0.88250639,   2.46310895, 675.87577154]`
+_the m is closer to 1, but the bimodality is also more subtle here : example data D01 - same as above_
+![[S063c_Ds_empty-processed_200bins.png|250]]
+
+
 
 
 ## Tasks

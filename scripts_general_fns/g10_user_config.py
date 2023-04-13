@@ -14,7 +14,7 @@ Created on Wed Jun  1 01:00:43 2022
 # paths are relative to the working directory
 # without the trailing slash "/"
 fcs_root_folder = 'flowcyt_data'
-fcs_experiment_folder = 'S044_new fusions_4-5-22'
+fcs_experiment_folder = 'S067b1_143_ww'
 
 # Input a regular expression to subset a limited number of wells
 

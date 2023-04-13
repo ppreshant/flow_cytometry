@@ -15,10 +15,10 @@ subset_cytoset <- function(non_data_stuff, specific_data, exclude_category)
   # subset the summary dataset : for overlaying medians onto plots 
   fcssummary.subset <- 
     flowworkspace_summary %>% 
-    filter(!str_detect(name, non_data_stuff), # remove samples without metadata or beads/pbs
+    filter(!str_detect(full_sample_name, non_data_stuff), # remove samples without metadata or beads/pbs
            !str_detect(sample_category, exclude_category), # exclude a specific category
            
-           str_detect(name, specific_data), # select specific data by name
+           str_detect(full_sample_name, specific_data), # select specific data by name
            str_detect(well, '.*')) # select with regex for wells : Example row D : 'D[:digit:]+'
   
   # TODO : use sample_metadata when flowworkspace_summary is not available?

@@ -15,7 +15,7 @@
 # Metada based sample filtering : to plot a subset of wells
 non_data_stuff <- 'NA|Beads|beads|PBS'
 specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
-exclude_category <- 'none' # use 'none' for everything : experiment/data specific
+exclude_category <- 'none' # use 'none' for selecting everything : experiment/data specific
 
 # subset the fl.set according to above variables and return a unique metadata + mean_median data
 source('scripts_general_fns/16-subset_cytoset.R') # source the script
@@ -27,7 +27,7 @@ fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_catego
 
 # estimate dimensions to save the plot in (for automated workflow)
 # num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels after making pltden_red
-num_of_unique_samples <- pData(fl.subset) %>% pull(name) %>% unique() %>% length()
+num_of_unique_samples <- pData(fl.subset) %>% pull(full_sample_name) %>% unique() %>% length()
 est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
 # overview plots : take a long time to show - so save them and open the png to visualize
@@ -67,7 +67,7 @@ if(0)
     # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
     # scale_fill_viridis_c(direction = -1) + # colourscale viridis
     
-    # facet_wrap('name', ncol = 10, scales = 'free') + # control facets for full panel
+    # facet_wrap('full_sample_name', ncol = 10, scales = 'free') + # control facets for full panel
   ggtitle(title_name) + 
     
     theme_gray()
@@ -99,7 +99,7 @@ if(0)
     # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
     # scale_fill_viridis_c(direction = -1) + # colourscale viridis
     
-    # facet_wrap('name', ncol = 10, scales = 'free') + # control facets for full panel
+    # facet_wrap('full_sample_name', ncol = 10, scales = 'free') + # control facets for full panel
     ggtitle(title_name) + 
     
     theme_gray()
@@ -236,6 +236,17 @@ if(0)
     print()
   
   
+  
+  # red-SSC scatter plot ; checking bimodality
+  plt_redssc_single_points <- 
+    {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['red']]]],
+                            y = .data[[scatter_chnls[['side']]]])) + 
+        geom_point(alpha = 0.05, size = .1) + 
+        # geom_hex(bins = 120) + 
+        geom_density2d(colour = 'black') + 
+        
+        scale_x_logicle() + scale_y_logicle()} %>% 
+    print
   
   # custom save plot
   # ggsave(str_c('FACS_analysis/plots/', 

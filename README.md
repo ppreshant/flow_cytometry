@@ -82,3 +82,22 @@ _The R section is not fully automated yet, but it should work pretty well once y
 4. run `11-manual_gating_workflow.R` for gating and saving counts of populations above the gated thresholds
 
 Do contact me if you have any questions about running this by creating an issue [here](https://github.com/ppreshant/flow_cytometry/issues)
+
+# Copyleft : GPL-3.0-or-later license
+```
+wrappers for automated processing and plotting of bacterial flow cytometry data 
+Copyright (C) 2023  Prashant Kalvapalle
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```

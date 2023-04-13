@@ -9,7 +9,7 @@ def process_beads_file(beads_filepath,
                        scatter_channels, fluorescence_channels,
                       give_full_output=False):
     
-    """ Load the beads .fcs file, gate it, plot and make calibration curve
+    """ Load the beads .fcs file, gate out debris, plot and make calibration curve
     
     Parameters
     ----------

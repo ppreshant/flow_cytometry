@@ -46,7 +46,7 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 
 # subset
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = '.*' # 'F05|D06' or '.*' for all
+regex_to_subset = 'A09' # 'F05|D06' or '.*' for all
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
@@ -55,7 +55,7 @@ fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
 fcs_data_subset = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
     
 # Load one file for testing
-single_fcs = fcs_data_subset[5]
+single_fcs = fcs_data_subset[0]
 ```
 
 ```{python}
@@ -92,10 +92,44 @@ if len(beads_filepaths_list) > 0 : # if beads are found
     
 
 beads_data = FlowCal.io.FCSData(beads_filepath); # read in the beads
+
+```
+
+```{python tr_channels}
+print("fluorescence channel check in beads")
+[f'{i} : {i in beads_data.channels}' for i in fluorescence_channels]
 beads_data.channels # check channels
 ```
 
+### Make MEFL calibrations
+
 ```{python}
-print("fluorescence channel check in beads")
-[f'{i} : {i in beads_data.channels}' for i in fluorescence_channels]
+from scripts_general_fns.g15_beads_functions import process_beads_file
+to_mef = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels) # works!
+```
+
+## MEFL single fcs
+
+```{python}
+# Make processed data
+from scripts_general_fns.g8_process_single_fcs_flowcal import process_single_fcs_flowcal # processing - gating-reduction, MEFLing
+
+processed_single_fcs = \
+process_single_fcs_flowcal(single_fcs,
+                           to_mef,
+                           scatter_channels, fluorescence_channels,
+                           make_plots=True)
+```
+
+### Plot before and after MEFL
+
+This plotting doesn't work for some reason
+
+```{python}
+# import matplotlib as plt
+FlowCal.plot.hist1d(single_fcs, channel = fluorescence_channels[0], xscale = 'logicle', xlim = (-100, 100), bins = 1000)
+
+FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0], xlim = (-500, 500), bins = 200)
+
+FlowCal.plot.hist1d(processed_single_fcs, channel = fluorescence_channels[0])
 ```

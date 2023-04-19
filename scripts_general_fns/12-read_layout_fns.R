@@ -74,7 +74,7 @@ get_and_parse_plate_layout <- function(flnm)
     mutate(across('assay_variable', as.character)) %>% # useful when plasmid numbers are provided, will convert to text
     
     group_by(assay_variable, sample_category) %>% 
-    mutate('biological_replicates' = row_number()) %>%  # Infer biological replicates in order of occurrence
+    mutate('replicate' = row_number()) %>%  # Infer biological replicates in order of occurrence
     mutate(full_sample_name = str_c(assay_variable, sample_category, sep = " /")) # make a fusion column for unique name per replicate
                                # I don't recall why I put the extra space before the "/" or why I didn't retain "_"
 }

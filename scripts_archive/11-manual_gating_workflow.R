@@ -48,7 +48,7 @@ ggsave(str_c('FACS_analysis/plots/',
 gates_1d_list <- 
   map(fluor_chnls, 
    ~ openCyto::mindensity(single_fcs, channel = .x, 
-                          gate_range = c(736, Inf) # manual use: need a gate range to set higher than cluster
+                          # gate_range = c(736, Inf) # manual use: need a gate range to set higher than cluster
                           )) # draws a line at the minimum density region in 1d
 
 # Look at openCyto documentation for other gating functions 
@@ -97,7 +97,7 @@ plt_den_1d_list <-
 # Broadcast gates ----
 # Set gates to all samples
 
-gate_set <- GatingSet(fl.set) # create a gatingset for all the samples
+gate_set <- GatingSet(fl.set) # create a gatingset for all the samples / can use fl.subset too
 
 # Add the 1D gates we set above
 node1 <- gs_pop_add(gate_set, gates_1d_list[[1]], name = 'Green') # add gates to root node of gating set

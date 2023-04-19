@@ -97,7 +97,7 @@ plot_median_data(.fluor = 'gfp')
 
 # plotly::ggplotly(plt.median_yfree, dynamicTicks = T) # interactive plot
 
-ggsave(plot_as(title_name), width = 5, height = 4) # save
+ggsave(plot_as(title_name, '_median'), width = 5, height = 4) # save
 
 
 

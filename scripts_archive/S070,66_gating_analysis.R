@@ -1,4 +1,4 @@
-# S066_gating_analysis.R
+# S070,66_gating_analysis.R
 
 
 # Pre-steps/first time ----
@@ -19,64 +19,46 @@ source('scripts_general_fns/13-formatting_plot_funs.R')
 
 
 # Load data ----
-flnms <- c('S066x_Ara dose-1', 'S066b1_Ara dose_ d2-d4', 'S066b2_Ara dose d5')
-title_name <- 'S066-processed' # appears on fig title and saved plot name
+
+flnms <- 'S070_Ara'
+title_name <- "S070_Ara-processed" # overwrite title_name 
+
+# S066 datasets
+# flnms <- c('S066x_Ara dose-1', 'S066b1_Ara dose_ d2-d4', 'S066b2_Ara dose d5')
+# title_name <- 'S066-processed' # appears on fig title and saved plot name
 
 counts_gated <- 
   flnms %>% 
   {str_c('FACS_analysis/tabular_outputs/', ., '-processed-gated_counts.csv')} %>% 
   
   map_dfr(read.csv) %>% # read all the gated counts files
-  mutate(Arabinose = as.numeric(assay_variable), .before = assay_variable) %>% # make Ara numeric
+  
+  # processing for dose_response type of data
+  mutate(sample_type = if_else(str_detect(assay_variable, 'glu|OFF|ON'), 'Controls', 'Induction'), # mark controls
+         Arabinose = as.numeric(assay_variable), .before = assay_variable) %>%  # convert to numeric for plotting properly
   mutate(day = str_remove(sample_category, '^d'), .before = sample_category) # make a new column for day
 
 unique_counts <- summarise(counts_gated, mean_freq = mean(freq),
                            .by = c(Arabinose, assay_variable, sample_category, day, Population))
 
 
-# Plots ----
+# dose response plot ----
 
-# plot dose-response
-# save_jitter <- position_jitter(width = .5, height = 0)
+source('scripts_general_fns/19-plot_dose_response_and_controls.R')
+dose_response_title <- 'Memory with Ara conc., flow cytometry'
+plt_dosec <- plot_dose_response_and_controls()
+plt_dosec[[1]] # call the combined plot
 
-plt_dose <-
-{ggplot(counts_gated,
-        aes(Arabinose, freq, colour = sample_category)) +
-    
-    geom_point() + 
-    geom_line(aes(y = mean_freq), unique_counts) + 
-    
-    guides(colour = guide_legend(title = 'day'))} %>% 
-  
-  format_logscale_x() + 
-  
-  ggtitle('ON state fraction', subtitle = title_name)
+plotly::ggplotly(plt_dosec[[2]]) # interactive partial plot with numeric Arabinose : chase outliers
+ggsave(plot_as(title_name, '-dose_response'), plt_dosec, width = 6, height = 4)
 
 
-plt_controls <- 
-  
-  {filter(counts_gated, str_detect(assay_variable, 'glu|OFF|ON')) %>% # plot non Ara samples
-  
-  ggplot(aes(assay_variable, freq, colour = sample_category)) +
-      
-      geom_point(show.legend = F) + 
-      ylab(NULL) + xlab('Controls')} %>% 
-  print
+# Plot timecourse ----
+# relevant for S066 only
 
-# Assemble plots
-library(patchwork)
-
-full_plot <- 
-plt_dose + plt_controls + 
-  plot_layout(guides = 'collect', widths = c(4, 1))
-
-ggsave(plot_as(title_name, '-dose_response'), full_plot, width = 6, height = 4)
-
-
-# Plot timecourse 
 plt_timecourse <-
   {ggplot(counts_gated,
-          aes(day, freq, label = biological_replicates)) +
+          aes(day, freq, label = biological_replicates)) + # change `biological_replicates` to `replicate` : S070
       
       geom_point(size = 1, position = position_jitter(width = 0.2, height = 0)) + 
       

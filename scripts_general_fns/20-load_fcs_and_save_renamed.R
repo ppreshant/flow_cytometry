@@ -1,13 +1,14 @@
-# 20-rename_fcs_and_save.R
+# 20-load_fcs_and_save_renamed.R
 
 #' Rename .fcs files using information from the metadata (/pData) and save in any directory with `write.FCS()`
 #' Use case : when merging files from multiple runs to analyze together in whole or subsets w regex retrieval
 #' @param : add_dir_key = T/F : whether or not to grab an additional signal of the directory name 
 #' @param : interactive_session : select F if not interactive session ; will not prompt user check of ex filename
-rename_fcs_and_save <- function(fcs_export_folder_name, base_export_dir = 'processed_data/',
-                              .flset = fl.set,
-                              add_dir_key = TRUE, source_dir,
-                              interactive_session = TRUE)
+rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir, 
+                                base_export_dir = 'processed_data/',
+                                .flset = fl.set,
+                                add_dir_key = TRUE, source_dir,
+                                interactive_session = TRUE)
 {
   
   # generate new file names ----
@@ -58,13 +59,23 @@ rename_fcs_and_save <- function(fcs_export_folder_name, base_export_dir = 'proce
 
 
 #' load cytoset from a directory, attach metadata to pData, rename files w metadata and save to output dir
-get_fcs_rename_save_to_dir <- function(.dirpath, .output_dir = fcs_export_folder_name, 
-                                       .interactive_session = TRUE, .get_metadata = TRUE)
+get_fcs_and_metadata <- function(.dirpath, .get_metadata = TRUE,
+                                 rename_and_save_fcs = FALSE, 
+                                 .interactive_session = TRUE)
 {
-  # Read each .fcs file within each directory and 
+  
+  # Load .fcs ----
+  
+  # Read all .fcs files within the directory
+  # also works with single multidata .fcs files from Guava machine : 
+  # Extracts multidata .fcs file to multiple .fcs files and re-reads as as cytoset
+
   fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a flowWorkspace::cytoset
                                fcs_pattern_to_subset = fcs_pattern_to_subset,
                                directory_path = .dirpath)
+  
+  
+  # metadata ----
   
   # Read the sample names and metadata from google sheet
   if(.get_metadata)
@@ -85,8 +96,14 @@ get_fcs_rename_save_to_dir <- function(.dirpath, .output_dir = fcs_export_folder
   pData(fl.set) <- new_pdata # replace the pData
   
   
-  # run the `rename_fcs_and_save()` function now ; non interactive?
-  rename_fcs_and_save(.output_dir, source_dir = .dirpath, interactive_session = .interactive_session)
+  # rename and save workflow
+  
+  if(rename_and_save_fcs)
+    
+    # run the `rename_fcs_and_save()` function now ; non interactive?
+    {rename_fcs_and_save(source_dir = .dirpath, interactive_session = .interactive_session)
+  
+    } else return(fl.set)
   
   # TODO : add feature to copy the logfile, append directory name to the file name
   

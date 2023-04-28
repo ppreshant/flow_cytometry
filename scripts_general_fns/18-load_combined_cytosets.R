@@ -2,8 +2,10 @@
 
 #' Load combined cytosets from multiple independent runs/plates
 #' The names of datasets need to be processed a different way
-
-load_combined_cytosets <- function(folder_name)
+#' @param : folder_name : load datasets from this folder
+#' @pram : make_other_category : Make TRUE to group samples into `other_category` to facet plots
+load_combined_cytosets <- function(folder_name, 
+                                   make_other_category = FALSE)
 {
   
   # Get data ----
@@ -18,8 +20,12 @@ load_combined_cytosets <- function(folder_name)
   
   new_pdata <- pData(fl.set) %>% 
     
-    separate(name, into = c('assay_variable', 'sample_category', 'well', 'data_set', NA), remove = F) %>% # split into metadata
-    mutate(other_category = str_replace_all(assay_variable, sample_name_translation)) # split names into categories
+    separate(name, # split metadata into columns
+             into = c('assay_variable', 'sample_category', 'well', 'data_set', NA), sep = '_|\\.',
+             remove = F) %>% 
+    
+    {if(make_other_category) # translate groups of variables into other_category
+      mutate(., other_category = str_replace_all(assay_variable, sample_name_translation)) else .} # split names into categories
   
   pData(fl.set) <- new_pdata # replace the pData
   

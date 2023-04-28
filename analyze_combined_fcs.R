@@ -27,7 +27,7 @@ sample_name_translation <- c('(^10.|110|119).*' = 'J23x', # 'oldnames|regex' = i
 # Load combined dataset ----
 
 source('scripts_general_fns/18-load_combined_cytosets.R') # source script
-fl.set <- load_combined_cytosets(folder_name)
+fl.set <- load_combined_cytosets(folder_name, make_other_category = T)
 
 
 # Side processing ----

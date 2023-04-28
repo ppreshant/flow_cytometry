@@ -442,9 +442,9 @@ The markdown calls from python are displayed as output `<IPython.core.display.Ma
 
 # Notes of individual analyses
 ## S050
-Noticed that name of fluophores: _gfpmut3, mcherry2_ names are not showing up in channel names on d0/d1/d8 data. Did we forget to unmix or something else gone wrong? 
-- Is the fluor data completely missing? _Confirmed in the Sony software: Happens when the spectrum does not show up, implying that compensation removes the fluorescenc channels from the data_
-- Check sizes for comparable number of samples : data for d-1 has gfpmut3 and mcherry2 channels
+- [x] _fixed by resaving data?_ Noticed that name of fluophores: _gfpmut3, mcherry2_ names are not showing up in channel names on d0/d1/d8 data. Did we forget to unmix or something else gone wrong? 
+	- Is the fluor data completely missing? _Confirmed in the Sony software: Happens when the spectrum does not show up, implying that compensation removes the fluorescenc channels from the data_
+	- Check sizes for comparable number of samples : data for d-1 has gfpmut3 and mcherry2 channels
 	
 data | # samples | size | Notes
 -----| ------------| -----|------------------
@@ -461,3 +461,4 @@ in comparison, S048 gives
  [7] "mGreenLantern cor-A" "mGreenLantern cor-H" "mGreenLantern cor-W" "mScarlet-I-A"        "mScarlet-I-H"        "mScarlet-I-W"       
 [13] "TIME"
 
+- S050 issue when combining data workflow : 8 files are missing presumably because they were not in the plate grid ; d-1/E12, G12, H12 - probably PBS and beads?

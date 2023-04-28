@@ -88,4 +88,6 @@ get_fcs_rename_save_to_dir <- function(.dirpath, .output_dir = fcs_export_folder
   # run the `rename_fcs_and_save()` function now ; non interactive?
   rename_fcs_and_save(.output_dir, source_dir = .dirpath, interactive_session = .interactive_session)
   
+  # TODO : add feature to copy the logfile, append directory name to the file name
+  
 }

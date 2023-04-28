@@ -10,14 +10,12 @@ rename_fcs_and_save <- function(fcs_export_folder_name, base_export_dir = 'proce
                               interactive_session = TRUE)
 {
   
-  dir.create(str_c('processed_data/', fcs_export_folder_name, '/')) # create the new directory
+  # generate new file names ----
   
   # Generate a short key to signify the directory that the .fcs files are from 
   # looking for format (day : dx or letter after S0xx expt name)
   dir_key <- if(add_dir_key) str_match(source_dir, 'S[:digit:]+([:alpha:])')[2] # get 'b' in S0xxb ; else below
   if(!is.null(dir_key) && is.na(dir_key)) dir_key <- str_extract(source_dir, 'd-?[:digit:]+') # get day key from dx
-  
-  
   
   new_file_names <- 
     mutate(new_pdata,
@@ -27,6 +25,7 @@ rename_fcs_and_save <- function(fcs_export_folder_name, base_export_dir = 'proce
                                # rownames(new_pdata) %>% str_extract('^(.)'), # add plate id letter (a, b, c etc.)
                                sep = '_')) %>%
     pull(new_flnames) # get the new filenames as a vector
+  
   
   # Show example filename and ask user prompt before saving : only if using interactively
   if(interactive_session)
@@ -41,27 +40,36 @@ rename_fcs_and_save <- function(fcs_export_folder_name, base_export_dir = 'proce
     if(proceed_key == 2) return(0) 
   }
     
+  
+  # Save files ----
+  
+  if(!dir.exists(fcs_export_folder_name)) # if path doesn't exist, create the directory
+    dir.create(str_c('processed_data/', fcs_export_folder_name, '/')) # create the new directory
+
+  
   # Proceed to saving all renamed .fcs files now
-    
   new_file_names %>%   
     {str_c(base_export_dir, fcs_export_folder_name, '/', # make filepaths for all the above filenames
            ., '.fcs')} %>% # make file path
     
     {for (i in 1:length(.)) {write.FCS(fl.set[[i]], filename = .[i])}} # save each .fcs file by looping
   
-  
-  
 }
 
 
 #' load cytoset from a directory, attach metadata to pData, rename files w metadata and save to output dir
 get_fcs_rename_save_to_dir <- function(.dirpath, .output_dir = fcs_export_folder_name, 
-                                       .interactive_session = TRUE)
+                                       .interactive_session = TRUE, .get_metadata = TRUE)
 {
   # Read each .fcs file within each directory and 
   fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a flowWorkspace::cytoset
                                fcs_pattern_to_subset = fcs_pattern_to_subset,
                                directory_path = .dirpath)
+  
+  # Read the sample names and metadata from google sheet
+  if(.get_metadata)
+    sample_metadata <- get_and_parse_plate_layout(.dirpath)
+  
   
   # attach metadata to the pData
   new_pdata <- pData(fl.set) %>% 

@@ -1,11 +1,45 @@
 # merge_cytosets_and_save.R
+# adhoc script to merge cytosets and save them into a folder
 
+# Prelims ----
+source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
+
+source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent channel names
+
+
+# Inputs ----
+
+# the combined dataset will be exported to this folder inside 'processed_data/..'
+fcs_export_folder_name <- 'S050_combined' 
+
+
+# new style ----
+# iterate through the list of folders and put them all into the export folder specified above
+
+# Geared for S050 ; but edit as necessary (one time use anyway right?) 
+
+# User inputs
+days <- -1:8
+
+# Make a list of folders
+dir.paths = map(days, ~ str_c(base_directory, 'S050_d', .x, '/'))
+
+
+# General rename-save ----
+# vectorized to work in all of the dir paths loaded above
+
+source('scripts_general_fns/20-rename_fcs_and_save.R')
+dir.paths %>% map(get_fcs_rename_save_to_dir, .interactive_session = F)
+  
+# work in progress ; vectorize this over dir.paths now..
+
+
+
+# Old script -----
 # run till line 14 of `analyze_combined_fcs.R`
 
 
 
-# adhoc script to merge cytosets and save them into a folder
-fcs_export_folder_name <- 'S063_combined' # the combined dataset will be exported to this folder inside 'processed_data/..'
 
 
 # Get data ----
@@ -13,7 +47,8 @@ fcs_export_folder_name <- 'S063_combined' # the combined dataset will be exporte
 # run general analyze_fcs.R and save each fl.set iteration as a cytoset variable to store the data to be combined
 # flset1 <- fl.set
 # in future this could be a map command - returning a list of cytoframes ; 
-# can unlist / map rbind2 somehow (read map cheatsheet)  :https://raw.githubusercontent.com/rstudio/cheatsheets/master/purrr.pdf
+# can unlist / map rbind2 somehow (read map cheatsheet)  
+# :https://raw.githubusercontent.com/rstudio/cheatsheets/master/purrr.pdf
 
 
 # Combine data ----

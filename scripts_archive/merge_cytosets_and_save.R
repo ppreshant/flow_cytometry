@@ -10,7 +10,7 @@ source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent chan
 # Inputs ----
 
 # the combined dataset will be exported to this folder inside 'processed_data/..'
-fcs_export_folder_name <- 'S050_combined' 
+fcs_export_dir <- 'S050_combined' # end with "_combined"
 
 
 # new style ----
@@ -29,7 +29,8 @@ dir.paths = map(days, ~ str_c(base_directory, 'S050_d', .x, '/'))
 # vectorized to work in all of the dir paths loaded above
 
 source('scripts_general_fns/20-rename_fcs_and_save.R')
-dir.paths %>% map(get_fcs_rename_save_to_dir, .interactive_session = F)
+dir.paths %>% map(get_fcs_and_metadata, .get_metadata = F,
+                  rename_and_save_fcs = T) # .interactive_session = F,
   
 # work in progress ; vectorize this over dir.paths now..
 
@@ -80,7 +81,7 @@ pData(fl.set) <- new_pdata # replace the pData
 
 
 # Save backup data of the superset with easier names (write.FCS)
-dir.create(str_c('processed_data/', fcs_export_folder_name, '/')) # create the new directory
+dir.create(str_c('processed_data/', fcs_export_dir, '/')) # create the new directory
 
 mutate(new_pdata,
        new_flnames = str_c(str_replace(name, ' /', '_'), 
@@ -89,7 +90,7 @@ mutate(new_pdata,
                            sep = '_')) %>%
   pull(new_flnames) %>% # get the new filenames
   
-  {str_c('processed_data/', fcs_export_folder_name, '/', # make filepaths for all the above filenames
+  {str_c('processed_data/', fcs_export_dir, '/', # make filepaths for all the above filenames
          ., '.fcs')} %>% # make file path
   
   {for (i in 1:length(.)) {write.FCS(fl.set[[i]], filename = .[i])}} # save each .fcs file by looping

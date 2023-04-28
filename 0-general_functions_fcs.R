@@ -33,7 +33,8 @@ list_of_general_functions <- c("1-reading_multidata_fcs.R",
                                "2-get_number_of_datasets_fcs.R",
                                "6-wrappers_utilities.R",
                                "12-read_layout_fns.R",
-                               "13-formatting_plot_funs.R")
+                               "13-formatting_plot_funs.R",
+                               '20-load_fcs_and_save_renamed.R')
 
 # Source all the functions listed above
 map(str_c('./scripts_general_fns/', list_of_general_functions),

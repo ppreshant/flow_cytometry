@@ -55,6 +55,8 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
     
     {for (i in 1:length(.)) {write.FCS(fl.set[[i]], filename = .[i])}} # save each .fcs file by looping
   
+  # TODO : add feature to copy the logfile, append directory name to the file name
+  
 }
 
 
@@ -70,41 +72,54 @@ get_fcs_and_metadata <- function(.dirpath, .get_metadata = TRUE,
   # also works with single multidata .fcs files from Guava machine : 
   # Extracts multidata .fcs file to multiple .fcs files and re-reads as as cytoset
 
-  fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a flowWorkspace::cytoset
-                               fcs_pattern_to_subset = fcs_pattern_to_subset,
-                               directory_path = .dirpath)
-  
-  
-  # metadata ----
-  
-  # Read the sample names and metadata from google sheet
-  if(.get_metadata)
-    sample_metadata <- get_and_parse_plate_layout(.dirpath)
-  
-  
-  # attach metadata to the pData
-  new_pdata <- pData(fl.set) %>% 
-    mutate(well = str_extract(name, '[A-H][:digit:]+')) %>% # detect the well numbers
-    rename(original_name = name) %>% # rename the "name" column
+  if(str_detect(folder_name, '_combined')) 
+  {
+    # Load combined dataset ----
     
-    left_join(sample_metadata, by = 'well') %>% # join the metadata: assay_variable, Sample_category.. 
+    source('scripts_general_fns/18-load_combined_cytosets.R') # source script
+    fl.set <- load_combined_cytosets(folder_name)
+    
+  } else 
+  { 
+    # Load regular dataset ----
+    
+    fl.set <- read_multidata_fcs(fl.path, # returns multiple fcs files as a flowWorkspace::cytoset
+                                 fcs_pattern_to_subset = fcs_pattern_to_subset,
+                                 directory_path = .dirpath)
     
     
-    column_to_rownames('original_name') # remake the rownames -- to enable attachment
-  
-  
-  pData(fl.set) <- new_pdata # replace the pData
-  
-  
-  # rename and save workflow
-  
-  if(rename_and_save_fcs)
+    # metadata ----
     
-    # run the `rename_fcs_and_save()` function now ; non interactive?
+    # Read the sample names and metadata from google sheet
+    if(.get_metadata)
+      sample_metadata <- get_and_parse_plate_layout(.dirpath)
+    
+    
+    # attach metadata to the pData
+    new_pdata <- pData(fl.set) %>% 
+      mutate(well = str_extract(name, '[A-H][:digit:]+')) %>% # detect the well numbers
+      rename(original_name = name) %>% # rename the "name" column
+      
+      left_join(sample_metadata, by = 'well') %>% # join the metadata: assay_variable, Sample_category.. 
+      
+      
+      column_to_rownames('original_name') # remake the rownames -- to enable attachment
+    
+    
+    pData(fl.set) <- new_pdata # replace the pData
+    
+    
+    # rename and save workflow ----
+    
+    if(rename_and_save_fcs)
+      
+      # run the `rename_fcs_and_save()` function now ; non interactive?
     {rename_fcs_and_save(source_dir = .dirpath, interactive_session = .interactive_session)
-  
+      
     } else return(fl.set)
+    
+    
+  }
   
-  # TODO : add feature to copy the logfile, append directory name to the file name
   
 }

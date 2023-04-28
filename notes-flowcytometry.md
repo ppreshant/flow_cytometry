@@ -230,7 +230,14 @@ flowframe/cytoframe = single files ; set = set of files. cyto - stores data in C
 
 ## file handling
 - [ ] Move the multifile .fcs to `Archive` when expanded into a folder already
-- [ ] Implement a regex command to capture files from multiple directories (S050 - multiday expt). 
+- [x] Plan a workflow for analysing a subset of files from multiple sub-directories for S050 - multiday expt)
+	- Can use simple regex? _Gets only wells, not easy to get replicates + induced, uninduced etc._ Loading with regex 'A01' - _works, and adds numbers to the `sampleNames` in the cytoset to make them unique . Will be hard to match to proper day ; not generalizable.._
+	- [x] Implement a function to load processed data, change filenames to the metadata and save to another folder ; also copy the logfile if present and delete the original folder. Start from `merge_cytosets_and_save.R` script.
+		- + include a key for the dataset captured using regex such as - letters : `S0xx[:alpha:]` / day key : `d[:digit:]` from the folder name ; with user input, skip this when details are present in the dataset already ; _how does this change for outer folder vs S050 which has inner folders -- this is rare/onetime only_
+		- Show the first filename example and ask user to proceed before doing the batch renaming
+	- Load these renamed samples using regex as needed ; set gates with a designated sample and save them somehow
+		- [ ] How to save gates?
+	- 
 - [x] How to solve the problem of non unique names of wells within different runs inside S050? _This is solved in `combine_data_workflow.R` 
 - [x] (_solved, by replacing `pData` and `sampleNames`_) Attach the names from the template to cytoset? `cf_rename_channel(x, old, new)`. _there is non uniqueness here too for replicates -- need to merge before attaching names_
 - (_done_) Another application : to join data from different experiments to plot on the same graph (48 + 51 + 78, 79 etc.). _temporary fix would be to just copy the (processed) files/renamed with expt and sample name into a temp folder ; since it is just a few files not too much space consumed_ // Can copy the logfiles and delete the processed folders -- _these can always be remade with FlowCal given the logfile parameters_
@@ -280,6 +287,7 @@ Directory checking in `1-reading_multidata_fcs`
 
 ## Gating
 - [ ] Is there a way to gate a `mindensity` to be in the middle of two samples (one positive and one negative)? _Start looking at openCyto and then flowWorkspace documentations_
+- [ ] How to plot only the gated data points? `fs <- getData(tbdata, "CD3")` - [ggcyto](https://bioconductor.org/help/course-materials/2015/BioC2015/ggcyto.html)
 - [x] Is there a `flowWorkspace` way to gate (quad gate..?) on a single sample and use the same gating parameters across all samples?
 	- [x] (_use biexp_): `mindensity` gate value causes convergence problems with logicle transform
 - [ ] figure out how to add filterID with mindensity

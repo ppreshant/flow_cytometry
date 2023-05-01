@@ -461,4 +461,6 @@ in comparison, S048 gives
  [7] "mGreenLantern cor-A" "mGreenLantern cor-H" "mGreenLantern cor-W" "mScarlet-I-A"        "mScarlet-I-H"        "mScarlet-I-W"       
 [13] "TIME"
 
-- S050 issue when combining data workflow : 8 files are missing presumably because they were not in the plate grid ; d-1/E12, G12, H12 - probably PBS and beads?
+- [x] S050 issue when combining data workflow : 8 files are missing 
+	- Fixed by loading the proper files now
+	- ~~missing files presumably because they were not in the plate grid ; d-1/E12, G12, H12 - probably PBS and beads?~~

@@ -49,3 +49,32 @@ plt_ridges <- plot_ridges_fluor(.show_medians = F, .facets_other_category = T)
 # Summary stats ----
 
 # Save summary stats
+
+
+# Plotting ----
+
+# For S050 combined datasets
+plt_days <- 
+  ggcyto(fl.set, 
+         aes(x = .data[['mcherry2-A']], 
+             fill = sample_category)) +
+  
+  ggridges::geom_density_ridges(aes(y = data_set), alpha = 0.3) + 
+  facet_wrap(facets = NULL) + 
+  scale_x_logicle() +
+  
+  # Labels of the median line
+  # {if (exists('fcsunique.subset'))  # only if the labelling subset data exists
+  #   {geom_text(data = filter(fcsunique.subset, Fluorophore == fluor_chnls['red']),
+  #             mapping = aes(x = mean_medians, y = assay_variable,
+  #                           label = round(mean_medians, 0)),
+  #             nudge_y = -0.1) } } + 
+  # median text is imperfect : showing the mean of the medians of 3 replicates. Refer to link for better alternative
+  # https://stackoverflow.com/questions/52527229/draw-line-on-geom-density-ridges
+  
+  theme(legend.position = 'top') +
+  ggtitle(title_name) + ylab('')
+
+
+fl.subset <- fl.set
+plt_days2 <- plot_ridges_fluor(.yvar = data_set, .show_medians = T, .save_plots = F)

@@ -24,6 +24,8 @@ load_combined_cytosets <- function(folder_name,
              into = c('assay_variable', 'sample_category', 'well', 'data_set', NA), sep = '_|\\.',
              remove = F) %>% 
     
+    mutate(full_sample_name = str_c(assay_variable, sample_category, sep = " /")) %>%  # make a fusion column for unique name per replicate
+    
     {if(make_other_category) # translate groups of variables into other_category
       mutate(., other_category = str_replace_all(assay_variable, sample_name_translation)) else .} # split names into categories
   

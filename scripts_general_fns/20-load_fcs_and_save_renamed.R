@@ -3,7 +3,7 @@
 #' Rename .fcs files using information from the metadata (/pData) and save in any directory with `write.FCS()`
 #' Use case : when merging files from multiple runs to analyze together in whole or subsets w regex retrieval
 #' @param : add_dir_key = T/F : whether or not to grab an additional signal of the directory name 
-#' @param : interactive_session : select F if not interactive session ; will not prompt user check of ex filename
+#' @param : interactive_session : prompts user check of filename before saving ; select F to prevent for loops
 rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir, 
                                 base_export_dir = 'processed_data/',
                                 .flset = fl.set,
@@ -16,14 +16,14 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
   # Generate a short key to signify the directory that the .fcs files are from 
   # looking for format (day : dx or letter after S0xx expt name)
   dir_key <- if(add_dir_key) str_match(source_dir, 'S[:digit:]+([:alpha:])')[2] # get 'b' in S0xxb ; else below
-  if(!is.null(dir_key) && is.na(dir_key)) dir_key <- str_extract(source_dir, 'd-?[:digit:]+') # get day key from dx
+  if(!is.null(dir_key) && is.na(dir_key)) dir_key <- str_extract(source_dir, 'd-?[:digit:]+') # get day key 
   
   new_file_names <- 
-    mutate(new_pdata,
+    mutate(pData(.flset),
            new_flnames = str_c(str_replace(full_sample_name, ' /', '_'), 
                                well, # unique names by well
                                dir_key, # add a key for the directory to all .fcs files within it
-                               # rownames(new_pdata) %>% str_extract('^(.)'), # add plate id letter (a, b, c etc.)
+                               # rownames(new_pdata) %>% str_extract('^(.)'), # add plate id (a, b, c etc.)
                                sep = '_')) %>%
     pull(new_flnames) # get the new filenames as a vector
   
@@ -44,8 +44,9 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
   
   # Save files ----
   
-  if(!dir.exists(fcs_export_folder_name)) # if path doesn't exist, create the directory
-    dir.create(str_c('processed_data/', fcs_export_folder_name, '/')) # create the new directory
+  # if path doesn't exist, create the directory within 'processed_data' -- generalize parent folder {# TODO}
+  str_c('processed_data/', fcs_export_folder_name, '/') %>% 
+    {if(!dir.exists(.)) dir.create(.)} 
 
   
   # Proceed to saving all renamed .fcs files now
@@ -53,7 +54,7 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
     {str_c(base_export_dir, fcs_export_folder_name, '/', # make filepaths for all the above filenames
            ., '.fcs')} %>% # make file path
     
-    {for (i in 1:length(.)) {write.FCS(fl.set[[i]], filename = .[i])}} # save each .fcs file by looping
+    {for (i in 1:length(.)) {write.FCS(.flset[[i]], filename = .[i])}} # save each .fcs file by looping
   
   # TODO : add feature to copy the logfile, append directory name to the file name
   
@@ -114,7 +115,7 @@ get_fcs_and_metadata <- function(.dirpath, .get_metadata = TRUE,
     if(rename_and_save_fcs)
       
       # run the `rename_fcs_and_save()` function now ; non interactive?
-    {rename_fcs_and_save(source_dir = .dirpath, interactive_session = .interactive_session)
+    {rename_fcs_and_save(source_dir = .dirpath, .flset = fl.set, interactive_session = .interactive_session)
       
     } else return(fl.set)
     

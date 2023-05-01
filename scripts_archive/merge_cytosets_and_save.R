@@ -19,18 +19,22 @@ fcs_export_dir <- 'S050_combined' # end with "_combined"
 # Geared for S050 ; but edit as necessary (one time use anyway right?) 
 
 # User inputs
-days <- -1:8
+days <- 1:8 # -1:8
 
 # Make a list of folders
 dir.paths = map(days, ~ str_c(base_directory, 'S050_d', .x, '/'))
 
 
 # General rename-save ----
+
+# get metadata -- only once for all data/ else use .get_metadata = T below
+sample_metadata <- get_and_parse_plate_layout(folder_name) 
+
 # vectorized to work in all of the dir paths loaded above
 
-source('scripts_general_fns/20-rename_fcs_and_save.R')
+source('scripts_general_fns/20-load_fcs_and_save_renamed.R')
 dir.paths %>% map(get_fcs_and_metadata, .get_metadata = F,
-                  rename_and_save_fcs = T) # .interactive_session = F,
+                  rename_and_save_fcs = T, .interactive_session = F)
   
 # work in progress ; vectorize this over dir.paths now..
 

@@ -8,7 +8,7 @@ source('./analyze_fcs.R')
 
 # Select sample(s) ----
 
-single_fcs <- fl.set[[expand_wellname('B02')]] # select a representative sample to set gates on
+single_fcs <- get_matching_well(fl.set, 'A06_d-1')  # fl.set[[expand_wellname('B02')]] # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
 # Visualize sample ----
@@ -48,7 +48,7 @@ ggsave(str_c('FACS_analysis/plots/',
 gates_1d_list <- 
   map(fluor_chnls, 
    ~ openCyto::mindensity(single_fcs, channel = .x, 
-                          # gate_range = c(736, Inf) # manual use: need a gate range to set higher than cluster
+                          gate_range = c(736, Inf) # manual use: need a gate range to set higher than cluster
                           )) # draws a line at the minimum density region in 1d
 
 # Look at openCyto documentation for other gating functions 
@@ -139,8 +139,8 @@ autoplot(gate_set[[13]]) + scale_x_flowjo_biexp() + scale_y_flowjo_biexp() # che
 counts_gated <- gs_pop_get_count_fast(gate_set) %>% 
   mutate(freq = Count/ParentCount) %>% # get the fraction of events in the gate
   
-  mutate(well = str_extract(name, '[A-H][:digit:]*')) %>%  # extract well from .fcs name
-  left_join(sample_metadata, by = 'well') %>%  # join the sample names from the plate layout
+  # mutate(well = str_extract(name, '[A-H][:digit:]*')) %>%  # extract well from .fcs name
+  left_join(sample_metadata, by = 'name') %>%  # join the sample names from the plate layout
 
   # # transform the metadata to final plot variable (ad-hoc, changes w expt)
   # mutate('fraction of RAM cells' = 

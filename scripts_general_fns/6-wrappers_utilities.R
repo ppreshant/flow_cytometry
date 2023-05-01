@@ -65,6 +65,23 @@ arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = order_by_chann
 }
 
 
+#' Select the sampleName matching one or more regular expressions
+#' @param : .flset = cytoset to retrieve well from
+#' @param : .matcher = regex expression : preferably wellname etc. that is unique
+get_matching_well <- function(.flset, .matcher)
+{
+  samples <- 
+    sampleNames(.flset) %>% 
+    .[str_detect(., .matcher)]
+  
+  if(length(samples) > 1) print('multiple matches found : ') else print('Selected well : ')
+  print(samples)
+  
+  .flset[[samples]]
+  # TODO : include ... to match multiple regexes ; still figuring out best way to do this
+}
+
+
 # Adhoc wrappers ----
 
 # to be generalized in due time

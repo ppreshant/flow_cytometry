@@ -21,12 +21,14 @@ subset_cytoset <- function(non_data_stuff, specific_data, exclude_category)
            str_detect(full_sample_name, specific_data), # select specific data by name
            str_detect(well, '.*')) # select with regex for wells : Example row D : 'D[:digit:]+'
   
-  # TODO : use sample_metadata when flowworkspace_summary is not available?
+  # TODO : use sample_metadata when flowworkspace_summary is not available? Can't plot medians then
   
   
   # get the full filenames of the samples to be included  
   samples_to_include <- pull(fcssummary.subset, filename) %>%  # take the sample names to be plotted
     unique()
+  
+  # BUG : selects the whole fl.set to subset when samples_to_include is empty vector
   
   # subset the cytoset carrying the `.fcs` data : Make a global variable
   fl.subset <<- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset. 
@@ -36,7 +38,7 @@ subset_cytoset <- function(non_data_stuff, specific_data, exclude_category)
   # Get unique values : for adding labels to plot/medians
   fcsunique.subset <- 
     select(fcssummary.subset, 
-           assay_variable, sample_category, any_of('other_category'), # other_categories for pooled datasets
+           assay_variable, sample_category, any_of(c('data_set', 'other_category')), # other_categories for combined datasets
            Fluorophore, mean_medians) %>% 
     unique() %>% # choose unique entries in the tibble
     

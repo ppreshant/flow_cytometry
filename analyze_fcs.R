@@ -13,8 +13,9 @@ source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent chan
 # rmarkdown::render('flowcal_html_output.Rmd', output_file = str_c('./FACS_analysis/html_outputs/', title_name, '.html'))
 
 
-fl.path = str_c(base_directory, folder_name, file.name_input, '.fcs')
-dir.path = str_c(base_directory, folder_name, file.name_input)
+fl.path <- str_c(base_directory, folder_name, file.name_input, '.fcs')
+dir.path <- str_c(base_directory, folder_name, file.name_input)
+combined_data <- str_detect(folder_name, '_combined') # will be TRUE if folder_name contains "combined"
 
 # Load fcs, metadata ----
 
@@ -54,7 +55,7 @@ if(autodetect_channels) {
 # Saving summary stats from flowWorkspace function
 
 # used for grouping and while making factors for ordering
-metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore') 
+metadata_variables <- c('assay_variable', 'sample_category', 'Fluorophore', if(combined_data) 'data_set') 
 
 # get summary statistics
 flowworkspace_summary <-

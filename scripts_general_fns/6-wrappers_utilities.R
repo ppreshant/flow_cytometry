@@ -16,11 +16,12 @@ expand_wellname <- function(wellname) str_c(wellname, ' Well - ', wellname, ' WL
 #' @param .df : dataframe of .fcs summary data
 #' @param .fluor_colour : pick which channel of the named fluor_channels vector you want the order based on. Default 'red'
 #' @param .sorter_vars : the (typically) numeric value that is sorted on. Default 'mean_medians' which should be pre-calculated
-#' @param meta_variables : a char vector of the variables that will be factorized
+#' @param meta_variables : a char vector of the variables that will be factorized ; 
+#' Default : metadata_variables + Exclude 'data_set' for combined data by default
 #' @param to_return : NULL or char - returns a rearranged tibble if NULL, and returns a list of levels if anything else
 
 arrange_in_order_of_fluorophore  <- function(.df, .fluor_colour = order_by_channel, .sorter_vars = 'mean_medians',
-                                             meta_variables = metadata_variables,
+                                             meta_variables = metadata_variables %>% .[. != 'data_set'],
                                              to_return = NULL) # to_return = 'order' returns a list of the levels
 { # usage
   # arrange_in_order_of_fluorophore(processed_flowcal) -> t1

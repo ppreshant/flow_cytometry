@@ -327,14 +327,14 @@ For manual scripts with possible changes across experiments, should they be in a
 
 
 # R/flopR
-### What exactly does flopR do?
+## What exactly does flopR do?
 1. Log10 transform, trim zero values (-Inf after log transf)
 2. Density gating
 3. **Singlet gating** ; _May not be as useful if density gating already makes it clean enough.; beads seem to matter -- compare with FlowCal_ for S044 beads
 4. **Autofluorescence (geometric mean) subtraction** ; _straightforward task_
 5. MEFL calculation
 
-#### Issues 
+## Issues 
 - Is **too slow**. 5 files, with calibration takes >5 mins even failing in the beads step.
 	- flowClust of the beads is the slowest step, approx 1 min ; ggplot saving is also long -- too many points?
 	- Put a profiler to figure out where it is being slowed down, and how to improve it.. 
@@ -347,7 +347,7 @@ For manual scripts with possible changes across experiments, should they be in a
 
 - [x] Get_calibration not selecting the correct bead population. Our sample has too much junk, but the `process_fcs` that was getting bacteria and then singlets was doing ok -- so maybe short-circuit the program to do this for the beads too..
 
-Tasks
+## Tasks
 - [x] Fixed : [issue](https://github.com/ucl-cssb/flopr/issues/8) on github!  : showing error in `process_fcs` from the `get_bacteria` function.
 	```
 	[1] "2 clusters found"
@@ -407,9 +407,11 @@ Goal : Want to transition the jupyter notebook into a quarto (or Rmd) workflow s
 1. (_convenience_) Need to read in the filename directly from R script `-.5-user_inputs.R` instead of the python file `g10.user_config.py` to prevent duplication 
 
 ## Issues
+- [x] Quarto has a different way of managing attachments. It is misplacing the attachments in two different places : 1. head directory - images ; 2. `scripts_archive/` - libs : contains formatting etc. 
+		- Moving them both to `html_outputs` enables a cleaner `.html` output : Check `S071a_d-1,0.html`
+		- [ ] Read on why this is different from `.Rmd` and if there are options to make them same
 - [ ] Modules loaded through R (using reculate) don't update when the `.py` file is updated. Requires to restart R
 - [ ] Show `IPython.core.display.Markdown object` in quarto document like jupyter notebook does it
-- [ ] images in html through quarto are broken
 
 ## connecting to conda env
 Need to figure out how to use the correct conda env 'flowcal'. is this set by reticulate or by quarto or Rstudio itself?. Works with R's `reticulate` library if `Sys.setenv(RETICULATE_PYTHON = "C:/Users/new/.conda/envs/flowcal/python.exe")` is used before `library(reticulate)`.

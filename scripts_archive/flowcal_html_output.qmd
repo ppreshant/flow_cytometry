@@ -23,17 +23,6 @@ library(reticulate)
 Clean \`.fcs\` data by excluding saturated events, retaining singlets and events among densest region to exclude debris
 
 ```{python}
-
-print('entered the first chunk')
-```
-
-Issues :
-
--   Looks like there is problem with conda environment; how to enter the correct env?
-
-    -   `error : matplotlib not found..`
-
-```{python}
 # | echo: false
 # import os ; os.chdir("..") ; os.getcwd() # changing working dir;try global defaults
 # os.getcwd()

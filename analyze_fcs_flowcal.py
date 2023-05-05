@@ -106,8 +106,9 @@ def process_fcs_dir(make_processing_plots= None):
     if beads_found and not retrieve_custom_beads_file:
         fcspaths.remove(beads_filepath)
         fcslist = [m for m in fcslist if m not in os.path.basename(beads_filepath)] # and filename list
-    # TODO: Need a better index based way to trim fcslist of the beads
-    # when multiple beads files present;
+    # TODO: Need a better index based way to trim fcslist of the beads, ex: when multiple beads files present;
+    # BUG : Code will fail in line 202 `summary_stats = ..` if beads file name is same as another sample
+    #     : Rename beads .fcs file when copying from another dataset
     
     
     

@@ -323,6 +323,11 @@ f'list is : {*a,}'
 # %% [markdown] tags=[]
 # # Testing utilities
 # - on single fcs files etc.
+# - Troubleshooting : processing phase
+
+# %%
+# Load all data 
+fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
 
 # %%
 # process all .fcs files : (skips MEFLing if beads are absent)
@@ -333,7 +338,11 @@ processed_fcs_data = [process_single_fcs_flowcal\
                         to_mef,
                         scatter_channels, fluorescence_channels,
                         make_plots=None)\
-                  for single_fcs in fcs_data_subset]
+                  for single_fcs in fcs_data] # fcs_data_subset
+
+# %%
+fcs_data.__len__()
+# processed_fcs_data.__len__()
 
 # %%
 # Remove .fcs data where no events are left after the filtering process
@@ -393,7 +402,7 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
     outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
                    for singlefcspath in fcspaths]
 
-    # %% load the .fcs data jupyter={"outputs_hidden": true} tags=[]
+    # %% load the .fcs data tags=[] jupyter={"outputs_hidden": true}
     fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
 
     # convert data into MEFLs for all .fcs files
@@ -426,3 +435,35 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
     # remove .fcs holding lists to save memory
     del fcs_data
     del calibrated_fcs_data
+
+# %% tags=[]
+# get summary statistics
+summary_stats_list = (['mean', 'median', 'mode'], # use these labels and functions below
+                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
+
+# Generate a combined pandas DataFrame for mean, median and mode respectively : Complex map pipe
+summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in processed_fcs_data] |\
+    p(pd.DataFrame,
+      columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
+      index = fcslist), # rownames as the .fcs file names
+    summary_stats_list[0], # x = summary stat names for the map, below has y = summary stat functions
+    summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+
+
+# %%
+summary_stats
+
+# %%
+fcslist2 = [m for m in fcslist if m not in os.path.basename(beads_filepath)] # and filename list
+
+# %%
+fcslist2.__len__()
+
+# %%
+os.path.basename(beads_filepath)
+
+# %%
+[m for m in fcslist if m in os.path.basename(beads_filepath)]
+
+# %%
+'antsanta' in 'ants'

@@ -10,22 +10,57 @@ source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent chan
 # Inputs ----
 
 # the combined dataset will be exported to this folder inside 'processed_data/..'
-fcs_export_dir <- 'S050_combined' # end with "_combined"
+fcs_export_dir <- 'S071_combined/' # end with "_combined"
 
 
-# new style ----
+# manual workflow ----
+# Use this to load files, manually change the pData (which goes into file renaming) before calling the saver
+
+# Load data 
+fl.set <- get_fcs_and_metadata(str_c(base_directory, folder_name, file.name_input))
+
+
+sample_cat_fill <- c('^U' = 'Uninduced', '^I' = 'Induced') # for filling abbreviations in sample_category
+
+# fix pData manually
+new_pdata2 <- pData(fl.set) %>% 
+  separate(sample_category, into = c('sample_category', 'dir_key'), sep = '-') %>% # add new category for directory
+  
+  mutate(across(dir_key, # fix d-1 trunc and make controls as d-1 
+                ~ replace_na(.x, 'd-1') %>% str_replace('d$', 'd-1') )) %>% 
+  
+  # fill abbreviatios of induced and uninduced
+  mutate(across(sample_category, 
+                ~ str_replace_all(.x, sample_cat_fill)))
+
+
+pData(fl.set) <- new_pdata2 # replace the pData
+
+
+rename_fcs_and_save(.flset = fl.set, interactive_session = TRUE)
+
+
+
+# vectorized merger ----
 # iterate through the list of folders and put them all into the export folder specified above
 
-# Geared for S050 ; but edit as necessary (one time use anyway right?) 
 
-# User inputs
-days <- 1:8 # -1:8
+
+# Get directories ----
+
+# recognize directories with a regex pattern for expt name
+subdirs <- dir(base_directory, '^S071._')
+# not used yet.. attach to make dir.paths
+
+# manual subdirectory building # Geared for S050 ; but edit as necessary (one time use anyway right?) 
+days <- 1:8 # -1:8 # User inputs
 
 # Make a list of folders
 dir.paths = map(days, ~ str_c(base_directory, 'S050_d', .x, '/'))
 
 
 # General rename-save ----
+# with same metadata for all directories
 
 # get metadata -- only once for all data/ else use .get_metadata = T below
 sample_metadata <- get_and_parse_plate_layout(folder_name) 

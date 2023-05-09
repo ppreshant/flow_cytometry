@@ -52,6 +52,8 @@ plt_dosec[[1]] # call the combined plot
 plotly::ggplotly(plt_dosec[[2]]) # interactive partial plot with numeric Arabinose : chase outliers
 ggsave(plot_as(title_name, '-dose_response'), plt_dosec, width = 6, height = 4)
 
+# save pdf for paper
+ggsave(str_c('FACS_analysis/plots/', title_name, '.pdf'), width = 5, height = 4)
 
 # Plot timecourse ----
 # relevant for S066 only

@@ -78,9 +78,9 @@ Advantage of flowcal
 - [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
 
 ### Bimodality after MEFL issue
-- [ ] Investigate the bimodality around 0 for non fluorescent cells. Ex: S055/S063. _is this an artifact of the Sony flow cyt software doing background subtraction?_ 
-- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal. 
-- Sebastian [confirms](https://github.com/taborlab/FlowCal/issues/359#issuecomment-1537203850) that m needs to be closer to 1. Beads have too much debris (_probably data too?_). Need to clear more debris with `gate.high_low(beads_sample, channels=['FSC-A'], low=(5000))`
+- [x] Investigate the bimodality around 0 for non fluorescent cells. Ex: S055/S063. _is this an artifact of the Sony flow cyt software doing background subtraction?_ 
+- Verdict : Don't use MEFLing till I figure out why the beads are giving shitty slope `m` (~ 0.8) even after strong thresholding (low = 5,000 / 10,000) like Sebastian did
+- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal. Sebastian [confirms](https://github.com/taborlab/FlowCal/issues/359#issuecomment-1537203850) that m needs to be closer to 1. Beads have too much debris (_probably data too?_). Need to clear more debris with `gate.high_low(beads_sample, channels=['FSC-A'], low=(5000))`
 	- First, make sure that your beads processing is correct. `m=0.68` is highly atypical and suspicious. Ideally you would have it between 0.9 - 1.1, and these should be extremely consistent across your runs (i.e. if you got 0.92 once, you should get +/- 0.1 at most every time in the same instrument)
 	- The other option is to force `m=1`. the beads curve won't fit well in this case..
 compare S055 : 

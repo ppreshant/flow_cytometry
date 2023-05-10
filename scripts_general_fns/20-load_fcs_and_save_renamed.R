@@ -5,7 +5,7 @@
 #' @param : add_dir_key_from_source_dirname = T/F : whether or not to grab an additional signal of the directory name 
 #' @param : interactive_session : prompts user check of filename before saving ; select F to prevent for loops
 rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir, 
-                                base_export_dir = 'processed_data/',
+                                base_export_dir = base_directory,
                                 .flset = fl.set,
                                 add_dir_key_from_source_dirname = TRUE, source_dir, 
                                 interactive_session = TRUE)

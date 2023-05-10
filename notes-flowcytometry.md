@@ -72,13 +72,17 @@ Advantage of flowcal
 	- Check if this can be done in R too?
 
 ## Bugs
+- [ ] `to_mef = FlowCal.mef.get_transform_fxn` in `g.15..` : fails when only red channels are present in fluorescence_channels :: uses the mGreenLantern mefl vals for it :(
 - [ ] Code: input() function called from within a module in jupyterlab does not work. See `analyze_fcs_flowcal`/Line 121 for beads with low events
 - [x] code stops in the pipeline but runs adhoc : `to_mef()` step : on gfp and mcherry2 data `S066x_Ara dose-1` -- `fluorescence_channels` is empty, not being recognized -- due to PBS
 - [x] _(fixed now) Looks like singlet gating is using the wrong y axis- should be FSC-H? 
 
 ### Bimodality after MEFL issue
 - [ ] Investigate the bimodality around 0 for non fluorescent cells. Ex: S055/S063. _is this an artifact of the Sony flow cyt software doing background subtraction?_ 
-- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal
+- Check on the [github issue](https://github.com/taborlab/FlowCal/issues/359) I made on FlowCal. 
+- Sebastian [confirms](https://github.com/taborlab/FlowCal/issues/359#issuecomment-1537203850) that m needs to be closer to 1. Beads have too much debris (_probably data too?_). Need to clear more debris with `gate.high_low(beads_sample, channels=['FSC-A'], low=(5000))`
+	- First, make sure that your beads processing is correct. `m=0.68` is highly atypical and suspicious. Ideally you would have it between 0.9 - 1.1, and these should be extremely consistent across your runs (i.e. if you got 0.92 once, you should get +/- 0.1 at most every time in the same instrument)
+	- The other option is to force `m=1`. the beads curve won't fit well in this case..
 compare S055 : 
 Raw ![[S055_51 in 8 organisms-raw-ridge density-raw.png|250]] Processed ![[S055_51 in 8 organisms-processed-ridge density-processed.png|250]]
 - Take the negative control sample from this dataset and trace the intermediate distributions in the flowCal process - _Is this because of subsetting the data or due to MEFL transformation?_ -- Looks like it is. How is it that S061 sensory only doesn't have the bimodal
@@ -108,7 +112,7 @@ Running `to_mef.fitting()` with `full_output = True` gives these details about t
 
  - [x] Post a reply with the density plot - say that bin edges is not an issue, maybe the model parameters..
 
-#### Check cleak peak : S055 
+#### Check clen peak : S055 
 Checking the bead calibration of S055_B2 (MG1655 control) which looks clean (not bimodal) in a mGreenLantern plot ; it is still bimodal in mScarlet!
 fluorphore order : green (good), red (bimodal)
 ``'beads_params': [array([  0.89199098,   2.5864598 , 792.15587603]),  array([7.93298660e-01, 2.76010590e+00, 1.09402666e+03])],`
@@ -162,7 +166,7 @@ _the m is closer to 1, but the bimodality is also more subtle here : example dat
 	- [ ] (_fancy_) get the density gating percentage from user input after showing a plot of 50%, interactive analysis.?
 
 ### Processing
-
+- [ ] Show the parameters of fitting in the output ; + have user review before proceeding with MEFLing?
 
 ### Other information
  - How do we get volume information to get cell density data (_Cells/ul_) from the .fcs file? 

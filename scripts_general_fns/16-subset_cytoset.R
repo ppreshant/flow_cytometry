@@ -3,8 +3,9 @@
 #' Subset a cytoset by using it's flowworkspace_summary (`summary(fl.set)`)/ in future, `pData()` might work too
 #' outputs a unique subset tibble with metadata and medians for labelling ridgeline plots
 #' Side effect : creates universal variable fl.subset - which is the main purpose of this script
+#' @param : ... : one ore more conditions for custom filtering
 
-subset_cytoset <- function(non_data_stuff, specific_data, exclude_category)
+subset_cytoset <- function(non_data_stuff, specific_data, exclude_category, ...)
 {
   #' Make a subset of data for plotting purposes :: ex: Remove PBS controls, beads etc. 
   #' Using this for plotting in nice a orientation mimicking the plate wells if possible
@@ -19,7 +20,8 @@ subset_cytoset <- function(non_data_stuff, specific_data, exclude_category)
            !str_detect(sample_category, exclude_category), # exclude a specific category
            
            str_detect(full_sample_name, specific_data), # select specific data by name
-           str_detect(well, '.*')) # select with regex for wells : Example row D : 'D[:digit:]+'
+           str_detect(well, '.*'), # select with regex for wells : Example row D : 'D[:digit:]+'
+           ...) # custom filtering
   
   # TODO : use sample_metadata when flowworkspace_summary is not available? Can't plot medians then
   

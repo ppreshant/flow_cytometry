@@ -19,7 +19,12 @@ exclude_category <- 'none' # use 'none' for selecting everything : experiment/da
 
 # subset the fl.set according to above variables and return a unique metadata + mean_median data
 source('scripts_general_fns/16-subset_cytoset.R') # source the script
-fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category) # use for labeling ridges' medians
+
+fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
+
+                                    # str_detect(assay_variable, 'wt') | str_detect(data_set, 'd1') # optional manual filtering (additional to above)
+ )
+
 # Side effect : creates a global variable fl.subset
 
 

@@ -69,11 +69,11 @@ fluorescence channel check in beads")
     
     
     # trim saturated : more than 1000 in FSC, SSC
-    # removes the large cloud of points 
+    # removes the large cloud of points -- MY BEADS HAVE LOT OF DEBRIS
     beads_gate1 = FlowCal.gate.high_low(beads_data,
                                  channels = scatter_channels,
-                                 low=(1000)) 
-    # TODO: low=threshold of 1,000 is arbitrary : Generalize this--
+                                 low=(10000)) 
+    # TODO: low=threshold of 10,000 is arbitrary : Generalize this--
     # my Spherotech beads have lot of debris < 1,000, 
     # but threshold might change depending on gains.
     
@@ -85,16 +85,16 @@ fluorescence channel check in beads")
     # TODO: Have a way to discard the aberrant files with a warning and continue running?
     
     
-    # gate 30% # since my beads have lot of debris at low FSC, SSC ranges
-    beads_densitygate30 = FlowCal.gate.density2d(beads_gate1,
+    # gate 80% # After cleaning out lot of debris at low FSC, SSC ranges
+    beads_densitygate = FlowCal.gate.density2d(beads_gate1,
                                         channels=scatter_channels,
-                                        gate_fraction= 0.3,
+                                        gate_fraction= 0.8,
                                         full_output=True)
     
     # visualize the gating effect
     FlowCal.plot.density_and_hist(beads_gate1,
-                                  gated_data = beads_densitygate30.gated_data,
-                                  gate_contour = beads_densitygate30.contour,
+                                  gated_data = beads_densitygate.gated_data,
+                                  gate_contour = beads_densitygate.contour,
                                   density_channels = scatter_channels,
                                   density_params = {'mode': 'scatter'},
                                   hist_channels= fluorescence_channels)
@@ -113,12 +113,15 @@ fluorescence channel check in beads")
     mScarlet_mefl_vals =      [0, 487, 1474, 4516, 11260, 34341, 107608, 260461]
     
     # Make the MEFL transformation function using gated beads data
-    to_mef = FlowCal.mef.get_transform_fxn(beads_densitygate30.gated_data, 
+    to_mef = FlowCal.mef.get_transform_fxn(beads_densitygate.gated_data, 
                                            mef_values = [mGreenLantern_mefl_vals, mScarlet_mefl_vals],
                                            mef_channels = fluorescence_channels,
                                            plot=True,
                                           full_output = give_full_output)
     plt.show()
+    # BUG : fails when only red channels are present in fluorescence_channels :: uses the mGreenLantern mefl vals for it :(
     
+    # TODO : put in an error check for m < 0.9 ; Need to get full output and get mef_model.fitting['beads_params'][0][0]
+    # then make `to_mef = mef_model.transform_fxn`
     
     return to_mef # return the calibration matrix..

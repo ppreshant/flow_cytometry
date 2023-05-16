@@ -56,15 +56,14 @@ manual_modify_pdata <- function(.pdata)
 subdirs <- dir(base_directory, '^S071._') %>% 
   str_c('/') # add the trailing slash to the directory
 
-# dir.paths <- str_c(base_directory, subdirs)
+dir.paths <- str_c(base_directory, subdirs)
 
 
 # manual subdirectory building (uncomment to use)
 
 # Geared for S050 ; but edit as necessary (one time use anyway right?) 
-# days <- 1:8 # -1:8 # User inputs
-# 
-# dir.paths = map(days, ~ str_c(base_directory, 'S050_d', .x, '/')) # Make a list of folders
+# days <- -1:8 # -1:8 # User inputs
+# dir.paths = map_chr(days, ~ str_c(base_directory, 'S050_d', .x, '/')) # Make a list of folders
 
 
 
@@ -76,18 +75,6 @@ subdirs <- dir(base_directory, '^S071._') %>%
 
 # vectorized to work in all of the dir paths loaded above
 
-# rm(folder_name) # remove this from the global environment to prevent confusion
-# subdirs %>%
-#   map( \(x) 
-#        {folder_name <- x ; dir.path <- str_c(base_directory, x) ; # set assignments
-#          get_fcs_and_metadata(.dirpath = dir.path,
-#                               
-#                               # other inputs to the function
-#                               .get_metadata = F,
-#                               manually_modify_pdata = T, # needs a function `manual_modify_pdata` -- above
-#                               
-#                               rename_and_save_fcs = T, .interactive_session = T)} )
-
 dir.paths %>% map(get_fcs_and_metadata,
                   manually_modify_pdata = T, # needs a function `manual_modify_pdata` -- above
                   rename_and_save_fcs = T, .interactive_session = T)
@@ -96,7 +83,7 @@ dir.paths %>% map(get_fcs_and_metadata,
 # for same metadata workflow : S050
 # dir.paths %>% map(get_fcs_and_metadata, .get_metadata = F,
 #                   rename_and_save_fcs = T, .interactive_session = F)
-
+# 
 
 # Old script -----
 # run till line 14 of `analyze_combined_fcs.R`

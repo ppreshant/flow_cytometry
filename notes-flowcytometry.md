@@ -470,3 +470,16 @@ in comparison, S048 gives
 - [x] S050 issue when combining data workflow : 8 files are missing 
 	- Fixed by loading the proper files now
 	- ~~missing files presumably because they were not in the plate grid ; d-1/E12, G12, H12 - probably PBS and beads?~~
+
+## Data sets to re-analyze without MEFL
+
+Currently doing this only for showing full distribution figs
+- [ ] Check for S070 data if without MEFLing changes fraction above C- gate changes significantly
+
+Memory paper
+- (Fig S only) S050 : can use it to show trend of decay in suppl.
+- (_?_) S071 : memory WW visual glance
+- (_check_) S070 Ara dose response
+
+Marine
+- S063a, b, c : Redo processing without MEFLing

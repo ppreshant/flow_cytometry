@@ -1,5 +1,24 @@
 # S050_dist_analysis.R
 
+# S050 plot subsets ----
+
+# subset using the special condition in `7-exploratory_data_view.R` line 23
+
+fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
+                                   
+                                   (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | str_detect(assay_variable, '79') # optional manual filtering (additional to above)
+)
+
+# run plotter without saving
+plt_ridges <- plot_ridges_fluor(.show_medians = show_medians, .save_plots = F)
+
+plt_ridges[[2]] + facet_grid(facets = NULL) + ggtitle(str_c(title_name, '- pSS079')) # merge facets to join MG1655 with others
+
+ggsave(plot_as('S050_subset2-processed', '-pSS079'), width = 3, height = 6)
+
+
+# S050 subset (old) ----
+
 # modify pData for S050 subsets 
 # recognize day from filename and make a `data_set` column
 

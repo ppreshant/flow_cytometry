@@ -76,10 +76,12 @@ flowworkspace_summary <-
             )} %>%
   select(filename, everything()) %>%  # gives the min, max quartiles, mean for fluorescence channels
   
+  # fish out well information from filename
+  mutate(well = if(combined_data) {str_match(filename, '_([A-H][:digit:]+)') %>% .[,2] # look for well after underscore (combined data)
+  } else  str_extract(filename, '[A-H][:digit:]+') # regular data - well should be clear (could use ^ : start with)
+  ) %>%
   
-  # attach metadata
-  mutate(well = str_extract(filename, '[A-H][:digit:]+')) %>% # detect the well numbers
-  
+  # attach metadata by well
   left_join(sample_metadata) %>%  # attach the metadata : sample names from google sheets (, by = 'well')
 
   

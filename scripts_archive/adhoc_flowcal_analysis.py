@@ -134,11 +134,17 @@ f'{single_fcs.__len__()} : number of events' # check that this is a non-empty fi
 # # Process the beads
 
 # %%
+beads_match_name = 'beads'
+
+# %%
 # Get beads within the folder  
 beads_filepaths_list = [m for m in fcspaths if re.search(beads_match_name, m, re.IGNORECASE)]
 if len(beads_filepaths_list) > 0 : # if beads are found
     beads_found = True
     beads_filepath = beads_filepaths_list[0] # take the first beads file
+
+# %%
+beads_filepath
 
 # %%
 # RUN THIS INSTEAD OF THE ABOVE CELL FOR KNOWN BEADS FILE PATH ; IGNORE IF RUNNING ABOVE CELL
@@ -151,10 +157,15 @@ if len(beads_filepaths_list) > 0 : # if beads are found
 
 
 # %% tags=[]
-# Test beads processing function
+# Clean up beads and get MEFL function
 from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
 
-to_mef = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels) # works!
+mef_model = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels, give_full_output=True)
+to_mef = mef_model.transform_fxn
+
+# %%
+# inspect parameters
+mef_model.fitting
 
 # %% [markdown]
 # # Bimodal troubleshooting : Plotting 1d histograms
@@ -244,7 +255,9 @@ processed_single_fcs.hist_bins
 # Need to run to_mef `FlowCal.mef.get_transform_fxn` with `full_output==True`
 #  > (It would also be helpful to inspect the calibration model parameters and make sure they make sense--the exponential term should be near 1.0 for modern cytometers, and the linear scaling factor should depend on the detector voltage.
 
-# %% tags=[]
+# %% tags=[] jupyter={"outputs_hidden": true}
+from scripts_general_fns.g15_beads_functions import process_beads_file # get and process beads data
+
 mef_model = process_beads_file(beads_filepath, scatter_channels, fluorescence_channels, give_full_output=True)
 
 # %%
@@ -258,6 +271,51 @@ mef_model.fitting
 
 # %%
 mef_model.selection
+
+# %% [markdown]
+# ## Cleaning beads for better fit
+
+# %%
+beads_data = FlowCal.io.FCSData(beads_filepath)
+beads_gate1 = FlowCal.gate.high_low(beads_data,
+                             channels = scatter_channels,
+                             low=(10000))
+beads_densitygate30 = FlowCal.gate.density2d(beads_gate1,
+                                    channels=scatter_channels,
+                                    gate_fraction= 0.9,
+                                    sigma = 5.,
+                                    full_output=True)
+print('events retained : ', beads_densitygate30.gated_data.__len__())
+# visualize the gating effect
+FlowCal.plot.density_and_hist(beads_gate1,
+                              gated_data = beads_densitygate30.gated_data,
+                              gate_contour = beads_densitygate30.contour,
+                              density_channels = scatter_channels,
+                              density_params = {'mode': 'scatter'},
+                              hist_channels= fluorescence_channels)
+# FlowCal.plot.density_and_hist(beads_densitygate30.gated_data,
+#                               density_channels = scatter_channels,
+#                               density_params = {'mode': 'scatter'},
+#                               hist_channels= fluorescence_channels)
+
+# %%
+# do calibration
+mGreenLantern_mefl_vals = [0, 771, 2106, 6262, 15183, 45292, 136258, 291042]
+mScarlet_mefl_vals =      [0, 487, 1474, 4516, 11260, 34341, 107608, 260461]
+
+# Make the MEFL transformation function using gated beads data
+mef_model2 = FlowCal.mef.get_transform_fxn(beads_densitygate30.gated_data, 
+                                       mef_values = [mScarlet_mefl_vals, mGreenLantern_mefl_vals],
+                                       mef_channels = fluorescence_channels,
+                                       plot=False,
+                                      full_output = True)
+mef_model2.fitting
+
+# %%
+mef_model2.transform_fxn
+
+# %% [markdown]
+# I couldn't get the m > 0.805 here; Sebastian's [example with S057b1](https://github.com/taborlab/FlowCal/issues/359#issuecomment-1537203850) gets 0.92..
 
 # %% [markdown]
 # # Processing .fcs wrapper : gating to MEFL
@@ -319,6 +377,20 @@ indx, empties = zip(*[(i, a) for (i,a) in enumerate(processed_fcs_data) if a.__l
 # %%
 a = range(3)
 f'list is : {*a,}'
+
+# %%
+# adding an if inside list comprehensions
+b = ['cats', 'dogs', 'anaconda']
+switch = 1
+[s + 
+ ('_aregood' if switch else '') for s in b]
+
+# %% [markdown]
+# ## Debugging practice
+
+# %%
+from scripts_archive.debug_module import debug_tester
+debug_tester()
 
 # %% [markdown] tags=[]
 # # Testing utilities
@@ -391,9 +463,9 @@ from scripts_general_fns.g9_write_fcs_wrapper import write_FCSdata_to_fcs # .fcs
 from scripts_general_fns.g10_user_config import fcs_root_folder, fcs_experiment_folder
 print(fcs_experiment_folder) # check that corect file is loaded
 
-# %%
+# %% tags=[]
 # loop for every experiment folder 
-for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)) + 2)]:
+for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(1)) + 1)]:
 
     # get .fcs file list and load data
     fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/')
@@ -401,14 +473,13 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
     # trim the directory to remove excessive subsidectories (from Sony instruments)
     outfcspaths = ['processed_data/' + fcs_experiment_folder + '/' + os.path.basename(singlefcspath) \
                    for singlefcspath in fcspaths]
-
-    # %% load the .fcs data tags=[] jupyter={"outputs_hidden": true}
+    
     fcs_data = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths]
 
     # convert data into MEFLs for all .fcs files
     calibrated_fcs_data = [process_single_fcs_flowcal\
                            (single_fcs,
-                            to_mef,
+                            None, # to_mef,
                             scatter_channels, fluorescence_channels)\
                       for single_fcs in fcs_data]
 
@@ -436,34 +507,59 @@ for fcs_experiment_folder in ['S050/S050_d' + str(x) for x in (np.array(range(7)
     del fcs_data
     del calibrated_fcs_data
 
+# %%
+(np.array(range(1)) + 1)
+# %% make a logfile for all data at once
+from datetime import datetime # date and time module for the log file
+
+logtext = [f'Processed on : {datetime.now()}',
+           f'MEFL calibration done? : No',
+           '\n',
+           f'Density gating fraction : {config.density_gating_fraction}',
+           f'Fraction retained : {config.density_gating_fraction * 0.9}',
+           f'beads file : {"no beads found"}'] 
+
+with open('processed_data/' + fcs_experiment_folder + '/' + 'processing-log.txt', 'w') as log:
+    '\n'.join(logtext) | p(log.write)
+
+# %% [markdown]
+# # S050 : processing selected wells across days
+# load fcs_data_subset based on regex in the above cell
+# - Check if duplicate names are solved in some way
+
 # %% tags=[]
-# get summary statistics
-summary_stats_list = (['mean', 'median', 'mode'], # use these labels and functions below
-                      [FlowCal.stats.mean, FlowCal.stats.median, FlowCal.stats.mode])
+# load fcs paths
+fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder + '/', include_day_key = True)
 
-# Generate a combined pandas DataFrame for mean, median and mode respectively : Complex map pipe
-summary_stats = map(lambda x, y: [y(single_fcs, channels = fluorescence_channels) for single_fcs in processed_fcs_data] |\
-    p(pd.DataFrame,
-      columns = [x + '_' + chnl for chnl in fluorescence_channels], # name the columns: "summarystat_fluorophore"
-      index = fcslist), # rownames as the .fcs file names
-    summary_stats_list[0], # x = summary stat names for the map, below has y = summary stat functions
-    summary_stats_list[1]) | p(pd.concat, px, axis = 1)
+# subset paths matching regex
+from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
+regex_to_subset = 'H07' # 'F05|D06' or '.*' for all
 
+fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
+fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
 
 # %%
-summary_stats
+fcspaths_subset
 
 # %%
-fcslist2 = [m for m in fcslist if m not in os.path.basename(beads_filepath)] # and filename list
+# load the subset of the .fcs files
+fcs_data_subset = [FlowCal.io.FCSData(fcs_file) for fcs_file in fcspaths_subset]
 
 # %%
-fcslist2.__len__()
+# output file paths
+# trim the directory to remove excessive subsidectories (from Sony instruments)
+outfcspaths = ['processed_data/' + fcs_experiment_folder + '_subset' + '/' + singlefcsname \
+               for singlefcsname in fcslist_subset]
 
 # %%
-os.path.basename(beads_filepath)
+# convert data into MEFLs for all .fcs files
+processed_fcs_data = [process_single_fcs_flowcal\
+                       (single_fcs,
+                        None,
+                        scatter_channels, fluorescence_channels)\
+                  for single_fcs in fcs_data_subset]
 
 # %%
-[m for m in fcslist if m in os.path.basename(beads_filepath)]
-
-# %%
-'antsanta' in 'ants'
+# Save calibrated fcs data to file
+[write_FCSdata_to_fcs(filepath, fcs_data) \
+ for filepath, fcs_data in zip(outfcspaths, processed_fcs_data)]

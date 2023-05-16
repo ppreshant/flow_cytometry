@@ -21,9 +21,8 @@ load_combined_cytosets <- function(folder_name,
   new_pdata <- pData(fl.set) %>% 
     
     # Create columns from the filename 
-    mutate(across(name, str_remove('.fcs$'))) %>% # remove trailing '.fcs'
     separate(name, # split metadata into columns
-             into = c('assay_variable', 'sample_category', 'well', 'data_set', NA), sep = '_', # separate by underscore
+             into = c('assay_variable', 'sample_category', 'well', 'data_set', NA), sep = '_|\\.fcs', # separate by underscore, ignore trailing '.fcs'
              remove = F) %>% 
     
     mutate(full_sample_name = str_c(assay_variable, sample_category, sep = " /")) %>%  # make a fusion column for unique name per replicate

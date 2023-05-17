@@ -53,72 +53,22 @@ plt_ridges <- plot_ridges_fluor(.show_medians = show_medians) # make plots and o
 if(0)
 {
   
-  # plot scatterplots of fluorescences -- fails if only a single fluorophore is present
-  
-  pltscatter_fluor <- ggcyto(fl.subset, # select subset of samples to plot
-                             aes(x = .data[[fluor_chnls[['red']]]], 
-                                 y = .data[[fluor_chnls[['green']]]] )) +  # fluorescence channels
-    
-    # geom_point(alpha = 0.1) +
-    geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution. Strating at 64
-    scale_x_logicle() + scale_y_logicle() + # hidden until some ggplot error is fixed
-    # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-    
-    # scale_x_flowjo_biexp() + scale_y_log10() + # temporary use
-    
-    # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
-    
-    # visual changes
-    # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
-    # scale_fill_viridis_c(direction = -1) + # colourscale viridis
-    
-    # facet_wrap('full_sample_name', ncol = 10, scales = 'free') + # control facets for full panel
-  ggtitle(title_name) + 
-    
-    theme_gray()
-  
-  
-  ggsave(str_c('FACS_analysis/plots/', 
-               title_name,  # title_name, 
-               '-fluor', fl_suffix,
-               '.png'),
-         plot = pltscatter_fluor,
-         # height = 8, width = 20) # change height and width by number of panels
-         height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
-  
-  
   # scatter FSC-SSC ----
   
   # plot fwd-side scatterplots of all samples in the set
-  plt_scatter <- ggcyto(fl.subset, # select subset of samples to plot
-                        aes(x = .data[[scatter_chnls[['fwd']]]], 
-                            y = .data[[scatter_chnls[['side']]]] )) +  # fluorescence channels
-    
-    # geom_point(alpha = 0.1) +
-    geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
-    scale_x_logicle() + scale_y_logicle() +
-    # logicle = some bi-axial transformation for FACS (linear near 0, logscale at higher values)
-    # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) + # maybe won't work for Guava?
-    
-    # visual changes
-    # scale_fill_gradientn(colours = ?) + # to change the default colour scheme which is "spectral"
-    # scale_fill_viridis_c(direction = -1) + # colourscale viridis
-    
-    # facet_wrap('full_sample_name', ncol = 10, scales = 'free') + # control facets for full panel
-    ggtitle(title_name) + 
-    
-    theme_gray()
+  plt_scatter <- plot_scatter(title_name, '-scatter')
   
-  # TODO : Need some relative scale for each panel -- it is hard to see here. Maybe good for catching low events?
+  # dotplot is very very slow. will take 10 m to plot 
+  # plt_dots <- plot_scatter(title_name, '-dotplot', .plot_mode = 'dotplot')
   
-  ggsave(str_c('FACS_analysis/plots/', 
-               title_name,  # title_name, 
-               '-scatter', fl_suffix, 
-               '.png'),
-         plot = plt_scatter,
-         # height = 8, width = 20) # change height and width by number of panels
-         height = est_plt_side, width = est_plt_side) # use automatic estimate for plt sides : 2 / panel
   
+  # Scatter fluor 2 colours ----
+  
+  # plot scatterplots of fluorescences -- fails if only a single fluorophore is present
+  plt_fluor2d <- plot_scatter(title_name, '-fluor2d', .x = fluor_chnls[['red']], .y = fluor_chnls[['green']])
+  
+  
+  # density 1d plots ----
   
   # Older plots for density
   
@@ -189,44 +139,14 @@ if(0)
   # Single plots ----
   
   # set single_fcs if not set before gating
-  single_fcs <- fl.set[expand_wellname('D01')] # select single file based on wellname
+  single_fcs <- get_matching_well(fl.set, 'A01') # select single file based on sampleName match
   
-  # fluorescence plot of single sample -- troubleshooting
-  plt_fluor_single <- 
-    {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['red']]]], y = .data[[fluor_chnls[['green']]]])) + 
-        geom_hex(bins = 120) + 
-        geom_density2d(colour = 'black') + 
-        
-        scale_x_logicle() + scale_y_logicle() + 
-        theme_gray()} %>% 
-    
-    print()
-  
-  # TODO : make wrapper functions for all these single plots!
   
   # FSC-SSC plot of single sample
-  plt_sctr_single <- 
-    {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
-                            y = .data[[scatter_chnls[['side']]]])) + 
-        geom_hex(bins = 120) + 
-        geom_density2d(colour = 'black') + 
-        
-        scale_x_logicle() + scale_y_logicle()} %>% 
-    
-    print()
+  plt_sctr_single <- plot_scatter(.cytoset = single_fcs) %>% print
   
-  
-  # FSC-SSC scatter plot ; without HEX (trobleshooting)
-  plt_sctr_single_points <- 
-    {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
-                            y = .data[[scatter_chnls[['side']]]])) + 
-        geom_point(alpha = 0.05, size = .1) + 
-        # geom_hex(bins = 120) + 
-        geom_density2d(colour = 'black') + 
-        
-        scale_x_logicle() + scale_y_logicle()} %>% 
-    print
-  
+  # fluorescence plot of single sample -- troubleshooting
+  plt_fluor2d_single <- plot_scatter(.cytoset = single_fcs, .x = fluor_chnls[['red']], .y = fluor_chnls[['green']]) %>% print
   
   
   # singlet plot : FSC-H vs -A

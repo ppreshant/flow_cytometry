@@ -300,22 +300,29 @@ Directory checking in `1-reading_multidata_fcs`
 	- > The PeacoQC package provides quality control functions that will check for monotonic increasing channels and that will remove outliers and unstable events introduced due to e.g. clogs, speed changes etc. during the measurement of your sample. It also provides the functionality of visualising the quality control result of only one sample and the visualisation of the results of multiple samples in one experiment.
 
 ## Plotting
-- [ ] _De-clutter ridges_ : Remove labels and medians for overlapping sample names only. 
-	- [x] Or (_Currently doing with user input_) remove all medians and labels when > 2 categories (colours) occur for > 5 sample names for exploratory plotting
-- [x] Plotting order : Currently using red as the default I assume, but can have a user key for primary fluorophore of interest 'red/2' or 'green/1'? Need to pass it to `.fluor_colour` in `arrange_in_order_of_fluorophore()`
-- [ ] Explain the ugly plots of FSC, SSC in S063 processed and raw data. _Could this be related to the bin edge [issue](flowcal issue) that also causes bimodality of negative samples around 0?_ Ex: S063a_B02: 
+- [x] (_was due to error in `geom_hex()` ; solved by updating to `ggplot 3.2.4`_) Explain the ugly plots of FSC, SSC in S063 processed and raw data. _~~Could this be related to the bin edge [issue](flowcal issue) that also causes bimodality of negative samples around 0?~~_ 
+	- Something changed after Oct 6th commit [620f4e5](https://github.com/ppreshant/flow_cytometry/blob/620f4e500bd5033c4f6512d735325f128b920d5e/scripts_general_fns/7-exploratory_data_view.R) made a good plot for fluors for S040; aes_string(x = as.name(fluor_chnls[\['red']\])) format - which also produces a colourkey/legend. 
+	- Bad plot first seen on 31 Jan for S062a?
+	- Steps to try 
+		- Try reproducing the old S044 plots with current scripts?
+		- Read documentations and try `geom_hex()` -> `stat_bin_hex()` alternatives
+		- Replace ggcyto call with ggplot call directly?
+		- 
+	- Ex: S063a_B02: 
 ![[S063a_B02_raw.png|200]] vs flowcal ![[S063a_B02_raw-flowcal.png|300]]
 
 Also check S067b1 : plotting with `geom_hex()` and `geom_point()` : hex is messing up representing the density bigtime - was there any change in the function behavior from the past?
 ![[S067b1_143_ww-raw-sctr_hex.png | 300]]
   ![[S067b1_143_ww-raw-sctr_point.png | 300]]
-
-
-- [x] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_
-- [ ] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_
-- [ ] Overlay the correct median labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_
-- [ ] _(archive) figure out the mystery_ : `scale_x_log10()` is plotting different values compared to `scale_x_flowjo_biexp()`. The biexp shows negative values too, and MG1655 is centered around 0 almost which is what we expect from the machine's current calibration. The mean_median labels match the data better in this case too
 - [ ] _extra plot_ : Show the density of highly fluorescent events in FSC-SSC plot : _Would be useful to see if any gating/density filtration by FlowCal is distorting the data_
+	- Not straightforward, has wierd errors ~
+- [ ] (_too hard to automate_) _De-clutter ridges_ : Remove labels and medians for overlapping sample names only. 
+	- [x] Or (_Currently doing with user input_) remove all medians and labels when > 2 categories (colours) occur for > 5 sample names for exploratory plotting
+	- [x] For high density data (> 1 or 2 colours/`sample_category`), need to remove median highlighting / control it with a switch -- _good first application when you make the ridge plotting into a function_
+- [x] Plotting order : Currently using red as the default I assume, but can have a user key for primary fluorophore of interest 'red/2' or 'green/1'? Need to pass it to `.fluor_colour` in `arrange_in_order_of_fluorophore()`
+- [x] Re-arrange the ridgeline plots in descending order of fluorescence. _Currently it orders in ascending order so messes up for multiple coloured plots (check S063c)_
+- [ ] Overlay accurate median value labels on a ridgeline/density plot -- difficulty is in calculating this since the replicates are merged while plotting but not before-hand. _Currently the labels and values of "mean_medians" are shifted to lower than the lines plotted; visible in `scale_x_log10()`_
+-  _(archive) figure out the mystery_ : `scale_x_log10()` is plotting different values compared to `scale_x_flowjo_biexp()`. The biexp shows negative values too, and MG1655 is centered around 0 almost which is what we expect from the machine's current calibration. The mean_median labels match the data better in this case too
 - _Note_: The `name` column of the `pData` appears as facets ; and samples with same name are merged before plotting (verified for histograms)
 - [x] (_fixed using_ `aes_string(as.name(ch))`) Pass channel names stored in a variable (by reference) to the ggcyto aes call does not work easily -- something about (quasi)quotation?
 - [ ] _Error:_ `xlim(c(-100, 1e3))` not working on ggcyto + geomhex + geomdensity2d plot

@@ -1,18 +1,38 @@
 # S050_dist_analysis.R
 
+
+# Gating analysis ----
+# documenation of adhoc runs -: 
+
+# Green
+# use 'A07_d-1'
+# gate_range = c(150, Inf)
+
+# Red
+# well : 'A06_d-1'
+# gate_range = c(1500, Inf)
+
+
+
 # S050 plot subsets ----
 
 # subset using the special condition in `7-exploratory_data_view.R` line 23
 
-fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
-                                   
-                                   (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | str_detect(assay_variable, '79') # optional manual filtering (additional to above)
-)
+fcsunique.subset <- 
+  subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
+                 
+                 (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | 
+                   str_detect(assay_variable, '79') # optional manual filtering (additional to above)
+  )
 
 # run plotter without saving
 plt_ridges <- plot_ridges_fluor(.show_medians = show_medians, .save_plots = F)
 
-plt_ridges[[2]] + facet_grid(facets = NULL) + ggtitle(str_c(title_name, '- pSS079')) # merge facets to join MG1655 with others
+plt_red <- plt_ridges[[2]] + facet_grid(facets = NULL) + ggtitle(str_c(title_name, '- pSS079')) # merge facets to join MG1655 with others
+
+# add gate for red
+# plt_red + geom_gate(gates_1d_list[[2]], size = 0.8) 
+# Error: Can't subset by cols when gh is not data-only object! 
 
 ggsave(plot_as('S050_subset2-processed', '-pSS079'), width = 3, height = 6)
 

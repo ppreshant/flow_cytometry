@@ -2,7 +2,7 @@
 # miscellaneous functions 
 
 # Convenience function for plotting directory and .png suffix for adhoc plots
-plot_as <- function(plt_name, ...)  str_c('FACS_analysis/plots/', plt_name, ..., '.png')
+plot_as <- function(plt_name, ..., ext = '.png')  str_c('FACS_analysis/plots/', plt_name, ..., ext)
 
 #' Generate the full sample name from the wellname : A06 Well - A06 WLSM.fcs
 #' @param wellname : should have format Axx, example A06
@@ -109,6 +109,56 @@ plot_single_density_green <- function(.cytoset,
   
   # save plot if save_folder is specified
   if(!is.null(save_folder)) ggsave(plot_as(str_c(save_folder, plot_file_name)))
+  
+  return(plt)
+}
+
+#' generalized wrapper to plot scatter or dot plots of various parameters
+#' @param : save_plot_name : char : filename of the plot
+#' @param : save_plot_suffix : char : additional suffixes to plot : indicates -scatter, -fluor etc.
+#' @param : .x and .y : variables to plot on each axis as char. can use "FSC-A" or scatter_chnls[['fwd']]
+#' @param : .cytoset : set of .fcs files or a single file
+#' @param : .plot_mode : char : hex or dotplot
+#' @param : nbins_hex : numeric : number of bins to plot for geom_hex
+#' @param : alpha_dots : numeric : transparancy of dots in dotplot : keep low ~ 0.01!
+#' @param : save_plot_extension : char : extension of the plot : default '.png' / can use '.pdf'
+#' @param : save_folder : char : folder within `FACS_analysis/plots/` to save in ; could be 'Archive/'
+
+plot_scatter <- function(save_plot_name = NULL, # make save_folder NULL to not save
+                         save_plot_suffix = NULL,
+                         
+                         .x = scatter_chnls[['fwd']],
+                         .y = scatter_chnls[['side']],
+                         .plot_mode = 'hex', nbins_hex = 64, alpha_dots = 0.01,
+                         .cytoset = fl.subset,
+                         
+                         save_plot_extension = '.png',
+                         save_folder = 'Archive/') # make save_folder NULL to save in main plots folder
+{
+  
+  plt <- 
+    ggcyto(.cytoset, 
+           aes(x = .data[[.x]], y = .data[[.y]])) +
+    
+    
+    {if(.plot_mode == 'hex') geom_hex(bins = nbins_hex) else 
+      list(geom_point(alpha = alpha_dots, size = 0.2), # plot points and contours :: WARNING : this is much slower
+        geom_density2d(colour = 'black')) } +
+    
+    scale_x_logicle() + scale_y_logicle() + # scale axes
+    # ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) + # constrain axis limits
+    
+    # Appearance
+    theme_gray() + 
+    
+    # control facets for full panel cytosets 
+    if(class(.cytoset) == 'cytoset') facet_wrap('full_sample_name') # , scales = 'free'
+  
+  # save plot if "save_plot_name" is specified
+  if(!is.null(save_plot_name)) 
+    ggsave(plot_as(save_folder, save_plot_name, save_plot_suffix, ext = save_plot_extension), 
+           plot = plt, 
+           height = est_plt_side * 0.7, width = est_plt_side * 0.7)  # save plot
   
   return(plt)
 }

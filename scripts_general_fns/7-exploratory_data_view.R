@@ -21,8 +21,8 @@ exclude_category <- 'none' # use 'none' for selecting everything : experiment/da
 source('scripts_general_fns/16-subset_cytoset.R') # source the script
 
 fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
-
-                                    # str_detect(assay_variable, 'wt') | str_detect(data_set, 'd1') # optional manual filtering (additional to above)
+                                   # optional manual filtering (additional to above)
+                                   # str_detect(assay_variable, 'wt') | str_detect(data_set, 'd1') 
  )
 
 # Side effect : creates a global variable fl.subset
@@ -139,7 +139,7 @@ if(0)
   # Single plots ----
   
   # set single_fcs if not set before gating
-  single_fcs <- get_matching_well(fl.set, 'A01') # select single file based on sampleName match
+  single_fcs <- get_matching_well(fl.set, 'A02') # select single file based on sampleName match
   
   
   # FSC-SSC plot of single sample
@@ -150,17 +150,9 @@ if(0)
   
   
   # singlet plot : FSC-H vs -A
-  plt_singlet_FSC <- 
-    {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
-                            y = 'FSC-H')) + 
-        geom_hex(bins = 120) + 
-        geom_density2d(colour = 'black') + 
-        
-        scale_x_logicle() + scale_y_logicle()} %>% 
+  singlet_FSC_single <- {plot_scatter(.cytoset = single_fcs, 
+                                   .x = scatter_chnls[['fwd']], .y = 'FSC-H')} %>% print
     
-    print()
-  
-  
   
   # red-SSC scatter plot ; checking bimodality
   plt_redssc_single_points <- 
@@ -185,23 +177,18 @@ if(0)
   
   
   # fluor vs Scatter
+  green_fsc_single <- {plot_scatter(.cytoset = single_fcs, 
+                                   .x = scatter_chnls[['fwd']], .y = fluor_chnls[['green']])} %>% print
+  
+  ssc_green_single <- {plot_scatter(.cytoset = single_fcs, 
+                                    .x = fluor_chnls[['green']], .y = scatter_chnls[['side']])} %>% print
+  
+  
   plt_red_scatter <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['red']]]], y = `SSC-A`)) + 
       geom_hex(bins = 120) + 
       geom_density2d(colour = 'black') + 
       
       scale_x_logicle()} %>% print()
-  
-  plt_green_FSC <- {ggcyto(single_fcs, aes(x = `FSC-A`, y = .data[[fluor_chnls[['green']]]])) + 
-      geom_hex(bins = 120) + 
-      geom_density2d(colour = 'black') + 
-      
-      scale_x_logicle() + scale_y_logicle()} %>% print()
-  
-  plt_SSC_green <- {ggcyto(single_fcs, aes(x = .data[[fluor_chnls[['green']]]], y = `SSC-A`)) + 
-      geom_hex(bins = 120) + 
-      geom_density2d(colour = 'black') + 
-      
-      scale_x_logicle() + scale_y_logicle()} %>% print()
   
   
   
@@ -232,25 +219,24 @@ if(0)
   
   # scatter FSC vs SSC plot coloured by fluorescence
   plt_sctr_with_fluor <- 
-    {ggcyto(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
+    {ggplot(single_fcs, aes(x = .data[[scatter_chnls[['fwd']]]],
                             y = .data[[scatter_chnls[['side']]]],
                             z = .data[[fluor_chnls[['green']]]])) + 
-        stat_summary_hex(bins = 120) + 
+        stat_summary_hex(bins = 120, fun = 'median') + 
         geom_density2d(colour = 'black') + 
         
         scale_x_logicle() + scale_y_logicle()} %>% 
     
     print()
-  # error in `.data[["mGreenLantern cor-A"]]`:
-  # ! Column `mGreenLantern cor-A` not found in `.data`.
+  # not plotting ; ggcyto fails by not finding z variable
   
   
   # scatter and fluor correlation arrangement (since the above colour method failed)
   library(patchwork)
   
-  (plt_SSC_green + plt_sctr_single) / (plt_singlet_FSC + plt_green_FSC) # align the fluor vs fsc and ssc (plot_spacer())
+  (ssc_green_single + plt_sctr_single) / (singlet_FSC_single + green_fsc_single) # align the fluor vs fsc and ssc (plot_spacer())
   
   # optional save
-  ggsave(plot_as(title_name, 'D01-tr'))
+  ggsave(plot_as(title_name, 'A02-tr'), width = 8, height = 4)
   
 }

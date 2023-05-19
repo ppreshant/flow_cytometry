@@ -88,27 +88,39 @@ get_matching_well <- function(.flset, .matcher)
 # to be generalized in due time
 
 #' Plot the density of the green fluorescent channel of a single well
-#' @param .cytoset : give the subsetted cytoset (other single fcs data might also work)
-#' @param plot_file_name : The name of the .png file to save as
-#' @param save_folder : plot save folder inside 'FACS_analysis/plots/..' ; use NULL to not save. Default 'Archive/'
+#' @param : save_plot_name : char : filename of the plot
+#' @param : save_plot_suffix : char : additional suffixes to plot : indicates -scatter, -fluor etc.
+#' @param : .x : variables to plot on each axis as char. can use "FSC-A" or scatter_chnls[['fwd']]
+#' @param : .cytoset : set of .fcs files or a single file
+#' @param : save_plot_extension : char : extension of the plot : default '.png' / can use '.pdf'
+#' @param : save_folder : char : folder within `FACS_analysis/plots/` to save in ; could be 'Archive/'
 
 
-plot_single_density_green <- function(.cytoset,
-                                      plot_file_name,
-                                      save_folder = 'Archive/') # make save_folder NULL to not save
+plot_density <- function(save_plot_name = NULL, # make save_folder NULL to not save
+                         save_plot_suffix = NULL,
+                         
+                         .x = fluor_channels[['green']],
+                         .cytoset = fl.subset,
+                         save_plot_extension = '.png',
+                         save_folder = 'Archive/') # make save_folder NULL to not save
 {
   
   plt <- 
     ggcyto(.cytoset, 
-           aes(x = .data[[fluor_chnls[['green']]]] )#,  # plot 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA
-           # subset = 'A'
-    ) +
+           aes(x = .data[[.x]])) +
     geom_density(fill = 'green', alpha = 0.3) + 
     
-    scale_x_logicle()
+    scale_x_logicle() + 
+    
+    # control facets for full panel cytosets 
+    if(class(.cytoset) == 'cytoset') facet_wrap('full_sample_name') # , scales = 'free'
   
-  # save plot if save_folder is specified
-  if(!is.null(save_folder)) ggsave(plot_as(str_c(save_folder, plot_file_name)))
+  
+  # save plot if "save_plot_name" is specified
+  if(!is.null(save_plot_name)) 
+    ggsave(plot_as(save_folder, save_plot_name, save_plot_suffix, ext = save_plot_extension), 
+           plot = plt, 
+           height = est_plt_side * 0.7, width = est_plt_side * 0.7)  # save plot
   
   return(plt)
 }

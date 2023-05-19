@@ -99,7 +99,7 @@ get_matching_well <- function(.flset, .matcher)
 plot_density <- function(save_plot_name = NULL, # make save_folder NULL to not save
                          save_plot_suffix = NULL,
                          
-                         .x = fluor_channels[['green']],
+                         .x = fluor_chnls[['green']],
                          .cytoset = fl.subset,
                          save_plot_extension = '.png',
                          save_folder = 'Archive/') # make save_folder NULL to not save

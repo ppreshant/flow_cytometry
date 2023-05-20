@@ -31,7 +31,7 @@ green_fsc_single <- {plot_scatter(.cytoset = single_fcs,
 gates_1d_list <- 
   map(fluor_chnls, 
    ~ openCyto::mindensity(single_fcs, channel = .x, 
-                          gate_range = c(50, Inf) # manual use: need a gate range to set higher than cluster
+                          gate_range = c(200, Inf) # manual use: need a gate range to set higher than cluster
                           )) # draws a line at the minimum density region in 1d
 
 # Look at openCyto documentation for other gating functions 
@@ -115,7 +115,7 @@ autoplot(gate_set[[13]]) + scale_x_flowjo_biexp() + scale_y_flowjo_biexp() # che
 #                             '1/|,' = '') # remove commas and convert the 1/x into x 
 
 
-# Analysis ----
+# Count gated events ----
 
 metadata_variables_gating <- c('assay_variable', 'sample_category', 'Population')
 
@@ -198,17 +198,22 @@ ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 6)
 # Idea : subset the gated events ; then run flowworkspace summary on this dataset
 
 
-fl.subset2 <- gh_pop_get_data(gate_set, 'Green')
+fl.green <- gs_pop_get_data(gate_set, 'Green')
 
 # TODO : fix this to get the full sample set rather than just the first sample
 
-# check data
-fl.subset2 %>% class
-# this is a cytoframe vs the expected cytoset, what's going on? even 'root' gives only A01 data
 
 # plot to check
-plot_density(.cytoset = fl.subset2) %>% print()
+# plot_density(.cytoset = fl.green) %>% print()
 
+source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
+green_ridges <- plot_ridges_fluor(.show_medians = show_medians, .cytoset = fl.green, 
+                                  .show_jittered_points = T) # make plots and optionally save them with title_name + suffixes
+
+# check if gating worked
+# need to count the number of events before and after gating. 
+nrow(fl.set[[30]])
+nrow(fl.green[[30]])
 
 # manual gating ----
 

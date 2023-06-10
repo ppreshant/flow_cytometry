@@ -480,13 +480,21 @@ in comparison, S048 gives
 
 ## Data sets to re-analyze without MEFL
 
-Currently doing this only for showing full distribution figs
-- [ ] Check for S070 data if without MEFLing changes fraction above C- gate changes significantly
+**Use case** : Currently doing this only for showing full distribution figs
+- [ ] (*gating*) Check for S070/S050 data if with and without MEFLing changes gated fractions  significantly (gate above C-) 
 
 Memory paper
-- (Fig S only) S050 : can use it to show trend of decay in suppl.
+- S050 : Need for gating (if it makes a difference?) ; (Fig S only) Can use it to show trend of decay in suppl.
 - (_?_) S071 : memory WW visual glance
 - (_check_) S070 Ara dose response
 
 Marine
 - S063a, b, c : Redo processing without MEFLing
+
+## Recombinase memory paper
+Here's some notes on analysis used for memory paper
+- Fig 2c : S070 - gated fractions 
+	- (with MEFLing)
+	- gated on sample : ? 
+- Fig 3 : S050 - gated fractions?
+- Fig ? : 

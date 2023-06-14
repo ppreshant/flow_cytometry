@@ -6,12 +6,15 @@
 #' @param .show_medians Use this to show medians and annotate their value (when figure is not crowded)
 #' @param .facets_other_category Use when there is a user generated `other_category` to facet by.
 #' @param .save_plots Make `TRUE` to save the plot(s) for each fluorophore.
+#' @param .fluor_colour Regex. Use to subset only the desired fluorescent channels : using 'green' , 'red'..
 #' @param .clip_fraction Clips away density when it is < this fraction of the max height : to avoid showing long tails.
 #' @param .show_jittered_points Shows points below the distribution. Use for gated data to highlight lower density of points.
 #' @param .cytoset T data to plot. Defaults to `fl.subset`.
  
 plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and text labels 
                               .facets_other_category = FALSE, .save_plots = TRUE,
+                              
+                              .fluor_colour = '.*',
                               
                               .clip_fraction = 0.001,
                               .show_jittered_points = FALSE,
@@ -37,9 +40,11 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
     
   }
   
+  # subset only the desired fluorescent channels : using 'green' , 'red' ..
+  fluor_chnl_subset <- fluor_chnls %>% .[str_detect(names(.), .fluor_colour)]
   
   plt_ridges <- 
-    map(fluor_chnls, # run the below function for each colour of fluorescence
+    map(fluor_chnl_subset, # run the below function for each colour of fluorescence
         
         ~ ggcyto(.cytoset, # select subset of samples to plot
                  aes(x = .data[[.x]], 
@@ -125,7 +130,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
   if(.save_plots){ # save plots unless user input prevents this
     
     if(.facets_other_category | combined_data) { # saving plots if faceted by other_category/data_set
-      map(names(fluor_chnls), # iterate over fluorescence channels
+      map(names(fluor_chnl_subset), # iterate over fluorescence channels
           
           ~ ggsave(str_c('FACS_analysis/plots/', 
                          title_name,  # title_name, 
@@ -138,7 +143,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
       
     } else { # saving plots if not faceted : width, height and naming is different 
       
-      map(names(fluor_chnls), # iterate over fluorescence channels
+      map(names(fluor_chnl_subset), # iterate over fluorescence channels
           
           ~ ggsave(str_c('FACS_analysis/plots/', 
                          title_name,  # title_name, 

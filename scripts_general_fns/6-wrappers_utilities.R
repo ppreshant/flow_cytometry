@@ -75,10 +75,11 @@ get_matching_well <- function(.flset, .matcher)
     sampleNames(.flset) %>% 
     .[str_detect(., .matcher)]
   
-  if(length(samples) > 1) print('multiple matches found : ') else print('Selected well : ')
+  if(length(samples) > 1) print('multiple matches found, returning cytoset : ') else print('Selected well : ')
   print(samples)
   
-  .flset[[samples]]
+  if(length(samples) > 1) .flset[samples] else .flset[[samples]] # return a cytoset or cytoframe
+  
   # TODO : include ... to match multiple regexes ; still figuring out best way to do this
 }
 

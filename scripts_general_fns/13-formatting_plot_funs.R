@@ -21,7 +21,7 @@ scale_fill_discrete <- function(...) { # default palette for fill
 format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt + 
-    theme(legend.position = 'top') +  # position legend on the top
+    theme(legend.position = 'top', legend.justification = 'left') +  # position legend on the top
     theme_classic() + scale_color_brewer(palette="Set1") # set plain background theme, and colour scheme
 }
 

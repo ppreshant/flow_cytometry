@@ -2,16 +2,23 @@
 
 #' Subset a cytoset by using it's flowworkspace_summary (`summary(fl.set)`)/ in future, `pData()` might work too
 #' outputs a unique subset tibble with metadata and medians for labelling ridgeline plots
-#' Side effect : creates universal variable fl.subset - which is the main purpose of this script
-#' @param : ... : one ore more conditions for custom filtering
+#' Side effect creates universal variable fl.subset - which is the main purpose of this script
+#' @param ... one ore more conditions for custom filtering
+#' @return fcsunique.subset subseted summary for adding median/other labels on plots
+#' Side effect : creates global variables : fl.subset, num_of_unique_samples, and est_plt_side
 
-subset_cytoset <- function(non_data_stuff, specific_data, exclude_category, ...)
+subset_cytoset <- function(non_data_stuff = 'NA|Beads|beads|PBS', 
+                           specific_data = '.*', 
+                           exclude_category = 'none', 
+                           ...)
 {
   #' Make a subset of data for plotting purposes :: ex: Remove PBS controls, beads etc. 
   #' Using this for plotting in nice a orientation mimicking the plate wells if possible
   
   samples_in_fl <- sampleNames(fl.set) # get all the sample names
   
+  
+  # subset fcssummary ----
   
   # subset the summary dataset : for overlaying medians onto plots 
   fcssummary.subset <- 
@@ -29,12 +36,7 @@ subset_cytoset <- function(non_data_stuff, specific_data, exclude_category, ...)
   # get the full filenames of the samples to be included  
   samples_to_include <- pull(fcssummary.subset, filename) %>%  # take the sample names to be plotted
     unique()
-  
   # BUG : selects the whole fl.set to subset when samples_to_include is empty vector
-  
-  # subset the cytoset carrying the `.fcs` data : Make a global variable
-  fl.subset <<- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset. 
-  # Warning::  editing this fl.subset might change the original fl.set as well since this is a symbolic link
   
   
   # Get unique values : for adding labels to plot/medians
@@ -47,16 +49,20 @@ subset_cytoset <- function(non_data_stuff, specific_data, exclude_category, ...)
     mutate(across(where(is.factor), fct_drop)) # drop unused factor levels
   
   
-  # Optional (for cross experiment analysis): save subset of .fcs data with easier names (write.FCS)
-  # Question : How did we make this cross expt dataset? 24/2/23 -- did I rewrite the combine workflow script?
-  # TODO : make this using an optional user input variable?
+  # Subset cytoset ----
   
-  # mutate(fcssummary.subset,
-  #        new_flnames = str_c(str_replace(name, ' /', '_'), '_', well)) %>% # unique names by well
-  #   pull(new_flnames) %>% unique %>% # get the new filenames
-  #   {str_c('processed_data/ramfacs_S1_variants/', ., '-S044.fcs')} %>% # make file path (ensure folder exists)
-  #   {for (i in 1:length(.)) {write.FCS(fl.subset[[i]], filename = .[i])}} # save each .fcs files
+  # subset the cytoset carrying the `.fcs` data : Make a global variable
+  fl.subset <<- fl.set[samples_to_include] # select only a subset of the .fcs data cytoset. 
+  # Warning::  editing this fl.subset might change the original fl.set as well since this is a symbolic link
   
   
+  # plot dimensions ----
+  
+  # estimate dimensions to save the plot in (for automated workflow)
+  # num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels after making pltden_red
+  num_of_unique_samples <<- pData(fl.subset) %>% pull(full_sample_name) %>% unique() %>% length()
+  est_plt_side <<- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
+  
+  return(fcsunique.subset)
   
 }

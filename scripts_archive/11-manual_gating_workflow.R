@@ -8,7 +8,7 @@ source('./analyze_fcs.R')
 
 # Select sample(s) ----
 
-single_fcs <- get_matching_well(fl.set, 'C07') # select a representative sample to set gates on
+single_fcs <- get_matching_well(fl.set, 'A07_d-1') # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
 # Visualize sample ----
@@ -30,10 +30,14 @@ green_fsc_single <- {plot_scatter(.cytoset = single_fcs,
 # (setting 1D gates on both channels stored in vector 'fluor_chnls')
 gates_1d_list <- 
   map(fluor_chnls, 
-   ~ openCyto::mindensity(single_fcs, channel = .x, 
-                          gate_range = c(200, Inf) # manual use: need a gate range to set higher than cluster
-                          )) # draws a line at the minimum density region in 1d
-
+      ~ openCyto::gate_quantile(single_fcs, channel = .x))
+   
+# other gating functions : minimum density / valley in 1D when there are 2 peaks
+# gate_red <- openCyto::mindensity(single_fcs, channel = fluor_chnls['red']) %>% print
+                                  # gate_range = c(150, Inf) # manual use: need a gate range to set higher than cluster
+# gate_red <- openCyto:::.boundary(single_fcs, channels = fluor_chnls['red'], min = 300, max = Inf) %>% print
+                       
+ 
 # Look at openCyto documentation for other gating functions 
 # https://www.bioconductor.org/packages/release/bioc/vignettes/openCyto/inst/doc/HowToAutoGating.html
 

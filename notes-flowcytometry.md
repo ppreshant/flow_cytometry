@@ -495,6 +495,10 @@ Marine
 Here's some notes on analysis used for memory paper
 - Fig 2c : S070 - gated fractions 
 	- (with MEFLing)
-	- gated on sample : ? 
-- Fig 3 : S050 - gated fractions?
+	- gated on sample : B02 ; quantile 99, sets at 647.82
+- Fig 3 : S050 - gated fractions
+	- No MEFLing
+	- Gating : 
+		- green : 'A07_d-1' ; 99 quantile gate : sets at 172.39
+		- red : 'A06_d-1' ; 300 manual gate -- _since tail is long, eyeballing 300 based on full distribution_
 - Fig ? : 

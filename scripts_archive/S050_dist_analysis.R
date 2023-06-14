@@ -5,12 +5,13 @@
 # documenation of adhoc runs -: 
 
 # Green
-# use 'A07_d-1'
-# gate_range = c(150, Inf)
+# use 'A07_d-1' ; 99 quantile gate : sets at 172.39
+# old : gate_range = c(150, Inf) # uses exactly 150
 
 # Red
 # well : 'A06_d-1'
-# gate_range = c(1500, Inf)
+# gate_range = c(200, Inf) # using 888.3559 
+  # Notes: older range 1500 is too high, quartile 99 too high ; Try minden D02_d2 (induced)?
 
 # Notes: The samples were gated, and gating checked (`S050 plot subsets` below) and saved
 # Saved data is opened, processed (based on `S070,66_gating_analysis.R`) 
@@ -58,7 +59,7 @@ processed_counts <-
   ungroup()
   
   
-# can't use -- has Ara samples too - do in post processing in inkscape
+# do in post processing in inkscape to name the inducers properly
 
 
 # Plot ----
@@ -105,7 +106,7 @@ timeseries_plot <- function(.filter_assay = '.*', .fluor = 'Green', .filter_indu
     ggtitle('S050 : Flow cytometry. S050') + 
     
     # layout
-    theme(legend.position = 'top') +
+    theme(legend.position = 'top', legend.justification = 'left') +
     facet_wrap(facets = vars(assay_variable), scales = 'free_y', ncol = 3)} %>% print
   
 }
@@ -113,54 +114,94 @@ timeseries_plot <- function(.filter_assay = '.*', .fluor = 'Green', .filter_indu
 # Convenience function for plotting directory and .png suffix for adhoc plots
 plot_as <- function(plt_name, ..., ext = '.png')  str_c('FACS_analysis/plots/', plt_name, ..., ext)
 
+remove_title <- function(plot_handle) plot_handle + ggtitle(NULL, subtitle = NULL) # removes title and subtitle for plots - pdf
+
 
 # arabinose
 plt.ara <- timeseries_plot(.filter_assay = 'pInt8 \\+ rGFP', .fluor = 'Green', 
                            .filter_inducer = '(0|I)$')
 ggsave(plot_as('S050_Ara-fraction'), width = 6, height = 3)
+ggsave('FACS_analysis/plots/S050_Ara-fraction.pdf', plot = remove_title(plt.ara), width = 6, height = 3)
 
 
 # arabinose w glycerol
-plt.ara <- timeseries_plot(.filter_assay = 'pInt8 \\+ rGFP', .fluor = 'Green', 
+plt.ara.glycerol <- timeseries_plot(.filter_assay = 'pInt8 \\+ rGFP', .fluor = 'Green', 
                            .filter_inducer = 'glycerol', .order_inducer = c('0-glycerol', 'I-glycerol'))
 ggsave(plot_as('Archive/S050_Ara-fraction-glycerol'), width = 6, height = 3)
+
 
 # AHL v0
 plt.ahlv0 <- timeseries_plot(.filter_assay = 'pRV01 \\+ rGFP', .fluor = 'Green')
 ggsave(plot_as('S050_AHL-v0-fraction'), width = 6, height = 3)
+ggsave('FACS_analysis/plots/S050_AHL-v0-fraction.pdf', remove_title(plt.ahlv0), width = 6, height = 3)
 
 # AHL v0
 plt.ahl <- timeseries_plot(.filter_assay = 'pSS079', .fluor = 'Red')
 ggsave(plot_as('S050_AHL-fraction'), width = 6, height = 3)
+ggsave('FACS_analysis/plots/S050_AHL-fraction.pdf', remove_title(plt.ahl), width = 6, height = 3)
+
 # Bad gate? -- check
 
 
 
-
-
-# S050 plot subsets ----
+# plot distributions ----
 
 # subset using the special condition in `7-exploratory_data_view.R` line 23
 # these plots help check if gating went right for specific samples (to be concise)
 
-fcsunique.subset <- 
-  subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
-                 
-                 (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | 
-                   str_detect(assay_variable, '79') # optional manual filtering (additional to above)
-  )
 
-# run plotter without saving
-plt_ridges <- plot_ridges_fluor(.show_medians = show_medians, .save_plots = F)
+# pSS079/red ----
 
-# merge facets to join MG1655 with others
-plt_red <- plt_ridges[[2]] + facet_grid(facets = NULL) + ggtitle(str_c(title_name, '- pSS079')) 
+# Subset the desired data for supplementary fig
+fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
+                                   # optional manual filtering (additional to above)
+                                   str_detect(assay_variable, '79') | str_detect(data_set, 'd-1')
+)
 
-# add gate for red
-# plt_red + geom_gate(gates_1d_list[[2]], size = 0.8) 
-# Error: Can't subset by cols when gh is not data-only object! 
+# custom plot with gate (supplementary fig)
+plt_ridges <- plot_ridges_fluor(.show_medians = F, .save_plots = F, .fluor_colour = 'red')
 
-ggsave(plot_as('S050_subset2-processed', '-pSS079'), width = 3, height = 6)
+plt_ss79 <-
+  plt_ridges$red + facet_grid(rows = NULL) + # merge into one facet
+  ggtitle(str_c(title_name, '- pSS079')) + geom_vline(xintercept = 300, colour = 'red') # add title, show gate
+
+ggsave(plot_as('Archive/S050_pSS079'), plt_ss79, width = 3, height = 6)
+
+
+# Ara samples ----
+
+# : pInt8 + rGFP / green
+fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data = '.*', exclude_category, # use for labeling ridges' medians
+                                   # optional manual filtering (additional to above)
+                                   (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | 
+                                     str_detect(assay_variable, 'pInt8 \\+ rGFP') & !str_detect(sample_category, 'glycerol')
+)
+
+plt_ridges2 <- plot_ridges_fluor(.show_medians = F, .save_plots = F, .fluor_colour = 'green')
+
+plt_2 <- 
+  plt_ridges2$green + facet_grid(rows = NULL) + # merge into one facet
+  ggtitle(str_c(title_name, '- Ara')) + geom_vline(xintercept = 172.391035766601, colour = 'red') # add title, show gate
+
+ggsave(plot_as('Archive/S050_Ara'), plot = plt_2, width = 3, height = 6)
+
+
+
+# pRV samples ----
+
+# : pRV01 + rGFP / green
+fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data = '.*', exclude_category, # use for labeling ridges' medians
+                                   # optional manual filtering (additional to above)
+                                   (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | 
+                                     str_detect(assay_variable, 'pRV01 \\+ rGFP') & !str_detect(sample_category, 'glycerol')
+)
+
+plt_ridges3 <- plot_ridges_fluor(.show_medians = F, .save_plots = F, .fluor_colour = 'green')
+plt_ridges3$green + facet_grid(rows = NULL) + # merge into one facet
+  ggtitle(str_c(title_name, '- pRV01')) + geom_vline(xintercept = 172.391035766601, colour = 'red') # add title, show gate
+
+ggsave(plot_as('Archive/S050_pRV01'), width = 3, height = 6)
+
 
 
 # S050 subset (old) ----

@@ -22,25 +22,21 @@ source('scripts_general_fns/16-subset_cytoset.R') # source the script
 
 fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
                                    # optional manual filtering (additional to above)
-                                   # str_detect(assay_variable, 'wt') | str_detect(data_set, 'd1') 
+                                   # str_detect(assay_variable, '79') | str_detect(data_set, 'd-1')
  )
-
-# Side effect : creates a global variable fl.subset
+# Side effect : creates global variables : fl.subset, num_of_unique_samples, and est_plt_side
 
 
 # Exploratory plotting ----
 
-# estimate dimensions to save the plot in (for automated workflow)
-# num_of_facets <- pltden_red$facet$params %>% length() # find the number of panels after making pltden_red
-num_of_unique_samples <- pData(fl.subset) %>% pull(full_sample_name) %>% unique() %>% length()
-est_plt_side <- sqrt(num_of_unique_samples) %>% round() %>% {. * 2.5} # make 2.5 cm/panel on each side (assuming square shape)
 
-# overview plots : take a long time to show - so save them and open the png to visualize
+# overview plots : take a long time to show with many samples - so save them and open the png to visualize
 
-# Ridgeline plot
-# Plot is ordered in descending order of fluorescence if `list_of_ordered_levels` provided
 
 # Ridgeline plots ----
+
+# Ridgeline plot - good for comparing multiple sets in a concise density plot (density is per ridge :(
+# Plot is ordered in descending order of fluorescence if `list_of_ordered_levels` provided
 
 source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
 plt_ridges <- plot_ridges_fluor(.show_medians = show_medians) # make plots and optionally save them with title_name + suffixes

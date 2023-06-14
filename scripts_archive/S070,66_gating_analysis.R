@@ -50,10 +50,10 @@ plt_dosec <- plot_dose_response_and_controls()
 plt_dosec[[1]] # call the combined plot
 
 plotly::ggplotly(plt_dosec[[2]]) # interactive partial plot with numeric Arabinose : chase outliers
-ggsave(plot_as(title_name, '-dose_response'), plt_dosec, width = 6, height = 4)
+ggsave(plot_as(title_name, '-dose_response'), plt_dosec[[1]], width = 6, height = 4)
 
 # save pdf for paper
-ggsave(str_c('FACS_analysis/plots/', title_name, '.pdf'), width = 5, height = 4)
+ggsave(str_c('FACS_analysis/plots/', title_name, '.pdf'), plt_dosec[[1]], width = 5, height = 4)
 
 # Plot timecourse ----
 # relevant for S066 only
@@ -103,3 +103,26 @@ d0_unique <- summarise(ungroup(d0_counts), mean_freq = mean(freq),
 # save plot ----
 
 ggsave(plot_as(title_name, '-dose_response'))
+
+
+
+# Distribution plot ----
+
+# plotting this with threshold for supplementary fig S1
+
+# load data 
+# Make plot with axis rearranged (manually change list_of_ordered_variables)
+
+# subset S070 only
+fcsunique.subset <- subset_cytoset(specific_data = 'd.')
+
+list_of_ordered_levels$assay_variable <- c('OFF', 'ON', 'glu', '0', '1e-1', '1e0', '1e1', '1e2', '1e3', '1e4')
+
+plt_ridges <- plot_ridges_fluor(.show_medians = T, .save_plots = F, .fluor_colour = 'green')
+
+plt_green <- 
+  plt_ridges$green + ggtitle(NULL) + geom_vline(xintercept = 647.82, colour = 'red')
+
+# do gating and add value manually w geom_vline()
+ggsave('FACS_analysis/plots/S070_Ara_dist.pdf', width = 3, height = 6)
+

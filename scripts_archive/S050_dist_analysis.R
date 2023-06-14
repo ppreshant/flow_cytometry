@@ -9,8 +9,8 @@
 # old : gate_range = c(150, Inf) # uses exactly 150
 
 # Red
-# well : 'A06_d-1'
-# gate_range = c(200, Inf) # using 888.3559 
+# well : 'A06_d-1' ; 300 manual gate
+  # old : gate_range = c(200, Inf) # using 888.3559 
   # Notes: older range 1500 is too high, quartile 99 too high ; Try minden D02_d2 (induced)?
 
 # Notes: The samples were gated, and gating checked (`S050 plot subsets` below) and saved

@@ -501,4 +501,6 @@ Here's some notes on analysis used for memory paper
 	- Gating : 
 		- green : 'A07_d-1' ; 99 quantile gate : sets at 172.39
 		- red : 'A06_d-1' ; 300 manual gate -- _since tail is long, eyeballing 300 based on full distribution_
-- Fig ? : 
+- Fig S11? : `S061_WW-AHL production`
+	- No MEFLing
+	- Gate : C08 ; 99 quantile gate : sets at 2668.32

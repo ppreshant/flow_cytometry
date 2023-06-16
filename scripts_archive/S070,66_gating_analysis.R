@@ -59,13 +59,6 @@ ggsave(str_c('FACS_analysis/plots/', title_name, '.pdf'), plt_dosec[[1]], width 
 
 # Dynamic range calc ----
 
-# max Ara
-max_ara_freq <- filter(unique_counts, Arabinose == 1e3) %>% pull(mean_freq)
-
-# min Glu, d0
-min_glu_freq <- filter(unique_counts, assay_variable == 'glu', sample_category == 'd0') %>% pull(mean_freq) %>% 
-  print
-
 
 # dynamic range 1e3 / glu. d0
 map_dbl(c('1e3', 'glu'),
@@ -74,13 +67,14 @@ map_dbl(c('1e3', 'glu'),
 ) %>% 
   {.[1] / .[2]}
 
-max_ara_freq / min_glu_freq
 
-# Max
-filter(unique_counts, mean_freq == max(mean_freq))
 
-# Min
-filter(unique_counts, mean_freq == min(mean_freq))
+# dynamic range : ON-max / OFF-min . d0
+map_dbl(c('ON', 'OFF'),
+        ~ filter(unique_counts, sample_category == 'd0',
+                 assay_variable == .x) %>% pull(mean_freq)
+) %>% 
+  {.[1] / .[2]}
 
 
 

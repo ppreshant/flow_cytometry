@@ -55,7 +55,30 @@ ggsave(plot_as(title_name, '-dose_response'), plt_dosec[[1]], width = 6, height 
 # save pdf for paper
 ggsave(str_c('FACS_analysis/plots/', title_name, '.pdf'), plt_dosec[[1]], width = 5, height = 4)
 
-# Plot timecourse ----
+
+
+# Dynamic range calc ----
+
+# max Ara
+max_ara_freq <- filter(unique_counts, Arabinose == 1e4) %>% pull(mean_freq)
+
+# min Glu, d0
+min_glu_freq <- filter(unique_counts, assay_variable == 'glu', sample_category == 'd0') %>% pull(mean_freq) %>% 
+  print
+
+
+# dynamic range
+max_ara_freq / min_glu_freq
+
+# Max
+filter(unique_counts, mean_freq == max(mean_freq))
+
+# Min
+filter(unique_counts, mean_freq == min(mean_freq))
+
+
+
+# Plot timecourse S066 ----
 # relevant for S066 only
 
 plt_timecourse <-

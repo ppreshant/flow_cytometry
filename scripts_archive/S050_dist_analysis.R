@@ -62,12 +62,14 @@ processed_counts <-
 # do in post processing in inkscape to name the inducers properly
 
 
-# Plot ----
+# Plotting wrappers ----
 
 # plot generator function : filters to custom data-subset 
 timeseries_plot <- function(.filter_assay = '.*', .fluor = 'Green', .filter_inducer = '.*', .data = processed_counts,
                             .order_inducer = c('0', 'I'),
-                            .y = freq)
+                            .y = freq,
+                            
+                            use_colour = 'black')
   
 {
   # subset data
@@ -91,9 +93,10 @@ timeseries_plot <- function(.filter_assay = '.*', .fluor = 'Green', .filter_indu
             shape = Inducer,
             label = replicate)) + # for interactive plots and maybe joining with lines 
     
-    geom_point() + 
+    geom_point(colour = use_colour) + 
     geom_line(aes(group = interaction(sample_category, replicate),
-                  alpha = Inducer)) +
+                  alpha = Inducer),
+              colour = use_colour) +
     
     # formatting
     {if(two_shapes) scale_shape_manual(values = c(1, 16))} + # shape : open and closed circles
@@ -117,9 +120,12 @@ plot_as <- function(plt_name, ..., ext = '.png')  str_c('FACS_analysis/plots/', 
 remove_title <- function(plot_handle) plot_handle + ggtitle(NULL, subtitle = NULL) # removes title and subtitle for plots - pdf
 
 
-# arabinose
+
+# Plot gated ----
+
+# arabinose w glucose
 plt.ara <- timeseries_plot(.filter_assay = 'pInt8 \\+ rGFP', .fluor = 'Green', 
-                           .filter_inducer = '(0|I)$')
+                           .filter_inducer = '(0|I)$') # remove glycerol
 ggsave(plot_as('S050_Ara-fraction'), width = 6, height = 3)
 ggsave('FACS_analysis/plots/S050_Ara-fraction.pdf', plot = remove_title(plt.ara), width = 6, height = 3)
 
@@ -136,9 +142,9 @@ ggsave(plot_as('S050_AHL-v0-fraction'), width = 6, height = 3)
 ggsave('FACS_analysis/plots/S050_AHL-v0-fraction.pdf', remove_title(plt.ahlv0), width = 6, height = 3)
 
 # AHL v0
-plt.ahl <- timeseries_plot(.filter_assay = 'pSS079', .fluor = 'Red')
+plt.ahl <- timeseries_plot(.filter_assay = 'pSS079', .fluor = 'Red', use_colour = '#9E2A2B')
 ggsave(plot_as('S050_AHL-fraction'), width = 6, height = 3)
-ggsave('FACS_analysis/plots/S050_AHL-fraction.pdf', remove_title(plt.ahl), width = 6, height = 3)
+ggsave('FACS_analysis/plots/S050_AHL-fraction.pdf', remove_title(plt.ahl), width = 4, height = 3) # width 6, height 3
 
 # Bad gate? -- check
 
@@ -170,7 +176,7 @@ ggsave(plot_as('Archive/S050_pSS079'), plt_ss79, width = 3, height = 6)
 
 # Ara samples ----
 
-# : pInt8 + rGFP / green
+# : pInt8 + rGFP / green : w glucose
 fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data = '.*', exclude_category, # use for labeling ridges' medians
                                    # optional manual filtering (additional to above)
                                    (str_detect(assay_variable, 'MG1655') & data_set == 'd-1') | 

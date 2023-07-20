@@ -150,6 +150,144 @@ ggsave('FACS_analysis/plots/S050_AHL-fraction.pdf', remove_title(plt.ahl), width
 
 
 
+# Exponential fitting ----
+
+# fitting exponentials to Ara and AHL ; 
+# need half lives of 3 independent fits each + do t.test on half lives Ara vs AHL
+
+metadata_var_expfit <- c('assay_variable', 'sample_category', 'Population', 'replicate') # fit each replicate as paired
+
+counts_for_fit <- processed_counts %>% 
+  
+  group_by(across(all_of(metadata_var_expfit))) %>% 
+  
+  filter(str_detect(sample_category, 'Induced$'), # select only induced
+         # str_detect(assay_variable, 'pInt8 \\+ rGFP'), Population == 'Green' # select specific data
+         ) %>%  # filter only relevant data
+  
+  nest() # make into nested data for fitting
+
+
+
+# Generalized exp fitting : copied from qPCR:: S8_RAM stability.R
+
+safe_exp_fit <- safely(.f = ~ nls(freq ~ SSasymp(day, ys, y0, log_alpha), data = .x))
+# use as map(data, ~ safe_exp(.x)); tidied = map(.fit, ~ broom::tidy(.x$result)) / to avoid singular gradient error
+# Source : https://aosmith.rbind.io/2020/08/31/handling-errors/
+
+get_t_half_from_exp_fits <- function(.df)
+  
+{
+  .df %>% 
+    
+    mutate( # extract parameters from fit, attach to data
+      tidied = map(.fit, ~ broom::tidy(.x$result)), # extracting fitting parameters
+      augmented = map(.fit, ~ broom::augment(.x$result)), # extrapolating fitting data, for plotting
+      # extrapolated = map(.fit, ~ broom::augment(.x$result, newdata = extrapol_tibble)) # extrapolate when fit didn't work
+    ) %>% 
+    
+    # unnest the model parameters
+    unnest(tidied) %>% 
+    
+    # arrange the parameter estimate, std. error and other stuff for each paramameter in each column
+    pivot_wider(names_from = term,
+                values_from = c(estimate, std.error, statistic, p.value)) %>% 
+    
+    # produce t1/2 estimates
+    mutate(t.half = log(2)* exp(-estimate_log_alpha), 
+           std.error_t.half = log(2) * exp(-estimate_log_alpha) * std.error_log_alpha,
+           
+           t.half.text = str_c( format(t.half, digits = 2), 
+                                '+/-', 
+                                format(std.error_t.half, digits = 2),
+                                sep = ' ')
+    ) # using error propagation - https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example
+  
+}
+
+
+# Test on specific data before generalizing / to save time
+ara_exp_fits <-
+  counts_for_fit %>%
+  filter(str_detect(assay_variable, 'pInt8 \\+ rGFP'), Population == 'Green') %>% # filter for ara data
+  
+  mutate(.fit = map(data,
+                    # ~ nls(freq ~ SSasymp(day, ys, y0, log_alpha), data = .x)
+                    ~ safe_exp_fit(.x)
+  )) %>% 
+  
+  get_t_half_from_exp_fits()
+
+
+# Works on 1/3 curves : singular gradient error
+ahl_exp_fits <-
+  counts_for_fit %>%
+  filter(str_detect(assay_variable, 'pRV01 \\+ rGFP'), Population == 'Green') %>% # filter for ara data
+  mutate(data = map(data, ~ filter(.x, day > 2))) %>%  # truncate from d2
+  
+  mutate(.fit = map(data,
+                    # ~ nls(freq ~ SSasymp(day, ys, y0, log_alpha), data = .x)
+                    ~ safe_exp_fit(.x)
+  )) %>% 
+  
+  get_t_half_from_exp_fits # discarding two curves ; they decay linearly rather than exp - singular gradient
+
+
+
+# make mock data when fit fails (not tested..)
+extrapol_tibble <- tibble(day = 
+                            counts_for_fit$data[[1]]$day %>% range %>% {.[1]:.[2]}) 
+
+# Make fits
+normalized_with_exponential_fit <-
+  
+  counts_for_fit %>% 
+  # filter(plasmid == 'Ribo') %>%  # select only the good curves with decreasing trend
+  
+  mutate(.fit = # making the exponential fit
+           map(data, # SSasymp fitting y ~ ys+(y0-ys)*exp(-exp(log_alpha)*day)
+               # https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/SSasymp
+               
+               ~ safe_exp_fit(.x) # makes a list with $result and $error
+               # ~ nls(normalized_Copies_per_ul ~ SSasymp(day, ys, y0, log_alpha),
+               #       data = .)
+           ),
+         
+         
+         tidied = map(.fit, ~ broom::tidy(.x$result)), # extracting fitting parameters
+         augmented = map(.fit, ~ broom::augment(.x$result)), # extrapolating fitting data, for plotting
+         extrapolated = map(.fit, ~ broom::augment(.x$result, newdata = extrapol_tibble))
+  ) #%>% 
+  
+  # Get fitting parameters
+  
+
+
+# Statistics ----
+
+metadata_var_stats <- c('assay_variable', 'day', 'Population') # fit each replicate as paired
+
+counts_for_stats <- processed_counts %>% 
+  
+  group_by(across(all_of(metadata_var_stats))) %>% 
+  
+  filter( str_detect(assay_variable, '(pInt8|pRV01) \\+ rGFP'), # select specific data 
+          Population == 'Green', day >= 0, # select specific data
+          str_detect(sample_category, 'nduced$'), # select only normal ones (without **-Glycerol)
+         
+  ) %>%  # filter only relevant data
+  
+  nest() # make into nested data for fitting
+
+
+# welch t.tests : induced vs uninduced # using in fig 3B, C
+stats_on_counts <- counts_for_stats %>% 
+  mutate(t_test = map(data, # t.test for alternative hypothesis [Induced - Uninduced > 0]
+                      ~ t.test(freq ~ sample_category, paired = T, alternative = 'greater', data = .x)),
+         
+         p_val = map_dbl(t_test, ~ .x$p.value), # extract the p value
+         sig = p_val <= 0.05) 
+
 # plot distributions ----
 
 # subset using the special condition in `7-exploratory_data_view.R` line 23

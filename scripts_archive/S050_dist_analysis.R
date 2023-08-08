@@ -142,9 +142,12 @@ ggsave(plot_as('S050_AHL-v0-fraction'), width = 6, height = 3)
 ggsave('FACS_analysis/plots/S050_AHL-v0-fraction.pdf', remove_title(plt.ahlv0), width = 6, height = 3)
 
 # AHL v0
-plt.ahl <- timeseries_plot(.filter_assay = 'pSS079', .fluor = 'Red', use_colour = '#9E2A2B')
+plt.ahl <- timeseries_plot(.filter_assay = 'pSS079', .fluor = 'Red', use_colour = '#9E2A2B') + 
+  facet_grid(NULL)+ 
+  ylab("ON state cell fraction")
+
 ggsave(plot_as('S050_AHL-fraction'), width = 6, height = 3)
-ggsave('FACS_analysis/plots/S050_AHL-fraction.pdf', remove_title(plt.ahl), width = 4, height = 3) # width 6, height 3
+ggsave('FACS_analysis/plots/S050_AHL-fraction-v2.pdf', remove_title(plt.ahl), width = 4, height = 3) # width 6, height 3
 
 # Bad gate? -- check
 

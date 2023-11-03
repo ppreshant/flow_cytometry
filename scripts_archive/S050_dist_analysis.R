@@ -191,6 +191,8 @@ ara_exp_fits <-
   
   get_t_half_from_lm_exp_fits()
 
+ara_exp_fits$t.half.text
+
 
 # ahl fits
 ahl_exp_fits <-
@@ -204,8 +206,9 @@ ahl_exp_fits <-
   )) %>% 
   
   get_t_half_from_lm_exp_fits #%>% 
-  
 
+
+ahl_exp_fits$t.half.text # add 2 days to the half life here
 
 # append fits to plot
 

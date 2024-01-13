@@ -65,7 +65,7 @@ plot_median_data <- function(.filter = '.*', .fluor = '.*', .remove = 'nothing',
         
         aes(x = median, y = assay_variable, 
             colour = sample_category, fill = sample_category,
-            label = biological_replicates)) +
+            label = replicate)) +
     
     geom_jitter(width = 0, height = .3) + # plot individual replicates
     
@@ -92,8 +92,8 @@ plot_median_data <- function(.filter = '.*', .fluor = '.*', .remove = 'nothing',
 # FIXTHIS: Warning message:
 #   Ignoring unknown parameters: .data 
 
-# plot_median_data(.fluor = 'mScarlet') # call with regex of the fluorophore name matching
-plot_median_data(.fluor = 'gfp')
+plot_median_data(.fluor = 'mScarlet') # call with regex of the fluorophore name matching
+# plot_median_data(.fluor = 'gfp')
 
 # plotly::ggplotly(plt.median_yfree, dynamicTicks = T) # interactive plot
 

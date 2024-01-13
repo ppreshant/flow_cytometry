@@ -92,7 +92,7 @@ fcspaths, fcslist = get_fcs_files(fcs_root_folder + '/' + fcs_experiment_folder 
 # Testing features on a small subset of data
 # subset the relevant files to load
 from scripts_general_fns.g3_python_utils_facs import subset_matching_regex
-regex_to_subset = 'A02' # 'F05|D06' or '.*' for all
+regex_to_subset = 'A01' # 'F05|D06' or '.*' for all
 
 fcspaths_subset = subset_matching_regex(fcspaths, regex_to_subset)
 fcslist_subset = subset_matching_regex(fcslist, regex_to_subset)
@@ -124,11 +124,40 @@ fluorescence_channels, scatter_channels = tuple\
 fluorescence_channels
 # fcslist_subset
 
+# %%
+# check all the channels in the data 
+single_fcs.channels
+
 # %% [markdown]
 # # Check a dataset
 
 # %% tags=[]
 f'{single_fcs.__len__()} : number of events' # check that this is a non-empty file
+
+# %% [markdown]
+# ## Check gating 
+
+# %% tags=[] jupyter={"outputs_hidden": true}
+gate_and_reduce_dataset(single_fcs, 
+                        scatter_channels, fluorescence_channels,
+                        density_gating_fraction=0.25,
+                        make_plots=True)
+
+# %%
+# density logscale : singlets
+FlowCal.plot.density2d(single_fcs, ('FSC-A', 'FSC-H'),
+                       mode='scatter',
+                       xlim=(0, 2e4), ylim=(0, 1e4),
+                       # xscale='linear', yscale='linear'
+                      )
+
+# %%
+# scatter, linear : singlets
+FlowCal.plot.scatter2d(single_fcs, ('FSC-A', 'FSC-H'),
+                       # mode='scatter',
+                       xlim=(0, 2e4), ylim=(0, 1e4),
+                       xscale='linear', yscale='linear'
+                      )
 
 # %% [markdown]
 # # Process the beads

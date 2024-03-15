@@ -504,3 +504,18 @@ Here's some notes on analysis used for memory paper
 - Fig S11? : `S061_WW-AHL production`
 	- No MEFLing
 	- Gate : C08 ; 99 quantile gate : sets at 2668.32
+
+# Logs of data archival
+
+Processed data are getting too bulky and can be archived for old and published stuff onto box.com
+- Eventually will need a plan if these intermediate data need to be kept and where once I leave Rice
+- [ ] Discuss with Lauren the plan for data archival incl. big data such as flow cyt..
+
+Here's the folders using the most space. Screenshot from WizTree!
+![[flowcyt_disk_usage.png]]
+## Moved to box.com
+
+**Recombinase memory
+- S071_combined and MEFL. Expt: _Memory in WW II_
+- S050 individual, S050_combined, and MEFLs for both. Expt: _Long duration memory in E. coli_
+- 

@@ -123,7 +123,8 @@ if(save_summary_stats_from_R) {
 
 # Run the below portions of the script to manually to make ggplots of density and scatter etc 
 # -- time intensive, so run required subsets and not entire data
-source('scripts_general_fns/7-exploratory_data_view.R')
+
+if(make_ridge_line_plots) source('scripts_general_fns/7-exploratory_data_view.R')
 
 
 # Gating (*manual) ----

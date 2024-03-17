@@ -128,7 +128,7 @@ def process_fcs_dir(make_processing_plots= None):
     
     # Error check : for no fluorescence channels (could happen for beads)
     if len(fluorescence_channels) == 0 :
-        print('no fluorescence channels found in ' + fcslist[0])
+        print('no fluorescence channels found in the first data: ' + fcslist[0])
         exit(1)
         
     

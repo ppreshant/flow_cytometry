@@ -6,23 +6,29 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
-folder_name <- 'S066x_Ara dose-1/' # 'foldername/'  # for Sony flow cyt : top directory for expt containing all fcs files
+base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/ and any subfolders
 
-# for single file fcs guava data / Leave empty '' for multiple .fcs files in the above folder_name
+# for Sony flow cyt : top directory for expt containing all fcs files
+folder_name <- 'S083_D19,20_Brighter RAM fusion, shorter/' # 'foldername/'  
+
+# Name of .fcs file to read: Relevant only when reading a multi-data .fcs file (from Guava)
+# Leave this empty using '' for reading multiple .fcs files from the folder_name mentioned above
 file.name_input <- '' # input file name without .fcs
-# Relevant only when reading a multi-data .fcs file (from Guava)
+
 
 # get templates from google sheet or from data excel file
-template_source <- 'googlesheet' # googlesheet/excel = parse through a list of templates in the respective formats and
+template_source <- "googlesheet" # googlesheet/excel = parse through a list of templates in the respective formats and
 # get the template with the matching qxx ID. 'excel' looks for the file 'excel files/Plate layouts.xlsx'
 
-# regular expression to load only a subset of files : use '.*' for taking full data
+# regular expression to load only a subset of files : use '.*' or NULL for taking full data
 # fcs_pattern_to_subset <- '[A-H]06|E0[7-9]'
-fcs_pattern_to_subset <- NULL # leave as null if you need all files or use '.*.fcs'
+fcs_pattern_to_subset <- NULL # leave as NULL if you need all files or use '.*.fcs'
 
 # Channel to order ridgeplots by
-order_by_channel <- 'green' # decide 'red' or 'green' or other colour key within "channel_colour_lookup" above
+order_by_channel <- 'red' # decide 'red' or 'green' or other colour key within "channel_colour_lookup" above
+
+# Make ridgelineplots ? Make False if plots already made or want to skip
+make_ridge_line_plots <- FALSE 
 
 # Show median lines and labels in ridgeplot? enable only when ridges don't overlap too much
 show_medians <- FALSE

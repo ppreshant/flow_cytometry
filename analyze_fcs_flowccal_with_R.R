@@ -27,7 +27,9 @@ title_name <- config$fcs_experiment_folder # make title name for the html file n
 # calling quarto file
 
 quarto::quarto_render('scripts_archive/flowcal_html_output.qmd',
-                      output_file = stringr::str_c('FACS_analysis/html_outputs/', title_name, '.html'))
+                      output_file = stringr::str_c(title_name, '.html'))
+# this function cannot set a path for the output file: 'FACS_analysis/html_outputs/',.. 
+# find how to do this with yaml headers within quarto. Only find output-dir option for project: ?
 
 # calling r markdown file
 # rmarkdown::render('scripts_archive/flowcal_html_output.Rmd',

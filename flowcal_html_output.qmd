@@ -1,7 +1,12 @@
 ---
 title: title_name
 author: "Prashant Kalvapalle's script"
-format: html
+date: today
+format: 
+  html:
+    theme: default
+    embed-resources: true
+    output-file: 'FACS_analysis/html_outputs/title_name.html'
 editor: visual
 # knitr:
 #   opts_knit: 
@@ -14,8 +19,10 @@ editor: visual
 knitr::opts_knit$set(root.dir = normalizePath('..')) # set path to the project head
 
 # reticulate options
+
+# Using the python from the conda env so flowcal functions are loaded!
 Sys.setenv(RETICULATE_PYTHON = 'C:/Users/new/.conda/envs/flowcal/python.exe')
-library(reticulate)
+library(reticulate) # needed to connect python to Rstudio 
 ```
 
 ## flowcytometry cleanup steps
@@ -23,7 +30,7 @@ library(reticulate)
 Clean \`.fcs\` data by excluding saturated events, retaining singlets and events among densest region to exclude debris
 
 ```{python}
-# | echo: false
+#| echo: false
 # import os ; os.chdir("..") ; os.getcwd() # changing working dir;try global defaults
 # os.getcwd()
 
@@ -33,5 +40,5 @@ from scripts_general_fns.g10_user_config import make_processing_plots # Import p
 process_fcs_dir(make_processing_plots) # Run the pipeline
 # reading .fcs data, beads processing, cleanup and calibration, saving summary statistics and cleaned files
 
-# TODO : test if it works
+# TODO : test output file destination, css formatting. title_name as var
 ```

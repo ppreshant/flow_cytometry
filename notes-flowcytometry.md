@@ -513,9 +513,13 @@ Processed data are getting too bulky and can be archived for old and published s
 
 Here's the folders using the most space. Screenshot from WizTree!
 ![[flowcyt_disk_usage.png]]
-## Moved to box.com
 
+## Moved to box.com
 **Recombinase memory
 - S071_combined and MEFL. Expt: _Memory in WW II_
 - S050 individual, S050_combined, and MEFLs for both. Expt: _Long duration memory in E. coli_
+
+**SS_marine work**
+- S062_a and b. *Marine promoter library I*
+- S063_a, b and c_2 & combined. *iteration II. Re-conjugation*
 - 

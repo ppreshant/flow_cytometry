@@ -122,9 +122,16 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
 #' @param : manually_modify_pdata : T/F : pipe pData into a function for manual modification for 
 #' @param : rename_and_save_fcs : T/F : Use when combining multiple datasets. Saves renamed .fcs files to a dir
 #' @param : .interactive_session : T/F : Asks user to check the first filename before batch saving to dir 
+#' @return fl.set, a `flowWorkspace::cytoset` that includes multiple .fcs files
+#' Side effect : creates global variables: `sample_metadata` if `.get_metadata` is `TRUE`
 
 get_fcs_and_metadata <- function(.dirpath, .get_metadata = TRUE,
                                  manually_modify_pdata = FALSE,
+                                 
+                                 subset_by_metadata = FALSE,
+                                 non_data_stuff = 'NA|Beads|beads|PBS', 
+                                 specific_data = '.*', 
+                                 exclude_category = 'none',
                                  
                                  rename_and_save_fcs = FALSE, 
                                  .interactive_session = TRUE)
@@ -158,6 +165,8 @@ get_fcs_and_metadata <- function(.dirpath, .get_metadata = TRUE,
     if(.get_metadata)
       sample_metadata <<- basename(.dirpath) %>% get_and_parse_plate_layout
     
+    # TODO : Make informative error if sample_metadata is absent while `.get_metadata` is FALSE
+    
     
     # attach metadata to the pData
     new_pdata <- pData(fl.set) %>% 
@@ -176,8 +185,25 @@ get_fcs_and_metadata <- function(.dirpath, .get_metadata = TRUE,
     pData(fl.set) <- new_pdata # replace the pData
     
     
+    # subset by metadata ----
+    
+    if(subset_by_metadata)
+    {
+      subset_cytoset(.flset = fl.set,
+                     
+                     non_data_stuff, specific_data, exclude_category, 
+                     return_fcsunique.subset = FALSE)
+      
+      # re-name the fl.set to point to the subset
+      fl.set <- fl.subset 
+      # fl.subset is a global variable from the above function
+      # TODO: can implement this better than using a global variable
+    }
+
+    
     # rename and save workflow ----
     
+    # saves .fcs files into a "combined" folder with metadata based names
     if(rename_and_save_fcs)
       
       # run the `rename_fcs_and_save()` function now ; non interactive?

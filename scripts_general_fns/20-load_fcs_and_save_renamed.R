@@ -1,12 +1,18 @@
 # 20-load_fcs_and_save_renamed.R
 
-#' Rename .fcs files using information from the metadata (/pData) and save in any directory with `write.FCS()`
-#' Use case : when merging files from multiple runs to analyze together in whole or subsets w regex retrieval
-#' @param : add_dir_key_from_source_dirname = T/F : To grab an additional signal of the directory name 
-#' @param : interactive_session : prompts user check of filename before saving ; select F to prevent for loops
+#' Rename .fcs files using information from the metadata (/pData) 
+#' and save in any directory with `write.FCS()`
+#' Use case : For analysis of merged files from multiple runs (in whole or subsets w regex)
+#' @param fcs_export_folder_name Char. name of the combined folder to export fcs data to
+#' @param base_export_dir Char. base of the export directory, usually will be 'procesesed_files'
+#' @param .flset `flowWorkspace::cytoset`. Set of multiple fcs files read into R
+#' @param fcs_pattern_to_subset Char for regex filtering. Used to print to the logfile
+#' @param add_dir_key_from_source_dirname T/F : To grab an additional signal of the directory name 
+#' @param : interactive_session : prompts user check of filename before saving ; use F for automation
 rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir, 
                                 base_export_dir = base_directory,
-                                .flset = fl.set, 
+                                .flset = fl.set,
+                                fcs_pattern_to_subset = NULL,
                                 add_dir_key_from_source_dirname = TRUE, source_dir, 
                                 interactive_session = TRUE)
 {
@@ -71,14 +77,37 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
     
     {for (i in 1:length(.)) {write.FCS(.flset[[i]], filename = .[i])}} # save each .fcs file by looping
   
-  # copy logfile
+  
+  # copy logfile ----
+  
   logfile <- str_c(base_directory, source_dir, 'processing-log.txt')
+  
   if(file.exists(logfile)) 
-    file.copy(logfile, str_c(base_export_dir, 
-                             fcs_export_folder_name, 
-                             
-                             str_replace(source_dir, '/', '-'), # append the source folder name with "-"
-                             'processing-log.txt'))
+  {
+    # make a path for the logfile by appending source folder name
+    dest_logfile <- str_c(base_export_dir, 
+                          fcs_export_folder_name, 
+                          
+                          str_replace(source_dir, '/', '-'), # append the source folder name with "-"
+                          'processing-log.txt')
+    
+    # copy the logfile to destination
+    file.copy(logfile, dest_logfile)
+    
+    # add lines indicating the number and subset of .fcs data copied over
+    cat(
+      str_c('Copied (', length(new_file_names), ') files to this directory.', 
+            
+            # if only a subset of the directory was copied basedon regex/pattern match
+            if(!is.null(fcs_pattern_to_subset)) 
+              str_c(' matching regular expression :',
+                    fcs_pattern_to_subset)),
+      
+      file = dest_logfile, 
+      append = TRUE
+    )
+  
+  }
   
   # print message
   str_c('Saved (', length(new_file_names), ') files to directory : ', fcs_export_folder_name) %>% print   

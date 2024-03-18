@@ -34,6 +34,7 @@ list_of_general_functions <- c("1-reading_multidata_fcs.R",
                                "6-wrappers_utilities.R",
                                "12-read_layout_fns.R",
                                "13-formatting_plot_funs.R",
+                               '16-subset_cytoset.R',
                                '20-load_fcs_and_save_renamed.R')
 
 # Source all the functions listed above

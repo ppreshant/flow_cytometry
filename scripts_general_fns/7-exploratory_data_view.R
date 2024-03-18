@@ -18,7 +18,6 @@ specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific d
 exclude_category <- 'none' # use 'none' for selecting everything : experiment/data specific
 
 # subset the fl.set according to above variables and return a unique metadata + mean_median data
-source('scripts_general_fns/16-subset_cytoset.R') # source the script
 
 fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
                                    # optional manual filtering (additional to above)

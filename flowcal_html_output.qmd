@@ -4,11 +4,11 @@ author: "Prashant Kalvapalle's script"
 date: today
 format: 
   html:
-    theme: default
+    theme: default # there's not point doing flatly. Only 1 section
     embed-resources: true
-    output-file: 'FACS_analysis/html_outputs/title_name.html'
+    output-file: 'FACS_analysis/html_outputs/title_name.html' # call-override
 editor: visual
-# knitr:
+# knitr: # not knitting directly ; using quarto_render() now 
 #   opts_knit: 
 #     root.dir: 'C:/Users/new/Box Sync/Stadler lab/Data/Flow cytometry (FACS)'
 ---
@@ -16,7 +16,7 @@ editor: visual
 <!--# TODO : make title a variable from R, set flatly theme with table of content ; figure out how to call the render with an output name set -->
 
 ```{r setup, include = FALSE}
-knitr::opts_knit$set(root.dir = normalizePath('..')) # set path to the project head
+# knitr::opts_knit$set(root.dir = normalizePath('..')) # set path to the project head (if this qmd lies within a subfolder)
 
 # reticulate options
 
@@ -29,10 +29,15 @@ library(reticulate) # needed to connect python to Rstudio
 
 Clean \`.fcs\` data by excluding saturated events, retaining singlets and events among densest region to exclude debris
 
+```{python check-working-dir}
+# import os
+# # os.chdir("..") ; os.getcwd() # changing working dir;try global defaults
+# os.getcwd()
+
+```
+
 ```{python}
 #| echo: false
-# import os ; os.chdir("..") ; os.getcwd() # changing working dir;try global defaults
-# os.getcwd()
 
 from analyze_fcs_flowcal import process_fcs_dir # function for complete processing
 from scripts_general_fns.g10_user_config import make_processing_plots # Import plotting key

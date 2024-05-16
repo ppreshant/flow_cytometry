@@ -111,7 +111,7 @@ def get_well_name(string):
     
 
 # %% Get the matching entries from a list of strings (use to subset by wells : A01 etc.)
-def subset_matching_regex(list_strings, regex_string):
+def subset_matching_regex(list_strings, regex_string, ignore_case = False):
     """ Get the wellname (Ex: A11) from a longer string
     
 
@@ -131,7 +131,7 @@ def subset_matching_regex(list_strings, regex_string):
     import re # for regular expression string manipulations
     
     return [str for str in list_strings
-            if re.search(regex_string, str)]
+            if re.search(regex_string, str, re.IGNORECASE if ignore_case else 0)]
     
     
 # %% wrapper to select well and show effect on gating percentage

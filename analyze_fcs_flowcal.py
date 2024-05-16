@@ -122,9 +122,10 @@ def process_fcs_dir(make_processing_plots= None):
     # get the relevant channels present in the data
     relevant_channels = fcs_data[0].channels | p(myutils.subset_matching_regex, px, use_channel_dimension) 
 
-    # autodetect the channels
+    # autodetect the channels (case insensitive)
     fluorescence_channels, scatter_channels = tuple\
-        (myutils.subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
+        (myutils.subset_matching_regex(relevant_channels, regx, ignore_case=True) 
+         for regx in channel_lookup_dict.values())
     
     # Error check : for no fluorescence channels (could happen for beads)
     if len(fluorescence_channels) == 0 :

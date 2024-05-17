@@ -117,10 +117,12 @@ relevant_channels = single_fcs.channels | p(subset_matching_regex, px, use_chann
 
 # autodetect the channvels
 fluorescence_channels, scatter_channels = tuple\
-    (subset_matching_regex(relevant_channels, regx) for regx in channel_lookup_dict.values())
+    (subset_matching_regex(relevant_channels, regx, ignore_case=True) 
+     for regx in channel_lookup_dict.values())
 
 # %%
 # check --
+# relevant_channels
 fluorescence_channels
 # fcslist_subset
 
@@ -196,8 +198,48 @@ to_mef = mef_model.transform_fxn
 # inspect parameters
 mef_model.fitting
 
+# %%
+p = mef_model.fitting['beads_params'][0]
+p[1]
+
 # %% [markdown]
 # # Bimodal troubleshooting : Plotting 1d histograms
+
+# %% [markdown]
+# ## Plot with dummy data (Sebastial Castillo)
+# part 2 [here](https://github.com/taborlab/FlowCal/issues/359#issuecomment-1537203850)
+#
+
+# %%
+import numpy
+import matplotlib
+from matplotlib import pyplot
+
+def sc_func(x):
+    return numpy.sign(x) * numpy.exp(p[1]) * (numpy.abs(x)**p[0])
+
+# Fluorescence model parameters
+p = mef_model.fitting['beads_params'][0] # grab from above
+# p = [  0.68,   1.2,  112.69]
+
+# force m to be 1
+p[0] = 1
+
+# Histogram test
+# Generate normally distributed x around zero
+# See what happens with the mef-transformed distribution
+xn = numpy.random.normal(scale=1000, size=100000)
+yn = sc_func(xn)
+
+fig, axes = pyplot.subplots(2, 1, figsize=(8, 4))
+
+ax = axes[0]
+ax.hist(xn, bins=100)
+ax.set_ylabel('"a.u."')
+
+ax = axes[1]
+ax.hist(yn, bins=100)
+ax.set_ylabel('"MEF"')
 
 # %% tags=[]
 # Make processed data

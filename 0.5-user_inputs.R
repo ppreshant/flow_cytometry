@@ -39,13 +39,21 @@ save_summary_stats_from_R <- FALSE
 
 # secondary inputs ----
 
+# TODO: include combined data workflow into analyze_fcs.R
+# get user input directory regex and combined dir name and a switch
+
+# directory for saving the summary stats
+summary_base_directory <- 'FACS_analysis/tabular_outputs/'
+
+
+# calculated values ----
+
 # title_name <- 'S045b-Vmax red dilutions' # provide a name for saving plot/as plot titles
 fl_suffix = if_else(str_detect(base_directory, 'processed_data'), '-processed', '-raw')
 
 title_name <- stringr::str_replace(folder_name, '/$', fl_suffix) # Use the folder name without the slash, -raw suffix
 # TODO : make an if for raw vs processed based on the base_directory with str_detect()..
 
-summary_base_directory <- 'FACS_analysis/tabular_outputs/'
 
 
 # Other parameters ----

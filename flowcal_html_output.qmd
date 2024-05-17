@@ -26,14 +26,18 @@ Sys.setenv(RETICULATE_PYTHON = 'C:/Users/new/.conda/envs/flowcal/python.exe')
 library(reticulate) # needed to connect python to Rstudio 
 ```
 
-```{python get-directory-name}
+```{r get-directory-name}
 
-from scripts_general_fns.g10_user_config import fcs_experiment_folder
+config <- import('scripts_general_fns.g10_user_config')
+
+# reload user config
+importlib <- import("importlib")
+importlib$reload(config)
+
+title_name <- config$fcs_experiment_folder
 ```
 
-# Data name: 
-
-`{python} fcs_experiment_folder`
+# `r title_name` : data folder
 
 ## flowcytometry cleanup steps
 

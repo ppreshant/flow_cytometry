@@ -1,6 +1,8 @@
 # merge_cytosets_and_save.R
 # adhoc script to merge cytosets and save them into a folder
 
+# Best use is to copy segments of the vectorized or run them manually here
+
 # Prelims ----
 source('./0-general_functions_fcs.R') # call the function to load libraries and auxilliary functions
 
@@ -9,12 +11,21 @@ source('./0.5-user_inputs.R') # gather user inputs : file name, fluorescent chan
 
 # Inputs ----
 
+# data directories common regex
+common_directory_regex <- '^S089' # '^S071._'; 'S050_d' etc. # regex to recognize the directories to merge
+
 # the combined dataset will be exported to this folder inside 'processed_data/..'
-fcs_export_dir <- 'S071_combined/' # end with "_combined"
+fcs_export_dir <- 'S089_combined/' # end with "_combined"
 
+# TODO: add an input swtich for manual_modify_pData or not
 
-# manual workflow ----
-# Use this to load files, manually change the pData (which goes into file renaming) before calling the saver
+# adhoc workflow ----
+# experiment specific..
+
+# Use this to load files, manually change the pData adhocly (which goes into file renaming) before calling the saver
+# Experiment specific changes include expanding abbreviations in the data that would be informative in the plots etc.
+# U -> uninduced etc.
+
 
 
 # fix pData manually
@@ -47,13 +58,13 @@ manual_modify_pdata <- function(.pdata)
 
 # Vectorized merger ----
 # iterate through the list of folders and put them all into the export folder specified above
-
+# this works when combining all .fcs files within folders into the "-combined" directory
 
 
 # Get directories ----
 
 # recognize directories with a regex pattern for expt name
-subdirs <- dir(base_directory, '^S071._') %>% 
+subdirs <- dir(base_directory, common_directory_regex) %>% 
   str_c('/') # add the trailing slash to the directory
 
 dir.paths <- str_c(base_directory, subdirs)
@@ -76,7 +87,7 @@ dir.paths <- str_c(base_directory, subdirs)
 # vectorized to work in all of the dir paths loaded above
 
 dir.paths %>% map(get_fcs_and_metadata,
-                  manually_modify_pdata = T, # needs a function `manual_modify_pdata` -- above
+                  manually_modify_pdata = F, # needs a function `manual_modify_pdata` -- above
                   rename_and_save_fcs = T, .interactive_session = T)
 
 
@@ -85,11 +96,11 @@ dir.paths %>% map(get_fcs_and_metadata,
 #                   rename_and_save_fcs = T, .interactive_session = F)
 # 
 
-# Old script -----
+
+
+
+# Old script -----------------------------------------------------------------------
 # run till line 14 of `analyze_combined_fcs.R`
-
-
-
 
 
 # Get data ----

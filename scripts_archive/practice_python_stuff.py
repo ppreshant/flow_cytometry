@@ -150,3 +150,22 @@ fcspaths
 print('is this it?')
 Markdown('## Analyzing dataset : "{a}"'.format(a = 'gooddata')) | p(display)
 print('ues it works')
+
+
+# %%
+# testing conditional arguments in re.search function
+
+def doreg(a, b, ignore_case = False):
+    import re
+    return [True if re.search(a, b,  re.IGNORECASE if ignore_case else 0) 
+            else False]
+
+
+
+# %%
+doreg('Wen','twenty five', True)
+
+# %%
+tuple\
+(a 
+      for a in range(1,5))

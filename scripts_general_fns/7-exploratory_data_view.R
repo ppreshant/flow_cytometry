@@ -60,6 +60,10 @@ if(0)
   # dotplot is very very slow. will take 10 m to plot 
   # plt_dots <- plot_scatter(title_name, '-dotplot', .plot_mode = 'dotplot')
   
+  # Scatter FSC-green ----
+  # plot scatterplots of fluorescences -- fails if only a single fluorophore is present
+  plt_fscgr <- plot_scatter(title_name, '-fluor2d', .x = fluor_chnls[['green']], .y = scatter_chnls[['fwd']])
+  
   
   # Scatter fluor 2 colours ----
   

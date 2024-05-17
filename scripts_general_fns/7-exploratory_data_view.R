@@ -19,7 +19,8 @@ exclude_category <- 'none' # use 'none' for selecting everything : experiment/da
 
 # subset the fl.set according to above variables and return a unique metadata + mean_median data
 
-fcsunique.subset <- subset_cytoset(non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
+fcsunique.subset <- subset_cytoset(fl.set, 
+                                   non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
                                    # optional manual filtering (additional to above)
                                    # str_detect(assay_variable, '79') | str_detect(data_set, 'd-1')
  )
@@ -44,11 +45,14 @@ plt_ridges <- plot_ridges_fluor(.show_medians = show_medians) # make plots and o
 # context : ridge plot width seems to change with number of sample_categories ; set to constant width = 5 
 
 
+# Manual analysis ----------------
+# does not run when calling the script!
+
 # Other analysis ; run manually when required ; turned off when calling the whole script 
 if(0)
 {
   
-  # scatter FSC-SSC ----
+  ## scatter FSC-SSC ----
   
   # plot fwd-side scatterplots of all samples in the set
   plt_scatter <- plot_scatter(title_name, '-scatter')
@@ -134,7 +138,7 @@ if(0)
   # Single plots ----
   
   # set single_fcs if not set before gating
-  single_fcs <- get_matching_well(fl.set, 'A02') # select single file based on sampleName match
+  single_fcs <- get_matching_well(fl.set, 'B05') # select single file based on sampleName match
   
   
   # FSC-SSC plot of single sample

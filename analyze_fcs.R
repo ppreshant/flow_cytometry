@@ -48,7 +48,7 @@ if(autodetect_channels) {
 }
 
 # TODO : make this into a function -- so it can be run in analyze_combined_fcs?
-
+# TODO: generalize for case insensitive matching
 
 # Processing ----
 

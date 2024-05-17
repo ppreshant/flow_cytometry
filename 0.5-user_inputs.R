@@ -6,7 +6,7 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/ and any subfolders
+base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
 
 # for Sony flow cyt : top directory for expt containing all fcs files
 folder_name <- 'S083_D19,20_Brighter RAM fusion, shorter/' # 'foldername/'  
@@ -73,8 +73,9 @@ use_channel_dimension <- '-A$' # indicate the first letter : for Area, Height or
 # -HLog for Guava/Bennett ; 
 # TODO: Will try to autodetect the scatter channels and designate other ones as fluorescence -- will only work for Sony/BRC currently
 
-channel_colour_lookup <- c('(mScarlet|mcherry|YEL).*' = 'red', # uses regex matching to assign the colour to colourkey
-                           '(mGreenLantern|gfp|GRN).*' = 'green')
+# add more colourr/fluorophore names as needed
+channel_colour_lookup <- c('.*(mScarlet|mcherry|RFP|YEL).*' = 'red', # uses regex matching to assign the colour to colourkey
+                           '.*(mGreenLantern|gfp|GFP|GRN).*' = 'green')
 
 scatter_direction_lookup <- c('FSC.*' = 'fwd', 'SSC.*' = 'side') # regex matching to assign the side/fwd
 

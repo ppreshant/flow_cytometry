@@ -88,6 +88,11 @@ dir.paths <- str_c(base_directory, subdirs)
 
 dir.paths %>% map(get_fcs_and_metadata,
                   manually_modify_pdata = F, # needs a function `manual_modify_pdata` -- above
+                  
+                  # remove data that has no metadata in the sheet
+                  subset_by_metadata = TRUE,
+                  non_data_stuff = 'NA', # missing metadata becomes 'NA' as a string..
+                  
                   rename_and_save_fcs = T, .interactive_session = T)
 
 

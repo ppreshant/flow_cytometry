@@ -21,12 +21,20 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
                               
                               .cytoset = fl.subset)
 {
+ 
+  # TODO : add an error check for length(fl.subset) == 0 ~ faulty subset
+  
+  # switch: TRUE to plot y axis as data_set ; facet by assay_variable
+  plot_for_multiday_combined <- ridge_plot_by_data_set & combined_data
+  # default: FALSE => y axis as assay_variable ; no facet
+  
   
   # yaxis variable ----
   # variable name to plot on y axis. Typically assay_variable. Use "data_set" for combined data
-  .yvar <- if(combined_data) expr(data_set) else expr(assay_variable)
+  .yvar <- if(plot_for_multiday_combined) expr(data_set) else expr(assay_variable)
   
   # plot dimensions ----
+  
   # only for other_category stuff
   
   if(.facets_other_category)
@@ -34,11 +42,16 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
   n_facets_plt = pull(fcsunique.subset, other_category) %>% unique() %>% length()
   plt_height = est_plt_side/n_facets_plt
   
-  } else if(combined_data) {
+  
+  # plotting by multi-day
+  
+  } else if(plot_for_multiday_combined) {
     n_facets_plt = pull(fcsunique.subset, assay_variable) %>% unique %>% length
     plt_height = pull(fcsunique.subset, data_set) %>% unique %>% length * 1.2
     
   }
+
+  # default: other plotting : height = est_plt_side, width = 3
   
   # subset only the desired fluorescent channels : using 'green' , 'red' ..
   fluor_chnl_subset <- fluor_chnls %>% .[str_detect(names(.), .fluor_colour)]
@@ -57,7 +70,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
           ggridges::geom_density_ridges(
             aes(
               
-              y = if(exists('list_of_ordered_levels') && !combined_data) 
+              y = if(exists('list_of_ordered_levels') && !plot_for_multiday_combined) 
                 
               {fct_relevel(assay_variable, 
                            list_of_ordered_levels[['assay_variable']]) 
@@ -89,7 +102,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
             facet_wrap(facets = vars(other_category), ncol = n_facets_plt, # control facets
                        scales = 'free_y') 
             
-          } else if(combined_data) { # facets for assay_variable
+          } else if(plot_for_multiday_combined) { # facets for assay_variable
             facet_wrap(facets = vars(assay_variable), ncol = n_facets_plt, # control facets
                        scales = 'free_y')
             
@@ -129,7 +142,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
   
   if(.save_plots){ # save plots unless user input prevents this
     
-    if(.facets_other_category | combined_data) { # saving plots if faceted by other_category/data_set
+    if(.facets_other_category | plot_for_multiday_combined) { # saving plots if faceted by other_category/data_set
       map(names(fluor_chnl_subset), # iterate over fluorescence channels
           
           ~ ggsave(str_c('FACS_analysis/plots/', 

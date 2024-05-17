@@ -9,7 +9,7 @@
 base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
 
 # for Sony flow cyt : top directory for expt containing all fcs files
-folder_name <- 'S083_D19,20_Brighter RAM fusion, shorter/' # 'foldername/'  
+folder_name <- 'S089_combined/' # 'foldername/'  
 
 # Name of .fcs file to read: Relevant only when reading a multi-data .fcs file (from Guava)
 # Leave this empty using '' for reading multiple .fcs files from the folder_name mentioned above
@@ -28,19 +28,23 @@ fcs_pattern_to_subset <- NULL # leave as NULL if you need all files or use '.*.f
 order_by_channel <- 'red' # decide 'red' or 'green' or other colour key within "channel_colour_lookup" above
 
 # Make ridgelineplots ? Make False if plots already made or want to skip
-make_ridge_line_plots <- FALSE 
+make_ridge_line_plots <- TRUE 
 
 # Show median lines and labels in ridgeplot? enable only when ridges don't overlap too much
-show_medians <- FALSE
+show_medians <- TRUE
 
 # Save summary stats through R as .csv: mean, median, quartiles
-save_summary_stats_from_R <- FALSE
+save_summary_stats_from_R <- TRUE
 
 
 # secondary inputs ----
 
 # TODO: include combined data workflow into analyze_fcs.R
 # get user input directory regex and combined dir name and a switch
+
+# Decide if you want ridge plots y for each data_set / key (=> facet by assay_var)
+ridge_plot_by_data_set <- FALSE # make it TRUE to make ridgeplot y as data directory (use case: days)
+# only works on combined data sets!
 
 # directory for saving the summary stats
 summary_base_directory <- 'FACS_analysis/tabular_outputs/'

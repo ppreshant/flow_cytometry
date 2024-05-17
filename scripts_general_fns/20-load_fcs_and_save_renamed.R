@@ -31,8 +31,14 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
     dir_key <- if(add_dir_key_from_source_dirname) 
       str_match(source_dir, 'S[:digit:]+([:alpha:])')[2] # get 'b' in S0xxb ; else below
     
+    # if user does not want to add dir_key, it will be NULL after the above step
+    
     if(!is.null(dir_key) && is.na(dir_key)) 
       dir_key <- str_extract(source_dir, 'd-?[:digit:]+') # get day key 
+    
+    # if letter is absent as well as no day key, then use 'a' as default
+    if(!is.null(dir_key) && is.na(dir_key)) 
+      dir_key <- 'a' # use 'a' as the default key ; ex: S089 and S089b -> first one will be 'a'
     
   }
   

@@ -102,7 +102,7 @@ rename_fcs_and_save <- function(fcs_export_folder_name = fcs_export_dir,
     
     # add lines indicating the number and subset of .fcs data copied over
     cat(
-      str_c('Copied (', length(new_file_names), ') files to this directory.', 
+      str_c('\n\nCopied (', length(new_file_names), ') files to this directory.', 
             
             # if only a subset of the directory was copied basedon regex/pattern match
             if(!is.null(fcs_pattern_to_subset)) 

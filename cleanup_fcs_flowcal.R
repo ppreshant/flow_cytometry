@@ -19,6 +19,11 @@
 
 # import user config
 config <- reticulate::import('scripts_general_fns.g10_user_config')
+
+# reload user config
+importlib <- reticulate::import("importlib")
+importlib$reload(config)
+
 title_name <- config$fcs_experiment_folder # make title name for the html file naming
 
 

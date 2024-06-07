@@ -6,10 +6,18 @@
 # Load data by running analyze_fcs till line 37 (sample_metadata <- ..)
 source('./analyze_fcs.R')
 
+
 # Select sample(s) ----
 
-single_fcs <- get_matching_well(fl.set, 'A07_d-1') # select a representative sample to set gates on
+# select a single fcs using regex match: well name for regular data ; sample name for combined data
+subset_this_file <- 'A07_d-1' 
+# provide this in the adhoc script for the particular experiment
+
+
+# select a single fcs now
+single_fcs <- get_matching_well(fl.set, subset_this_file) # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
+
 
 # Visualize sample ----
 
@@ -28,6 +36,7 @@ green_fsc_single <- {plot_scatter(.cytoset = single_fcs,
 # Gating ----
 
 # (setting 1D gates on both channels stored in vector 'fluor_chnls')
+# set the gate at 99.9% percentile in the negative control sample (empty cells)
 gates_1d_list <- 
   map(fluor_chnls, 
       ~ openCyto::gate_quantile(single_fcs, channel = .x))
@@ -168,6 +177,8 @@ write.csv(counts_gated,
 
 # Plotting ----
 
+facet_by_sample_category <- FALSE
+
 # plot red and green cell counts 
 plt_counts <- {ggplot(counts_gated, 
                       aes(x = freq, y = assay_variable, 
@@ -178,8 +189,9 @@ plt_counts <- {ggplot(counts_gated,
     # geom_line(aes(x = mean_Count), linetype = 2) + 
     
     # facets
-    # facet_wrap(facets = if(combined_data) vars(data_set) else vars(sample_category),
-    #            scales = 'free') +
+    facet_wrap(facets = if(combined_data & !facet_by_sample_category) vars(data_set) 
+               else vars(sample_category),
+               scales = 'free') +
     
     ggtitle(title_name) + # add title to plot
     theme(legend.position = 'top')} %>%  # position legend on the top 
@@ -193,7 +205,7 @@ plt_counts <- {ggplot(counts_gated,
 # plotly::ggplotly(plt_counts)  
   
 # save plot
-ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 6)
+ggsave(plot_as(title_name, '-counts'), plt_counts, width = 6, height = 8)
 
 
 
@@ -204,7 +216,8 @@ ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 6)
 
 fl.green <- gs_pop_get_data(gate_set, 'Green')
 
-# TODO : fix this to get the full sample set rather than just the first sample
+# TODO : generate a fcsunique.subset using the gated_summary to annotate ridges
+# TODO: add the gated frequency on the right side of the ridgeline plot (separately)
 
 
 # plot to check
@@ -212,12 +225,80 @@ fl.green <- gs_pop_get_data(gate_set, 'Green')
 
 source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
 green_ridges <- plot_ridges_fluor(.show_medians = show_medians, .cytoset = fl.green, 
-                                  .show_jittered_points = T) # make plots and optionally save them with title_name + suffixes
+                                  # .show_jittered_points = TRUE,
+                                  # .save_plots = F, # don't save plots for now
+                                  .plot_filename = 'S089_gated' # save plot 
+                                  )
 
 # check if gating worked
 # need to count the number of events before and after gating. 
 nrow(fl.set[[30]])
 nrow(fl.green[[30]])
+
+# facet by sample category
+gated_ridges_faceted <- 
+  green_ridges$green + 
+  facet_wrap(facets = vars(sample_category), scales = 'free_y', ncol = 6) + # facet by organism (sample_category)
+  theme(legend.position = 'none') # remove legend/redundant
+
+# save plot
+ggsave(str_c('FACS_analysis/plots/', 
+             'S089_gated',
+             '.png'),
+       height = 6, width = 20) # change height and width by number of panels
+
+
+## summarize gated data intensity ----
+
+# get summary statistics
+gated_summary <-
+  summary(fl.green) %>% # base R's summary function : gives min, max, mean, median and quartiles; a column for each well and channel
+  map( ~ as_tibble(.x, rownames = 'statistic') %>% # convert array into dataframe
+         .[, c('statistic', fluor_chnls)]) %>% # select the relevant channels (avoiding dplyr, renaming issue with named vector)
+  
+  # Convert to a cleaner format
+  {map2_df(.x = ., .y = names(.),
+           ~ pivot_wider(.x,
+                         names_from = statistic,
+                         values_from = all_of(set_names(fluor_chnls, NULL)),
+                         names_glue = "{statistic}_{.value}"
+           ) %>%
+             
+             add_column(filename = .y)
+           
+  )} %>%
+  select(filename, everything()) %>%  # gives the min, max quartiles, mean for fluorescence channels
+  
+  # fish out well information from filename
+  mutate(well = if(combined_data) {str_match(filename, '_([A-H][:digit:]+)') %>% .[,2] # look for well after underscore (combined data)
+  } else  str_extract(filename, '[A-H][:digit:]+') # regular data - well should be clear (could use ^ : start with)
+  ) %>%
+  
+  # attach metadata and counts by well
+  left_join(counts_gated) %>%  # attach the metadata : sample names from google sheets (, by = 'well')
+  
+  
+  # reshape data for ease of use by code
+  pivot_longer(matches('-A$'),
+               names_to = c('measurement', 'Fluorophore'), # split columns
+               names_pattern = '(.*)_(.*)') %>% 
+  pivot_wider(names_from = measurement, values_from = value) %>%  # put mean, median .. in separate columns
+  
+  # get mean of replicates
+  group_by(across(all_of(metadata_variables))) %>% # group -- except replicate
+  mutate(mean_medians = mean(Median)) %>%  # find the mean of replicates
+  ungroup() %>% 
+  
+  # arrangement by median of red fluorescence in ascending order
+  arrange_in_order_of_fluorophore
+
+
+# save summary
+
+write.csv(gated_summary,
+          str_c('FACS_analysis/tabular_outputs/', title_name, '_gated-summary', '.csv'),
+          na = '')
+
 
 # manual gating ----
 

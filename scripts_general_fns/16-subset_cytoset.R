@@ -3,8 +3,13 @@
 #' Subset a cytoset using it's metadata from `pData(..)`
 #' Side effect creates universal variable fl.subset - which is the main purpose of this script
 #' @param : .flset = cytoset to subset
-#' #' @param ... one ore more conditions for custom filtering
 #' @param return_fcsunique.subset T/F: if you want to return the summary (from 7-..R for plots) or not (from 20-..R)
+#' @param non_data_stuff : regex to exclude samples with these in their names
+#' @param specific_data : regex to include only samples with these in their names
+#' @param exclude_category : exclude samples with this category
+#' @param custom_filtering : additional custom filtering using dplyr syntax
+#' @param ... additional/more than one conditions for custom filtering. Has to be entered after all named args
+
 #' @return fcsunique.subset subseted summary for adding median/other labels on plots..
 #' ..outputs a unique subset tibble with metadata and medians for labelling ridgeline plots
 
@@ -16,6 +21,7 @@ subset_cytoset <- function(.flset = fl.set,
                            specific_data = '.*', 
                            exclude_category = 'none',
                            return_fcsunique.subset = TRUE,
+                           custom_filtering,
                            ...)
 {
   #' Make a subset of data for plotting purposes :: ex: Remove PBS controls, beads etc. 
@@ -36,7 +42,10 @@ subset_cytoset <- function(.flset = fl.set,
            
            str_detect(full_sample_name, specific_data), # select specific data by name
            str_detect(well, '.*'), # select with regex for wells : Example row D : 'D[:digit:]+'
-           ...) # custom filtering
+           
+           # custom filtering
+           {{custom_filtering}},
+           ...) # unlimited custom filtering
   
   # TODO : use sample_metadata when flowworkspace_summary is not available? Can't plot medians then
   
@@ -79,7 +88,10 @@ subset_cytoset <- function(.flset = fl.set,
              
              str_detect(full_sample_name, specific_data), # select specific data by name
              str_detect(well, '.*'), # select with regex for wells : Example row D : 'D[:digit:]+'
-             ...) %>%  # custom filtering
+             
+             # custom filtering
+             {{custom_filtering}},
+             ...) %>% # unlimited custom filtering
       
       
       # select useful columns (for plotting medians on ridgelineplots)

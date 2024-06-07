@@ -12,7 +12,9 @@
 #' @param .cytoset T data to plot. Defaults to `fl.subset`.
  
 plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and text labels 
-                              .facets_other_category = FALSE, .save_plots = TRUE,
+                              .facets_other_category = FALSE, 
+                              
+                              .save_plots = TRUE, .plot_filename = title_name,
                               
                               .fluor_colour = '.*',
                               
@@ -72,7 +74,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
               
               y = if(exists('list_of_ordered_levels') && !plot_for_multiday_combined) 
                 
-              {fct_relevel(assay_variable, 
+              {fct_relevel(assay_variable, # should this be {{.yvar}} ?
                            list_of_ordered_levels[['assay_variable']]) 
                 
               } else {{.yvar}}), 
@@ -128,7 +130,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
           theme(panel.grid.major.x = element_line(colour = 'gray60', linewidth = .1)) + 
           
           theme(legend.position = 'top') +
-          ggtitle(title_name) + ylab('Sample name')
+          ggtitle(.plot_filename) + ylab('Sample name')
     )
   
   # CAVEAT : The median values shown on the chart are slightly different from the lines 
@@ -146,7 +148,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
       map(names(fluor_chnl_subset), # iterate over fluorescence channels
           
           ~ ggsave(str_c('FACS_analysis/plots/', 
-                         title_name,  # title_name, 
+                         .plot_filename,  # plot file name
                          '-', .x, 
                          '.png'),
                    plot = plt_ridges[[.x]], # plt_ridges
@@ -159,7 +161,7 @@ plot_ridges_fluor <- function(.show_medians = TRUE, # shows median lines and tex
       map(names(fluor_chnl_subset), # iterate over fluorescence channels
           
           ~ ggsave(str_c('FACS_analysis/plots/', 
-                         title_name,  # title_name, 
+                         .plot_filename,  # plot file name
                          '-', .x, 
                          '.png'),
                    plot = plt_ridges[[.x]], # plt_ridges

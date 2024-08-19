@@ -1,19 +1,39 @@
-# 11-manual_gating_workflow
+# gating script for S048 dilution experiment
+# this has been forked and somewhat generalized in 11-manual_gating_workflow.R 
+# gating scheme here (mindensity) is different than 11-..script (quantilegate) on negative control
 
-#' Gating on a single (or few?) representative sample and applying it to other fcs files
-#' Currently this is a general workflow but will be copied when it has been modified for specific expts
 
-# Load data by running analyze_fcs till line 38 with 'S048_e coli dilutions' data
-source('./analyze_fcs.R')
+# Load data into `fl.set` by running analyze_fcs till line 88 with 
+# 'S048_e coli dilutions' data from 'flowcyt_data'
+
+# source('./analyze_fcs.R')
+
+
+# visualize all data ----
+
+# subset data from 7-exploratory_data_analysis.R using custom parameter
+fcsunique.subset <- subset_cytoset(fl.set, 
+                                   non_data_stuff, specific_data, exclude_category, # use for labeling ridges' medians
+                                   return_fcsunique.subset = FALSE,
+                                   # optional manual filtering (additional to above)
+                                   # str_detect(assay_variable, '79') | str_detect(data_set, 'd-1')
+)
+
+# run "Scatter fluor 2 colours"
+# 
+
 
 # Select sample(s) ----
 
-single_fcs <- fl.set[[3]] # select a representative sample to set gates on
+single_fcs <- get_matching_well(fl.set, 'E03') # select a representative sample to set gates on
 # selected the 1:1 dilution for S048 : well E03
 
-# Visualize sample ----
 
-pltscatter_single <- ggcyto(single_fcs, # select subset of samples to plot
+# run the rest of steps from 11-manual_gating_workflow.R 
+
+# Visualize single sample ----
+
+pltscatter_single <- {ggcyto(single_fcs, # select subset of samples to plot
                      aes(x = 'mScarlet-I-A', y = 'mGreenLantern cor-A')) +  # fluorescence channels
   # geom_point(alpha = 0.1) +
   geom_hex(bins = 64) + # make hexagonal bins with colour : increase bins for higher resolution
@@ -23,7 +43,8 @@ pltscatter_single <- ggcyto(single_fcs, # select subset of samples to plot
   ggcyto_par_set(limits = list(x = c(-100, 1e4), y = c(-100, 1e4))) +
   
   facet_wrap('name', ncol = 10, scales = 'free') + # control facets
-  ggtitle(title_name)
+  ggtitle(title_name)} %>% 
+  print()
 
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
@@ -44,7 +65,10 @@ ggsave(str_c('FACS_analysis/plots/',
 
 # Gating ----
 # (setting 1D gates on both channels stored in vector 'fluor_chnls')
-gates_1d_list <- map(fluor_chnls, ~ openCyto::mindensity(single_fcs, channel = .x)) # draws a line at the minimum density region in 1d
+# gate at the valley of minimum density between -ve and +ve populations
+gates_1d_list <- 
+  map(fluor_chnls, 
+      ~ openCyto::mindensity(single_fcs, channel = .x)) # draws a line at the minimum density region in 1d
 
 
 # Visualize gates
@@ -53,7 +77,7 @@ gates_1d_list <- map(fluor_chnls, ~ openCyto::mindensity(single_fcs, channel = .
 plt_scatter_1dgate_list <- 
   map2(fluor_chnls, gates_1d_list,
        ~ {ggcyto(single_fcs, 
-                 aes_string(x = as.name(.x), y = 'SSC-A')) + # use respective channel name
+                 aes(x = .data[[.x]], y = 'SSC-A')) + # use respective channel name
            geom_hex(bins = 120) + 
            geom_density2d(colour = 'black') + 
            
@@ -92,8 +116,8 @@ plt_den_1d_list <-
 gate_set <- GatingSet(fl.set) # create a gatingset for all samples
 
 # Add the 1D gates
-node1 <- gs_pop_add(gate_set, gates_1d_list[[1]], name = 'Red') # add gates to root node of gating set
-node2 <- gs_pop_add(gate_set, gates_1d_list[[2]], name = 'Green') # add gates to root node
+node1 <- gs_pop_add(gate_set, gates_1d_list[[1]], name = 'Green') # add gates to root node of gating set
+node2 <- gs_pop_add(gate_set, gates_1d_list[[2]], name = 'Red') # add gates to root node
 # Now all the gates are added to the gating tree but the actual data is not gated yet
 
 # Add a dummy gate
@@ -111,6 +135,32 @@ recompute(gate_set)
 # check the gated data
 autoplot(gate_set[[13]]) + scale_x_flowjo_biexp() + scale_y_logicle() # plot data doesn't show up
 
+# TODO: some plot showing all gated data? -- will be hard to identify the samples still?
+
+
+# Check gates comprehensive ----
+
+# doesn't work.. issues with showing gates
+
+# plot gated data of all samples
+# pltscatter_gated <-
+#   ggcyto(fl.set[-(1:3)], # select subset of samples to plot : 
+#          aes(x = 'mScarlet-I-A', y = 'mGreenLantern cor-A')) + 
+#   
+#   geom_gate(data = gates_1d_list) + # show gate?
+#   
+#   geom_hex(bins = 64) + 
+#   scale_x_logicle() + scale_y_logicle() + 
+#   # facet_wrap('name', ncol = 10, scales = 'free') + 
+#   ggtitle(title_name)
+# 
+# ggsave(str_c('FACS_analysis/plots/', 
+#              title_name, 
+#              '-gated', 
+#              '.png'),
+#        plot = pltscatter_gated,
+#        height = 12, width = 40) # change height and width by number of panels
+
 
 # User input ----
 
@@ -121,7 +171,8 @@ sample_name_translator <- c('Base strain|green' = 'Inf', # changes the LHS into 
                             '51|red' = '0',
                             '1/|,' = '') # remove commas and convert the 1/x into x 
 
-title_name <- '3B Limit of detection of splicing-flow cyt'
+# title_name <- '3B Limit of detection of splicing-flow cyt'
+
 
 # Analysis ----
 
@@ -142,6 +193,14 @@ counts_gated <- gs_pop_get_count_fast(gate_set) %>%
   # summary stats
   group_by(assay_variable, Population) %>% # group within replicates
   mutate(across(Count, mean,  .names = 'mean_{.col}', .before = well)) # create mean of counts
+
+
+# Save gated counts ----
+
+write.csv(counts_gated, 
+          str_c('FACS_analysis/tabular_outputs/', title_name, '-gated_counts', '.csv'),
+          na = '')
+
 
 # Plotting ----
 
@@ -168,3 +227,4 @@ ggsave(plot_as(title_name, '-counts'), plt_counts, width = 4, height = 4)
 
 # save PDF
 ggsave(str_c('FACS_analysis/plots/', title_name, '-counts.pdf'), plt_counts, width = 4, height = 4)
+# note: later renamed this PDF to `limit of detection..` if you are looking for it

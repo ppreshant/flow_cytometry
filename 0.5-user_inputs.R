@@ -86,8 +86,9 @@ scatter_direction_lookup <- c('FSC.*' = 'fwd', 'SSC.*' = 'side') # regex matchin
 
 
 # Fluorescence channel names :: default / ignore this if not autodetecting, check "channel_colour_lookup" above
-fluor_chnls <- c('red' = 'mScarlet-I-A', # change according to cytometer, fluorophores and for changing from area to width height etc.
-        'green' = 'mGreenLantern cor-A')
+fluor_chnls <- 
+  c('green' = 'mGreenLantern cor-A', # change according to cytometer, fluorophores and for changing from area to width height etc.
+    'red' = 'mScarlet-I-A')
 # red = 'YEL-HLog' for Guava bennett or Orange-G-A.. for Guava-SEA ; and variable for Sony
 
 # fluor_chnls <- c('red' = 'mcherry2-A',

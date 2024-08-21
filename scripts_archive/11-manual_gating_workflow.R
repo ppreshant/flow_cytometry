@@ -175,7 +175,7 @@ write.csv(counts_gated,
           na = '')
 
 
-# Plotting ----
+# Plot gated fraction ----
 
 facet_by_sample_category <- FALSE
 
@@ -298,6 +298,31 @@ gated_summary <-
 write.csv(gated_summary,
           str_c('FACS_analysis/tabular_outputs/', title_name, '_gated-summary', '.csv'),
           na = '')
+
+
+# plot gated data intensity ----
+
+plt_gated_intensity <- 
+  {ggplot(gated_summary, 
+          aes(x = Median, y = assay_variable, 
+              colour = Population,
+              label = assay_variable)) + # label is for the tooltip
+      
+      geom_point() + 
+      geom_point(aes(x = mean_medians), shape = '|', size = 3) +
+      
+      # facets
+      facet_wrap(facets = if(combined_data & !facet_by_sample_category) vars(data_set) 
+                 else vars(sample_category),
+                 scales = 'free') +
+      
+      ggtitle(title_name) + # add title to plot
+      theme(legend.position = 'top')} %>%  # position legend on the top 
+  
+  print
+
+# formatting
+# format_logscale_x() %>% format_logscale_y()
 
 
 # manual gating ----

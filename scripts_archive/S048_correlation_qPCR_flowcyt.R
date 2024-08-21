@@ -3,6 +3,15 @@
 # Load libraries -----
 library(tidyverse)
 
+# other inputs ----
+
+# Sample name modifiers 
+
+sample_name_translator <- c('Base strain|green' = 'Inf', # changes the LHS into the RHS
+                            'ntc' = 'Inf',
+                            '51|red' = '0',
+                            '1/|,' = '') # remove commas and convert the 1/x into x 
+
 
 # Load data -----
 
@@ -12,6 +21,9 @@ qdat <-
   
   # remove ntc rows and Tm columns
   filter(assay_variable != 'ntc') %>% select(-matches('^Tm')) %>% 
+  
+  # create a matching column from assay variable
+  mutate('ratio_matcher' = str_replace_all(assay_variable, sample_name_translator)) %>% 
   
   # make Copies into the wide format
   pivot_wider(names_from = Target_name, values_from = matches('Copies|^CT$'))
@@ -24,6 +36,9 @@ flodat <-
   # remove the first column
   select(-`...1`) %>%
   
+  # create a matching column from assay variable
+  mutate('ratio_matcher' = str_replace_all(assay_variable, sample_name_translator)) %>% 
+  
   # convert population to wide format
   pivot_wider(names_from = Population, values_from = c(Count, mean_Count))
   
@@ -34,7 +49,7 @@ flodat <-
 
 # join data
 combined_data <-
-  left_join(qdat, flodat, by = join_by('fraction of RAM cells', biological_replicates == replicate))
+  left_join(qdat, flodat, by = join_by(ratio_matcher, biological_replicates == replicate))
 
 
 # Plotting ----
@@ -47,20 +62,35 @@ plt_counts <-
              label = assay_variable.x
              )) + 
   
-  geom_point() + 
-  geom_line(aes(x = mean_Count_Red, y = mean_Copies.per.ul.template_U64), 
-            linetype = 2) +
+      geom_point() + 
+      
+      # connect the means with a line
+      # geom_line(aes(x = mean_Count_Red, y = mean_Copies.per.ul.template_U64), 
+      #           linetype = 2) +
   
+      # plot linear regression
+      geom_smooth(method = 'lm', alpha = 0.5) +
+      # ggpmisc::stat_poly_eq() + ggpmisc::stat_poly_eq() + 
+      
   # ggtitle('3B Limit of detection of splicing-flow cyt') + # add title to plot
   # theme(legend.position = 'top') +  # position legend on the top 
   
-  # formatting
-  scale_x_log10() + scale_y_log10() } %>% 
+      # formatting
+      theme_classic() +
+      
+      # label axes
+      labs(x = 'Counts of Red cells', y = 'Copies of spliced 16S per ul') +
+      
+      # logscale: neat labels from https://stackoverflow.com/a/73526579/9049673
+      scale_x_log10(labels = scales::label_log()) + 
+      scale_y_log10(labels = scales::label_log()) } %>% 
   
   print()
 
 # interactive plot
 plotly::ggplotly(plt_counts)
 
-
+# save plot
+ggsave('FACS_analysis/plots/S048_correlation_qPCR_flowcyt.png', plt_counts, 
+       width = 5, height = 5)
 

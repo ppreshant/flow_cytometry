@@ -13,6 +13,7 @@
 # Subset data ----
 
 # Metada based sample filtering : to plot a subset of wells
+# non_data_stuff <- 'NA'
 non_data_stuff <- 'NA|Beads|beads|PBS' # NA removes samples not defined in the template
 specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
 exclude_category <- 'none' # use 'none' for selecting everything : experiment/data specific

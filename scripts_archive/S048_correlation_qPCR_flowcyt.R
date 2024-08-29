@@ -64,6 +64,10 @@ plt_counts <-
   
       geom_point() + 
       
+      # enclose replicates with ellipses
+      ggforce::geom_mark_ellipse(aes(group = `fraction of RAM cells.x`, label = NULL),
+                                     expand = unit(2, "mm")) + # smaller ellipses than default
+      
       # connect the means with a line
       # geom_line(aes(x = mean_Count_Red, y = mean_Copies.per.ul.template_U64), 
       #           linetype = 2) +
@@ -72,9 +76,6 @@ plt_counts <-
       geom_smooth(method = 'lm', alpha = 0.5) +
       # ggpmisc::stat_poly_eq() + ggpmisc::stat_poly_eq() + 
       
-  # ggtitle('3B Limit of detection of splicing-flow cyt') + # add title to plot
-  # theme(legend.position = 'top') +  # position legend on the top 
-  
       # formatting
       theme_classic() +
       
@@ -90,7 +91,17 @@ plt_counts <-
 # interactive plot
 plotly::ggplotly(plt_counts)
 
-# save plot
+## save plot ----
 ggsave('FACS_analysis/plots/S048_correlation_qPCR_flowcyt.png', plt_counts, 
        width = 5, height = 5)
 
+ggsave('FACS_analysis/plots/S048_correlation_qPCR_flowcyt.pdf', plt_counts, 
+       width = 4, height = 4)
+
+
+# Correlation ----
+
+# get the correlation for above plot: 
+with(combined_data,
+    cor(x = Count_Red, y = Copies.per.ul.template_U64, 
+        use = "pairwise.complete.obs")) # specify this to drop NAs

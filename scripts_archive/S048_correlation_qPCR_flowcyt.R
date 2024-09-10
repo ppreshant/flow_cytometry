@@ -45,8 +45,6 @@ flodat <-
 
 # Processing ----
 
-# BUG: fraction calculation is different between the qPCR and flow? 9.09 vs 9.99.. for 1/10x?
-
 # join data
 combined_data <-
   left_join(qdat, flodat, by = join_by(ratio_matcher, biological_replicates == replicate))
@@ -59,32 +57,37 @@ plt_counts <-
   {ggplot(combined_data, 
          
          aes(x = Count_Red, y = Copies.per.ul.template_U64,
-             label = assay_variable.x
+             # label = assay_variable.x
              )) + 
   
       geom_point() + 
       
       # enclose replicates with ellipses
       ggforce::geom_mark_ellipse(aes(group = `fraction of RAM cells.x`, label = NULL),
-                                     expand = unit(2, "mm")) + # smaller ellipses than default
+                                     expand = unit(2, "mm"), # smaller ellipses than default
+                                 alpha = 0.1) +
       
       # connect the means with a line
       # geom_line(aes(x = mean_Count_Red, y = mean_Copies.per.ul.template_U64), 
       #           linetype = 2) +
   
       # plot linear regression
-      geom_smooth(method = 'lm', alpha = 0.5) +
-      # ggpmisc::stat_poly_eq() + ggpmisc::stat_poly_eq() + 
+      # geom_smooth(method = 'lm', alpha = 0.5) +
+      ggpmisc::stat_poly_line() + # plot linear regression
+      ggpmisc::stat_poly_eq() + # show R2 value
       
       # formatting
       theme_classic() +
       
       # label axes
-      labs(x = 'Counts of Red cells', y = 'Copies of spliced 16S per ul') +
+      labs(x = 'Counts of mScarlet positive cells', y = 'Copies of spliced 16S per ul') +
+      
+      scale_x_continuous(labels = scales::label_number_auto())
       
       # logscale: neat labels from https://stackoverflow.com/a/73526579/9049673
-      scale_x_log10(labels = scales::label_log()) + 
-      scale_y_log10(labels = scales::label_log()) } %>% 
+      # scale_x_log10(labels = scales::label_log()) + 
+      # scale_y_log10(labels = scales::label_log()) 
+    } %>% 
   
   print()
 
@@ -95,13 +98,16 @@ plotly::ggplotly(plt_counts)
 ggsave('FACS_analysis/plots/S048_correlation_qPCR_flowcyt.png', plt_counts, 
        width = 5, height = 5)
 
-ggsave('FACS_analysis/plots/S048_correlation_qPCR_flowcyt.pdf', plt_counts, 
+# save pdf
+ggsave('FACS_analysis/plots/S048_correlation-linear_qPCR_flowcyt.pdf', plt_counts, 
        width = 4, height = 4)
 
 
 # Correlation ----
 
 # get the correlation for above plot: 
-with(combined_data,
+with(combined_data, # for columns in this data
+     
+     # correlation
     cor(x = Count_Red, y = Copies.per.ul.template_U64, 
         use = "pairwise.complete.obs")) # specify this to drop NAs

@@ -111,3 +111,49 @@ with(combined_data, # for columns in this data
      # correlation
     cor(x = Count_Red, y = Copies.per.ul.template_U64, 
         use = "pairwise.complete.obs")) # specify this to drop NAs
+
+
+# Save data ----
+
+# save cleaned out data for the paper tables (within the writing folder)
+
+# flow cyt data only 
+clean_flow_data <- 
+  
+  # rename x-axis variable and categories as in the paper
+  rename(flodat, 
+         'Fraction of Transconjugant E.coli' = `fraction of RAM cells`,
+         'counts_Recipient E.coli' = Count_Green, 'Mean_counts_Recipient E.coli' = mean_Count_Green,
+         'counts_Transconjugant E.coli' = Count_Red, 'Mean_counts_Transconjugant E.coli' = mean_Count_Red
+         ) %>% 
+  
+  # remove PBS and Beads (exclude NA in fraction)
+  drop_na(`Fraction of Transconjugant E.coli`) %>% 
+  
+  # select only relevant columns
+  select('Fraction of Transconjugant E.coli',
+         contains('counts')) %>% 
+  
+  # arrange by increasing fraction
+  arrange(`Fraction of Transconjugant E.coli`)
+
+output_path <- '../../Writing/RAM paper outputs/Archive'
+write.csv(clean_flow_data, str_c(output_path, '/', 'S15c_flowcyt_RAM-dilutions_S048', '.csv')) # save data as csv
+
+
+# correlation data (combined qPCR and flowcyt)
+clean_combined_data <- 
+  
+  # arrange by increasing fraction 
+  arrange(combined_data, `fraction of RAM cells.x`) %>%
+  
+  # select only the plotted columns
+  select(`fraction of RAM cells.x`, Copies.per.ul.template_U64, Count_Red) %>% 
+  
+  # rename as in the graph
+  rename('Fraction of Transconjugant E.coli' = `fraction of RAM cells.x`,
+         'Copies of spliced 16S per ul' = Copies.per.ul.template_U64,
+         'Counts of mScarlet positive cells' = Count_Red)
+
+write.csv(clean_combined_data, str_c(output_path, '/', 'S15d_correlation_RAM-dilutions', '.csv')) # save data as csv
+

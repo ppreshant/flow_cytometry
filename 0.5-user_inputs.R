@@ -6,10 +6,10 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
+base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/ and any subfolders
 
 # for Sony flow cyt : top directory for expt containing all fcs files
-folder_name <- 'S089_combined/' # 'foldername/'  
+folder_name <- 'S089_marine-SS_4/' # 'foldername/'  
 
 # Name of .fcs file to read: Relevant only when reading a multi-data .fcs file (from Guava)
 # Leave this empty using '' for reading multiple .fcs files from the folder_name mentioned above

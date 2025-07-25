@@ -1,13 +1,29 @@
 # S089_adhoc_plots.R
 
+# modifying this script to plot a reduced datasaet (only S089 / exclude S089b)
+# 25/July/2025 ; PK
+
 # run analyze_fcs until line 105
+# Load data into `fl.set`
+# "S089_marine-SS_4" dir from 'flowcyt_data'
+
+# custom settings ----
+
+# make subset without the controls and some other stuff
+non_data_stuff <- 'NA|Beads|beads|PBS|Chl|LB' # NA removes samples not in template
+specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
+exclude_category <- 'Negative' # use 'none' for selecting everything
+
+# order the promoters for consistent ordering in the paper (take from sheet)
+list_of_ordered_levels$assay_variable <- 
+  readODS::read_ods('flowcyt_data/S089_sample order.ods') %>% 
+  pull(Alias) |> rev()
+
+# list the organisms
+list_of_ordered_levels$sample_category <- c('Ds', 'Rd', 'Pg', 'Rp', 'Ec')
 
 # each organism in a facet ----
 
-# make subset without the controls
-non_data_stuff <- 'NA|Beads|beads|PBS' # NA removes samples not in template
-specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
-exclude_category <- 'Negative' # use 'none' for selecting everything
 
 # subset the fl.set according to above variables and 
 # return a unique metadata + mean_median data
@@ -20,6 +36,7 @@ fcsunique.subset <-
                  # str_detect(assay_variable, '79') | str_detect(data_set, 'd-1')
   )
 
+
 # run plot without saving
 source('scripts_general_fns/17-plot_ridges_fluor.R') # source script
 plt_ridges <- plot_ridges_fluor(.show_medians = show_medians, .save_plots = FALSE)
@@ -27,8 +44,16 @@ plt_ridges <- plot_ridges_fluor(.show_medians = show_medians, .save_plots = FALS
 # facet by organism
 plt_ridges$green + 
   
+  # add a line for E. coli control
+  geom_vline(xintercept = 1721, linetype = 'dotted') +
+  
+  # axis labels
+  xlab('Fluorescence intensity (sf.GFP-A) (a.u.)') +
+
   # facet by organism (sample_category)
-  facet_wrap(facets = vars(sample_category), scales = 'free_y', ncol = 6) + 
+  facet_wrap(facets = vars(
+    fct_relevel(sample_category, list_of_ordered_levels$sample_category)), 
+            scales = 'free_y', ncol = 6) + 
   theme(legend.position = 'none') # remove legend/redundant
 
 # save plot
@@ -36,8 +61,28 @@ ggsave(str_c('FACS_analysis/plots/',
              title_name,  # title_name, 
              '-ridges-by-organism', fl_suffix, 
              '.png'),
-       height = 6, width = 20) # change height and width by number of panels
+       height = 6, width = 15) # change height and width by number of panels
 
+# save vector plots (PDF, SVG, EPS)
+fig_path <- "C:\\Users\\new\\Box Sync\\Stadler lab\\Writing\\marine_plots_pk"
+
+ggsave(str_c(fig_path, 
+             '/flowcyt_S089', 
+             '.pdf'),
+       height = 6, width = 15)
+
+ggsave(str_c(fig_path, 
+             '/flowcyt_S089', 
+             '.svg'),
+       height = 6, width = 15)
+
+# EPS warning:
+# semi-transparency is not supported on this device: reported only once per page
+ggsave(str_c(fig_path, 
+             '/flowcyt_S089', 
+             '.eps'),
+             bg = 'transparent',
+       height = 6, width = 15)
 
 # gating analysis ----
 

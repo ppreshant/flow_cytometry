@@ -198,3 +198,33 @@ ggsave(plot_as(title_name, 'gated_intensity'),
 # why are there so many J23110?
 filter(gated_summary, assay_variable == 'J23100') %>% 
   view()
+
+
+# Scatter analyses ----
+
+# plot scatterplots of fluorescences -- fails if only a single fluorophore is present
+plt_fscgr <- plot_scatter(.x = fluor_chnls[["green"]], .y = scatter_chnls[["fwd"]]) + 
+
+  # add a line for E. coli control
+  geom_vline(xintercept = 1771, linetype = 'dashed') +
+    
+  # axis labels
+  xlab('Fluorescence intensity (sf.GFP-A) (a.u.)') +
+  # ylab('Promoter ID') +
+
+  # facet by organism (sample_category)
+  facet_grid(
+    cols = vars(
+      fct_relevel(sample_category, list_of_ordered_levels$sample_category)),
+    rows = vars(
+      fct_relevel(assay_variable, rev(list_of_ordered_levels$assay_variable))), 
+    #  switch = 'y', # put facet labels on the left 
+    scales = 'free_y') +
+  theme(strip.text.y = element_text(angle = 0)) # horizontal label for facet (readable)
+
+# save plot
+ggsave(str_c('FACS_analysis/plots/Archive/', 
+             title_name,  # title_name, 
+             '-scatter-fl-by-org',
+             '.png'),
+       height = 6, width = 12) # change height and width by number of panels

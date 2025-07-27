@@ -137,7 +137,7 @@ plot_density <- function(save_plot_name = NULL, # make save_folder NULL to not s
 #' @param : save_plot_extension : char : extension of the plot : default '.png' / can use '.pdf'
 #' @param : save_folder : char : folder within `FACS_analysis/plots/` to save in ; could be 'Archive/'
 
-plot_scatter <- function(save_plot_name = NULL, # make save_folder NULL to not save
+plot_scatter <- function(save_plot_name = NULL, # make save_plot_name NULL to not save
                          save_plot_suffix = NULL,
                          
                          .x = scatter_chnls[['fwd']],

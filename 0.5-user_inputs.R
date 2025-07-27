@@ -6,7 +6,7 @@
 # user inputs ----
 
 # include the trailing slash "/" in the folder paths
-base_directory <- 'flowcyt_data/' # processed_data/ or flowcyt_data/ and any subfolders
+base_directory <- 'processed_data/' # processed_data/ or flowcyt_data/ and any subfolders
 
 # for Sony flow cyt : top directory for expt containing all fcs files
 folder_name <- 'S089_marine-SS_4/' # 'foldername/'  

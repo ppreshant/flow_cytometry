@@ -5,12 +5,12 @@
 
 # run analyze_fcs until line 105
 # Load data into `fl.set`
-# "S089_marine-SS_4" dir from 'flowcyt_data'
+# "S089_marine-SS_4" dir from 'processed_data/'
 
 # custom settings ----
 
 # make subset without the controls and some other stuff
-non_data_stuff <- 'NA|Beads|beads|PBS|Chl|LB' # NA removes samples not in template
+non_data_stuff <- 'NA|Beads|beads|PBS|Chl|LB|Ec' # NA removes samples not in template
 specific_data <- '.*' # use '.*' for everything ; use '51|MG1655' for specific data
 exclude_category <- 'Negative' # use 'none' for selecting everything
 
@@ -45,10 +45,11 @@ plt_ridges <- plot_ridges_fluor(.show_medians = show_medians, .save_plots = FALS
 plt_ridges$green + 
   
   # add a line for E. coli control
-  geom_vline(xintercept = 1721, linetype = 'dotted') +
+  geom_vline(xintercept = 1771, linetype = 'dashed') +
   
   # axis labels
   xlab('Fluorescence intensity (sf.GFP-A) (a.u.)') +
+  ylab('Promoter ID') +
 
   # facet by organism (sample_category)
   facet_wrap(facets = vars(
@@ -59,9 +60,9 @@ plt_ridges$green +
 # save plot
 ggsave(str_c('FACS_analysis/plots/', 
              title_name,  # title_name, 
-             '-ridges-by-organism', fl_suffix, 
+             '-ridges-by-organism',
              '.png'),
-       height = 6, width = 15) # change height and width by number of panels
+       height = 6, width = 12) # change height and width by number of panels
 
 # save vector plots (PDF, SVG, EPS)
 fig_path <- "C:\\Users\\new\\Box Sync\\Stadler lab\\Writing\\marine_plots_pk"
